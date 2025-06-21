@@ -24,7 +24,7 @@
     "eslint": "^8.57.0",
     "eslint-config-next": "14.1.0",
     "vitest": "^1.0.0",
-    "@shadcn/ui": "^0.3.0",
+    "@shadcn/ui": "latest",
     "typescript": "^5.4.0"
   }
 }
