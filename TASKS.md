@@ -6,8 +6,8 @@
 
 ## 🔹 PHASE 0: Foundation Setup
 
-- [ ] ✅ Initialize Next.js 14 app with App Router
-- [ ] ✅ Install Tailwind CSS + set up PostCSS config
+- [x] Initialize Next.js 14 app with App Router
+- [x] Install Tailwind CSS + set up PostCSS config
 - [ ] ✅ Install MDX support with `next-mdx-remote` or native MDX routing
 - [ ] ✅ Create `/content` directory and configure local dev to clone/sync with `https://github.com/joshua-lossner/coherenceism.content.git`
 - [ ] ✅ Add `.env.example` and `.env.local` with Git sync options (optional)

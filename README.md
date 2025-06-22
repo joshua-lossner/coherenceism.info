@@ -19,6 +19,7 @@ This repo hosts the Next.js frontend for **Coherenceism.info**. Content is store
 ```
 npm install
 npm run dev
+npm test
 ```
 
 The journal section lives under `/app/journal`. For now it contains mocked entries and a placeholder layout. Individual entries are served via `/journal/[slug]`.
