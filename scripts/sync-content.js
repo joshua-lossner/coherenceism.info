@@ -6,7 +6,11 @@ const repoUrl = process.env.CONTENT_REPO_URL || 'https://github.com/joshua-lossn
 const contentDir = path.resolve(__dirname, '..', 'content');
 
 function run(cmd) {
-  execSync(cmd, { stdio: 'inherit' });
+  try {
+    execSync(cmd, { stdio: 'inherit' });
+  } catch (err) {
+    console.error(`Failed to execute "${cmd}":`, err.message);
+  }
 }
 
 if (!fs.existsSync(contentDir)) {
