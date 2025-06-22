@@ -22,6 +22,8 @@ npm run dev
 npm test
 ```
 
+MDX pages can be placed anywhere under `app/` using the `.mdx` extension. See `app/hello.mdx` for a simple example.
+
 The journal section lives under `/app/journal`. For now it contains mocked entries and a placeholder layout. Individual entries are served via `/journal/[slug]`.
 
 Content from `coherenceism.content` will eventually be injected via a CMS pipeline in `/cms`.
