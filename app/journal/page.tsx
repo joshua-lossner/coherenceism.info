@@ -1,18 +1,12 @@
-import Link from 'next/link'
 import { getAllEntries } from '../../lib/content'
+import JournalFeed from '../../components/JournalFeed'
 
 export default async function JournalIndexPage() {
   const entries = await getAllEntries('journal')
   return (
-    <main className="p-4 space-y-2">
+    <div className="space-y-4">
       <h1 className="text-2xl font-bold">Journal</h1>
-      <ul className="list-disc list-inside">
-        {entries.map((entry) => (
-          <li key={entry.slug}>
-            <Link href={`/journal/${entry.slug}`}>{entry.frontmatter.title}</Link>
-          </li>
-        ))}
-      </ul>
-    </main>
+      <JournalFeed entries={entries} />
+    </div>
   )
 }
