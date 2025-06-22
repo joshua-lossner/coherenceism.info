@@ -1,3 +1,7 @@
+@import "@fontsource-variable/inter/index.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/700.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -9,6 +13,8 @@
   --card: #18181b;
   --primary: #67e8f9;
   --primary-foreground: #0c0a09;
+  --font-sans: 'InterVariable', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
 }
 
 body {
