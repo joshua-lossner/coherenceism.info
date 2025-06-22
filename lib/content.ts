@@ -17,8 +17,8 @@ export async function getEntry(type: 'journal' | 'books', slug: string) {
   const filePath = path.join(CONTENT_ROOT, type, `${slug}.mdx`)
   const source = await fs.readFile(filePath, 'utf8')
   const { data, content } = matter(source)
-  const mdx = await compileMDX({ source: content })
-  return { frontmatter: data as Frontmatter, content: mdx }
+  const { content: compiled } = await compileMDX({ source: content })
+  return { frontmatter: data as Frontmatter, content: compiled }
 }
 
 export async function getAllEntries(type: 'journal' | 'books') {
