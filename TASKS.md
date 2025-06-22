@@ -14,22 +14,26 @@
 
 ---
 
-## 🔹 PHASE 1: Content Architecture
+## 🔹 PHASE 1: Content Architecture *(completed)*
 
-- [ ] Create dynamic route for `/journal/[slug]` and `/books/[slug]`
-- [ ] Build `getStaticProps` or equivalent content loader (use `gray-matter` + MDX parser)
-- [ ] Define unified frontmatter schema for markdown (title, date, tags, summary, type)
-- [ ] Build index pages:
-  - [ ] `/journal` → lists latest entries
-  - [ ] `/books` → longform or serialized content
-  - [ ] `/tags/[tag]` → filter by tag/topic
+- [x] Create dynamic route for `/journal/[slug]` and `/books/[slug]`
+- [x] Build `getStaticProps` or equivalent content loader (use `gray-matter` + MDX parser)
+- [x] Define unified frontmatter schema for markdown (title, date, tags, summary, type)
+- [x] Build index pages:
+  - [x] `/journal` → lists latest entries
+  - [x] `/books` → longform or serialized content
+  - [x] `/tags/[tag]` → filter by tag/topic
 
 ---
 
-## 🔹 PHASE 2: Design System
+## 🔹 PHASE 2: Design System & Social Feed
 
 - [ ] Implement base layout: header, nav, main content area, footer
 - [ ] Configure custom Tailwind theme with:
   - Fonts: `Inter`, `IBM Plex Mono`, or something... *coherently alien*
   - Color palette: Deep gray, soft neon, sandlight blue
   - Ambient dark mode default
+- [ ] Build scrollable feed experience similar to **bsky.app** or **x.com**:
+  - [ ] Vertical timeline layout for journal entries
+  - [ ] Infinite scroll or "load more" interaction
+  - [ ] Reusable card component for posts
