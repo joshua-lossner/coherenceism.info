@@ -28,12 +28,12 @@
 
 ## 🔹 PHASE 2: Design System & Social Feed
 
-- [ ] Implement base layout: header, nav, main content area, footer
-- [ ] Configure custom Tailwind theme with:
+- [x] Implement base layout: header, nav, main content area, footer
+- [x] Configure custom Tailwind theme with:
   - Fonts: `Inter`, `IBM Plex Mono`, or something... *coherently alien*
   - Color palette: Deep gray, soft neon, sandlight blue
   - Ambient dark mode default
-- [ ] Build scrollable feed experience similar to **bsky.app** or **x.com**:
-  - [ ] Vertical timeline layout for journal entries
-  - [ ] Infinite scroll or "load more" interaction
-  - [ ] Reusable card component for posts
+- [x] Build scrollable feed experience similar to **bsky.app** or **x.com**:
+  - [x] Vertical timeline layout for journal entries
+  - [x] Infinite scroll or "load more" interaction
+  - [x] Reusable card component for posts
