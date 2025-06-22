@@ -10,6 +10,7 @@ This repo hosts the Next.js frontend for **Coherenceism.info**. Content is store
 /lib/           - Server/client utilities
 /public/        - Static assets
 /scripts/       - Build and setup helpers
+/content/       - Markdown content cloned from `coherenceism.content`
 /tests/         - Vitest test suites
 /cms/           - Content pipeline (placeholder)
 ```
@@ -20,6 +21,12 @@ This repo hosts the Next.js frontend for **Coherenceism.info**. Content is store
 npm install
 npm run dev
 npm test
+```
+
+To pull down the markdown content repository, run:
+
+```
+npm run content:sync
 ```
 
 MDX pages can be placed anywhere under `app/` using the `.mdx` extension. See `app/hello.mdx` for a simple example.
