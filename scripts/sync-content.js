@@ -12,7 +12,9 @@ function run(cmd) {
 if (!fs.existsSync(contentDir)) {
   console.log(`Cloning content repo to ${contentDir}...`);
   run(`git clone ${repoUrl} ${contentDir}`);
-} else {
+} else if (fs.existsSync(path.join(contentDir, '.git'))) {
   console.log('Updating content repo...');
   run(`git -C ${contentDir} pull`);
+} else {
+  console.log('Content directory exists but is not a git repo; skipping sync');
 }
