@@ -5,7 +5,11 @@ import Footer from '../components/layout/footer'
 import { Inter, IBM_Plex_Mono } from 'next/font/google'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
-const plexMono = IBM_Plex_Mono({ subsets: ['latin'], variable: '--font-mono' })
+const plexMono = IBM_Plex_Mono({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  variable: '--font-mono',
+})
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
