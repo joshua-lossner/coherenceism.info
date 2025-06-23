@@ -34,3 +34,7 @@ MDX pages can be placed anywhere under `app/` using the `.mdx` extension. See `a
 The journal section lives under `/app/journal`. For now it contains mocked entries and a placeholder layout. Individual entries are served via `/journal/[slug]`.
 
 Content from `coherenceism.content` will eventually be injected via a CMS pipeline in `/cms`.
+
+## Content Sync during Build
+
+`npm run build` automatically executes `scripts/sync-content.js` to clone the `coherenceism.content.git` repository into the `content/` folder. The repository URL can be customized with the `CONTENT_REPO_URL` environment variable. When deploying to Vercel, ensure this variable points to a repo the build process can access, either by using public access or providing appropriate credentials.
