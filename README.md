@@ -29,6 +29,15 @@ To pull down the markdown content repository, run:
 npm run content:sync
 ```
 
+### Content Sync in Build
+
+`npm run build` triggers `scripts/sync-content.js` via the `prebuild` script. This
+script clones the `coherenceism.content.git` repository into the `content/`
+directory so the markdown is bundled with the site. You can override the
+repository URL with the `CONTENT_REPO_URL` environment variable. On Vercel,
+ensure this variable provides access to the repo (or make the repo public) so the
+build can succeed.
+
 MDX pages can be placed anywhere under `app/` using the `.mdx` extension. See `app/hello.mdx` for a simple example.
 
 The journal section lives under `/app/journal`. For now it contains mocked entries and a placeholder layout. Individual entries are served via `/journal/[slug]`.
