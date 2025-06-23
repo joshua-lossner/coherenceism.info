@@ -1,9 +1,18 @@
-const { execSync } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+const { execSync } = require('child_process')
+const fs = require('fs')
+const path = require('path')
 
 const repoUrl = process.env.CONTENT_REPO_URL || 'https://github.com/joshua-lossner/coherenceism.content.git';
 const contentDir = path.resolve(__dirname, '..', 'content');
+
+function hasGit() {
+  try {
+    execSync('git --version', { stdio: 'ignore' })
+    return true
+  } catch {
+    return false
+  }
+}
 
 function run(cmd) {
   try {
@@ -13,7 +22,9 @@ function run(cmd) {
   }
 }
 
-if (!fs.existsSync(contentDir)) {
+if (!hasGit()) {
+  console.log('git not available; skipping content sync');
+} else if (!fs.existsSync(contentDir)) {
   console.log(`Cloning content repo to ${contentDir}...`);
   run(`git clone ${repoUrl} ${contentDir}`);
 } else if (fs.existsSync(path.join(contentDir, '.git'))) {
