@@ -37,4 +37,4 @@ Content from `coherenceism.content` will eventually be injected via a CMS pipeli
 
 ## Content Sync during Build
 
-`npm run build` automatically executes `scripts/sync-content.js` to clone the `coherenceism.content.git` repository into the `content/` folder. The repository URL can be customized with the `CONTENT_REPO_URL` environment variable. When deploying to Vercel, ensure this variable points to a repo the build process can access, either by using public access or providing appropriate credentials.
+Running `npm run build` triggers a `prebuild` step that clones the `coherenceism.content` repository via `scripts/sync-content.js`. The repository URL can be customized using the `CONTENT_REPO_URL` environment variable. When deploying to Vercel, ensure this variable points to a repo the build process can access, either publicly or via credentials.
