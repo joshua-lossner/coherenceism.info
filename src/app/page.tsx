@@ -1,6 +1,5 @@
 'use client';
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
 import quotes from '../data/quotes.json';
 import { motion } from 'framer-motion';
 
@@ -31,18 +30,6 @@ export default function Home() {
         src="/coherence-background.mp4"
         poster="/background.jpg"
       />
-      <motion.div
-        whileHover={{ scale: 1.02 }}
-        className="pointer-events-none absolute bottom-4 right-4 sm:bottom-8 sm:right-8"
-      >
-        <Image
-          src="/tv-static.png"
-          alt="TV static"
-          width={300}
-          height={250}
-          className="w-48 sm:w-72"
-        />
-      </motion.div>
       {quote && (
         <motion.div
           initial={{ opacity: 0 }}

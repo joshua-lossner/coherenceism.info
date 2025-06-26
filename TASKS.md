@@ -21,7 +21,7 @@ This interface is NOT interactive in a traditional sense—there are no menus or
 
 🔸 Foreground TV
 •Fixed position, bottom-right (or center, up to you)
-•Image: /public/tv-static.png or short looped /public/tv-static.mp4
+•Placeholder TV asset removed; final video to be added later
 •Optional glow or scanline effect
 •On hover: subtle animated pulse or flicker using Framer Motion
 
