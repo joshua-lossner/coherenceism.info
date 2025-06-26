@@ -9,14 +9,19 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "framer-motion": "^10.16.0",
     "next": "14.2.9",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "framer-motion": "^10.16.0"
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@types/node": "24.0.4",
+    "@types/react": "18.2.44",
     "autoprefixer": "^10.4.14",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^15.3.4",
     "postcss": "^8.4.31",
-    "tailwindcss": "^3.4.4"
+    "tailwindcss": "^3.4.4",
+    "typescript": "5.8.3"
   }
 }
