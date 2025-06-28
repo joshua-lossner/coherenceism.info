@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+
+@layer base {
+  html {
+    font-family: 'JetBrains Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
+  }
+  
+  body {
+    @apply bg-black text-terminal-green overflow-hidden;
+  }
+}
+
+@layer utilities {
+  .scanlines {
+    background-image: repeating-linear-gradient(
+      0deg, 
+      transparent, 
+      transparent 2px, 
+      rgba(0, 255, 0, 0.03) 2px, 
+      rgba(0, 255, 0, 0.03) 4px
+    );
+  }
+  
+  .terminal-cursor {
+    animation: blink 1s infinite;
+  }
+  
+  @keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+  
+  .terminal-text {
+    letter-spacing: 0.5px;
+    line-height: 1.6;
+  }
+  
+  .glow-text {
+    animation: glow-cycle 2s ease-in-out infinite;
+  }
+  
+  @keyframes glow-cycle {
+    0%, 50% { 
+      text-shadow: none;
+    }
+    25% { 
+      text-shadow: 
+        0 0 1.5px #00ff00,
+        0 0 3px #00ff00,
+        0 0 4.5px #00ff00;
+    }
+    75% { 
+      text-shadow: none;
+    }
+  }
+  
+  .scrollbar-hide {
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    -webkit-scrollbar: none;
+    /* Hide scrollbar for IE, Edge and Firefox */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #000000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #00ff00;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #00cc00;
+} 
