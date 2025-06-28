@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react'
 import ReactMarkdown from 'react-markdown'
+import { useRouter } from 'next/navigation'
 
 interface TerminalLine {
   text: string
@@ -11,6 +12,7 @@ interface TerminalLine {
 }
 
 const WOPRTerminal = () => {
+  const router = useRouter()
   const [currentInput, setCurrentInput] = useState('')
   const [terminalLines, setTerminalLines] = useState<TerminalLine[]>([])
   const [isProcessing, setIsProcessing] = useState(false)
@@ -35,6 +37,8 @@ const WOPRTerminal = () => {
   const [isMusicPlaying, setIsMusicPlaying] = useState(false)
   const [currentTaglineIndex, setCurrentTaglineIndex] = useState(0)
   const [isGlitching, setIsGlitching] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const [isClient, setIsClient] = useState(false)
   const terminalRef = useRef<HTMLDivElement>(null)
   const hiddenInputRef = useRef<HTMLInputElement>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -302,6 +306,59 @@ const WOPRTerminal = () => {
     }
   }, [booksLoaded])
 
+  // Client-side hydration and mobile detection
+  useEffect(() => {
+    // Mark as client-side and check mobile
+    setIsClient(true)
+    
+    const checkMobile = () => {
+      const isMobileSize = window.innerWidth < 768 // md breakpoint
+      setIsMobile(isMobileSize)
+    }
+    
+    // Check immediately
+    checkMobile()
+    
+    // Also check on resize
+    window.addEventListener('resize', checkMobile)
+    
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // Initialize terminal only on desktop after client hydration
+  useEffect(() => {
+    // Only initialize terminal if client-side, not mobile, and not already initialized
+    if (isClient && !isMobile && !isInitializedRef.current) {
+      // Prevent duplicate initialization in development mode
+      setSystemReady(true)
+      isInitializedRef.current = true
+      
+      // Display clean header and main menu on startup
+      addLine("")
+      addLine("═══════════════════════════════════════════════════════════════════", 'separator')
+      addLine("")
+      addLine("C O H E R E N C E I S M . I N F O", 'ascii-art')
+      addLine("")
+      addLine("TAGLINE_PLACEHOLDER", 'tagline')
+      addLine("")
+      addLine("═══════════════════════════════════════════════════════════════════", 'separator')
+      addLine("")
+      addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'normal')
+      addLine("")
+      addLine("MAIN MENU")
+      addLine("")
+      addLine("/journal  - Read latest journal entries", 'normal', false, '/journal')
+      addLine("/books    - Browse Coherenceism texts", 'normal', false, '/books') 
+      addLine("/music    - Curated playlists and soundscapes", 'normal', false, '/music')
+      addLine("/about    - Introduction to Coherenceism", 'normal', false, '/about')
+      addLine("")
+      addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'normal')
+      addLine("")
+      addLine("Type a command above or 'help' for more options.")
+      addLine("")
+    }
+  }, [isClient, isMobile])
+
   // Tagline cycling effect
   useEffect(() => {
     const interval = setInterval(() => {
@@ -395,38 +452,7 @@ const WOPRTerminal = () => {
     }
   }
 
-  useEffect(() => {
-    // Prevent duplicate initialization in development mode
-    if (isInitializedRef.current) return
-    
-    // System ready immediately - no boot sequence
-    setSystemReady(true)
-    isInitializedRef.current = true
-    
-    // Display clean header and main menu on startup
-    addLine("")
-    addLine("═══════════════════════════════════════════════════════════════════", 'separator')
-    addLine("")
-    addLine("C O H E R E N C E I S M . I N F O", 'ascii-art')
-    addLine("")
-    addLine("TAGLINE_PLACEHOLDER", 'tagline')
-    addLine("")
-    addLine("═══════════════════════════════════════════════════════════════════", 'separator')
-    addLine("")
-    addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'normal')
-    addLine("")
-    addLine("MAIN MENU")
-    addLine("")
-    addLine("/journal  - Read latest journal entries", 'normal', false, '/journal')
-    addLine("/books    - Browse Coherenceism texts", 'normal', false, '/books') 
-    addLine("/music    - Curated playlists and soundscapes", 'normal', false, '/music')
-    addLine("/about    - Introduction to Coherenceism", 'normal', false, '/about')
-    addLine("")
-    addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'normal')
-    addLine("")
-    addLine("Type a command above or 'help' for more options.")
-    addLine("")
-  }, [])
+
 
   useEffect(() => {
     if (terminalRef.current && !isDisplayingMarkdown) {
@@ -1097,6 +1123,87 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
     if (hiddenInputRef.current) {
       hiddenInputRef.current.focus()
     }
+  }
+
+  const handleMobileNavClick = (path: string) => {
+    // Use Next.js router for client-side navigation
+    router.push(`/${path}`)
+  }
+
+  // Mobile view component
+  const MobileView = () => (
+    <div className="min-h-screen bg-black text-terminal-green flex flex-col items-center justify-center p-6">
+      {/* Scanlines effect */}
+      <div className="absolute inset-0 pointer-events-none scanlines" />
+      
+      <div className="text-center max-w-md mx-auto space-y-8">
+        {/* Title */}
+        <div className="space-y-4">
+          <h1 className="text-2xl font-mono text-cyan-400 tracking-wider">
+            COHERENCEISM.INFO
+          </h1>
+          <div className={`transition-all duration-300 ${isGlitching ? 'animate-pulse opacity-50 blur-sm' : 'opacity-100'}`}>
+            <p className="text-terminal-green-dim italic text-sm">
+              {taglines[currentTaglineIndex]}
+            </p>
+          </div>
+        </div>
+
+        {/* Navigation Links */}
+        <div className="space-y-4">
+          <div className="space-y-3">
+            <button 
+              onClick={() => handleMobileNavClick('journal')}
+              className="block w-full text-left text-terminal-green hover:text-terminal-amber transition-colors duration-200 text-lg font-mono"
+            >
+              → JOURNAL
+            </button>
+            <button 
+              onClick={() => handleMobileNavClick('books')}
+              className="block w-full text-left text-terminal-green hover:text-terminal-amber transition-colors duration-200 text-lg font-mono"
+            >
+              → BOOKS
+            </button>
+            <button 
+              onClick={() => handleMobileNavClick('music')}
+              className="block w-full text-left text-terminal-green hover:text-terminal-amber transition-colors duration-200 text-lg font-mono"
+            >
+              → MUSIC
+            </button>
+            <button 
+              onClick={() => handleMobileNavClick('about')}
+              className="block w-full text-left text-terminal-green hover:text-terminal-amber transition-colors duration-200 text-lg font-mono"
+            >
+              → ABOUT
+            </button>
+          </div>
+        </div>
+
+        {/* Desktop message */}
+        <div className="border-t border-terminal-green-dim pt-6 mt-8">
+          <p className="text-terminal-green-dim text-sm leading-relaxed">
+            💻 For the full terminal experience with AI assistant Byte, 
+            visit this site on a desktop or laptop computer.
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+
+  // Show loading until client hydration is complete
+  if (!isClient) {
+    return (
+      <div className="min-h-screen bg-black text-terminal-green flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-terminal-green-dim">Loading...</div>
+        </div>
+      </div>
+    )
+  }
+
+  // Return mobile view for small screens
+  if (isMobile) {
+    return <MobileView />
   }
 
   return (
