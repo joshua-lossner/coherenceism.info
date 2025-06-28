@@ -31,12 +31,18 @@ const WOPRTerminal = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [isViewingContent, setIsViewingContent] = useState(false)
+  const [pagerMode, setPagerMode] = useState(false)
+  const [pagerContent, setPagerContent] = useState('')
+  const [pagerTitle, setPagerTitle] = useState('')
   const [backgroundMusic, setBackgroundMusic] = useState<Window | null>(null)
   const [isMusicPlaying, setIsMusicPlaying] = useState(false)
   const [currentTaglineIndex, setCurrentTaglineIndex] = useState(0)
   const [isGlitching, setIsGlitching] = useState(false)
+  const [showMobileInput, setShowMobileInput] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const terminalRef = useRef<HTMLDivElement>(null)
   const hiddenInputRef = useRef<HTMLInputElement>(null)
+  const mobileInputRef = useRef<HTMLInputElement>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const musicRef = useRef<HTMLDivElement>(null)
   const isInitializedRef = useRef(false)
@@ -290,6 +296,16 @@ const WOPRTerminal = () => {
     "The Quiet Revolution of Rational Hope."
   ]
 
+  // Detect mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
   useEffect(() => {
     if (!journalsLoaded) {
       fetchJournals()
@@ -417,10 +433,10 @@ const WOPRTerminal = () => {
     addLine("")
     addLine("MAIN MENU")
     addLine("")
-    addLine("/journal  - Read latest journal entries", 'normal', false, '/journal')
-    addLine("/books    - Browse Coherenceism texts", 'normal', false, '/books') 
-    addLine("/music    - Curated playlists and soundscapes", 'normal', false, '/music')
-    addLine("/about    - Introduction to Coherenceism", 'normal', false, '/about')
+    addLine(isMobile ? "[Journal] - Latest entries" : "/journal  - Read latest journal entries", 'normal', false, '/journal')
+    addLine(isMobile ? "[Books] - Browse texts" : "/books    - Browse Coherenceism texts", 'normal', false, '/books') 
+    addLine(isMobile ? "[Music] - Playlists" : "/music    - Curated playlists and soundscapes", 'normal', false, '/music')
+    addLine(isMobile ? "[About] - Introduction" : "/about    - Introduction to Coherenceism", 'normal', false, '/about')
     addLine("")
     addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'normal')
     addLine("")
@@ -429,17 +445,17 @@ const WOPRTerminal = () => {
   }, [])
 
   useEffect(() => {
-    if (terminalRef.current && !isDisplayingMarkdown) {
-      // Normal auto-scroll to bottom - but NOT when displaying markdown content
+    if (terminalRef.current && !isDisplayingMarkdown && !isViewingContent && !pagerMode) {
+      // Normal auto-scroll to bottom - but NOT when displaying markdown content, viewing content, or in pager mode
       terminalRef.current.scrollTop = terminalRef.current.scrollHeight
     }
-  }, [terminalLines, currentInput, isProcessing, isDisplayingMarkdown])
+  }, [terminalLines, currentInput, isProcessing, isDisplayingMarkdown, isViewingContent, pagerMode])
 
   useEffect(() => {
-    if (systemReady && hiddenInputRef.current) {
+    if (systemReady && !isMobile && hiddenInputRef.current) {
       hiddenInputRef.current.focus()
     }
-  }, [systemReady])
+  }, [systemReady, isMobile])
 
   // Animate processing dots (cycle between 1, 2, 3 dots)
   useEffect(() => {
@@ -470,33 +486,21 @@ const WOPRTerminal = () => {
     setCurrentMenu(newMenu)
   }
 
-  const addMarkdownContent = (content: string, date?: string, pageInfo?: {current: number, total: number}) => {
-    // Set flag to prevent auto-scrolling when markdown is displayed
-    setIsDisplayingMarkdown(true)
-    setIsViewingContent(true)
+  const openPager = (content: string, title: string) => {
+    setPagerContent(content)
+    setPagerTitle(title)
+    setPagerMode(true)
     
-    if (pageInfo) {
-      setCurrentPage(pageInfo.current)
-      setTotalPages(pageInfo.total)
-    } else {
-      setCurrentPage(1)
-      setTotalPages(1)
+    // Scroll to top when opening pager
+    if (terminalRef.current) {
+      terminalRef.current.scrollTop = 0
     }
-    
-    // Add separator and date header
-    addLine("────────────────────────────────────────", 'separator')
-    if (date) {
-      addLine(`Date: ${date}`, 'normal')
-      if (pageInfo && pageInfo.total > 1) {
-        addLine(`Page ${pageInfo.current} of ${pageInfo.total}`, 'normal')
-      }
-      addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'separator')
-      addLine("", 'normal')
-    }
-    // Add markdown content
-    addLine(content, 'markdown', true)
-    addLine("", 'normal')
-    addLine("────────────────────────────────────────", 'separator')
+  }
+
+  const closePager = () => {
+    setPagerMode(false)
+    setPagerContent('')
+    setPagerTitle('')
   }
 
   const generateSpeech = async (text: string) => {
@@ -617,10 +621,10 @@ const WOPRTerminal = () => {
         addLine("")
         addLine("MAIN MENU")
         addLine("")
-        addLine("/journal  - Read latest journal entries", 'normal', false, '/journal')
-        addLine("/books    - Browse Coherenceism texts", 'normal', false, '/books') 
-        addLine("/music    - Curated playlists and soundscapes", 'normal', false, '/music')
-        addLine("/about    - Introduction to Coherenceism", 'normal', false, '/about')
+        addLine(isMobile ? "[Journal] - Latest entries" : "/journal  - Read latest journal entries", 'normal', false, '/journal')
+        addLine(isMobile ? "[Books] - Browse texts" : "/books    - Browse Coherenceism texts", 'normal', false, '/books') 
+        addLine(isMobile ? "[Music] - Playlists" : "/music    - Curated playlists and soundscapes", 'normal', false, '/music')
+        addLine(isMobile ? "[About] - Introduction" : "/about    - Introduction to Coherenceism", 'normal', false, '/about')
         addLine("")
         addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'normal')
         addLine("")
@@ -667,9 +671,13 @@ const WOPRTerminal = () => {
           journals.slice(0, 10).forEach((journal, index) => {
             const title = journal.title
             const date = journal.date ? ` (${journal.date})` : ''
-            addLine(`    ${index + 1}. ${title}`, 'ai-response', false, `${index + 1}`)
-            if (date) {
-              addLine(`       ${date}`, 'ai-response')
+            if (isMobile && date) {
+              addLine(`    ${index + 1}. ${title}${date}`, 'ai-response', false, `${index + 1}`)
+            } else {
+              addLine(`    ${index + 1}. ${title}`, 'ai-response', false, `${index + 1}`)
+              if (date) {
+                addLine(`       ${date}`, 'ai-response')
+              }
             }
           })
           addLine("────────────────────────────────────────", 'separator')
@@ -790,7 +798,7 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
           await new Promise(resolve => setTimeout(resolve, 100))
           if (journals.length > 0) {
             const journal = journals[0]
-            addMarkdownContent(journal.content, journal.date || 'Unknown')
+            openPager(journal.content, `Journal Entry - ${journal.date || 'Unknown'}`)
           } else {
             await typeResponse(`Journal entry not available.`, false)
           }
@@ -819,7 +827,7 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
               const chapter = chapters[0]
               setTerminalLines([])
               await new Promise(resolve => setTimeout(resolve, 100))
-              addMarkdownContent(chapter.content, `Chapter: ${chapter.title}`)
+              openPager(chapter.content, `Chapter: ${chapter.title}`)
             } else {
               await typeResponse(`Chapter not available.`, false)
             }
@@ -837,7 +845,7 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
           await new Promise(resolve => setTimeout(resolve, 100))
           if (journals.length > 1) {
             const journal = journals[1]
-            addMarkdownContent(journal.content, journal.date || 'Unknown')
+            openPager(journal.content, `Journal Entry - ${journal.date || 'Unknown'}`)
           } else {
             await typeResponse(`Journal entry not available.`, false)
           }
@@ -862,7 +870,7 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
               const chapter = chapters[entryIndex]
               setTerminalLines([])
               await new Promise(resolve => setTimeout(resolve, 100))
-              addMarkdownContent(chapter.content, `Chapter: ${chapter.title}`)
+              openPager(chapter.content, `Chapter: ${chapter.title}`)
             } else {
               await typeResponse(`Chapter not available.`, false)
             }
@@ -888,7 +896,7 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
           await new Promise(resolve => setTimeout(resolve, 100))
           if (journals.length > entryIndex) {
             const journal = journals[entryIndex]
-            addMarkdownContent(journal.content, journal.date || 'Unknown')
+            openPager(journal.content, `Journal Entry - ${journal.date || 'Unknown'}`)
           } else {
             await typeResponse(`Journal entry not available.`, false)
           }
@@ -924,7 +932,7 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
               const chapter = chapters[entryIndex]
               setTerminalLines([])
               await new Promise(resolve => setTimeout(resolve, 100))
-              addMarkdownContent(chapter.content, `Chapter: ${chapter.title}`)
+              openPager(chapter.content, `Chapter: ${chapter.title}`)
             } else {
               await typeResponse(`Chapter not available.`, false)
             }
@@ -940,6 +948,12 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
 
       case 'BACK':
       case '/BACK':
+        // If in pager mode, close pager
+        if (pagerMode) {
+          closePager()
+          return
+        }
+        
         setIsViewingContent(false)
         setCurrentPage(1)
         setTotalPages(1)
@@ -1042,8 +1056,28 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
     }
   }
 
+  const handleMobileInputSubmit = () => {
+    if (currentInput.trim() && !isProcessing) {
+      processCommand(currentInput)
+      setCurrentInput('')
+      if (mobileInputRef.current) {
+        mobileInputRef.current.blur()
+      }
+    }
+  }
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (!systemReady || isProcessing) return
+
+    // Handle pager mode keys
+    if (pagerMode) {
+      if (e.key === 'q' || e.key === 'Q' || e.key === 'Escape') {
+        closePager()
+        return
+      }
+      // Allow scrolling in pager mode but don't process other keys
+      return
+    }
 
     if (e.key === 'Enter') {
       if (currentInput.trim()) {
@@ -1094,7 +1128,14 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
   }
 
   const handleClick = () => {
-    if (hiddenInputRef.current) {
+    if (isMobile) {
+      setShowMobileInput(true)
+      setTimeout(() => {
+        if (mobileInputRef.current) {
+          mobileInputRef.current.focus()
+        }
+      }, 100)
+    } else if (hiddenInputRef.current) {
       hiddenInputRef.current.focus()
     }
   }
@@ -1131,130 +1172,204 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
       <div className="h-screen flex justify-start">
         <div 
           ref={terminalRef}
-          className="w-full max-w-4xl p-8 pb-32 overflow-y-auto text-base terminal-text scrollbar-hide"
+          className="w-full md:max-w-4xl terminal-padding terminal-padding-bottom overflow-y-auto text-terminal-mobile md:text-base terminal-text scrollbar-hide"
         >
-        {terminalLines.map((line, index) => (
-          <div 
-            key={index} 
-            className={`mb-1 ${
-              line.type === 'error' ? 'text-red-400' : 
-              line.type === 'processing' ? 'text-terminal-yellow' : 
-              line.type === 'ai-response' ? 'text-terminal-green-dim' :
-              line.type === 'separator' ? 'text-terminal-amber opacity-60' :
-              line.type === 'user-input' ? 'text-terminal-green font-bold brightness-125' :
-              line.type === 'markdown' ? 'text-terminal-green' :
-              line.type === 'ascii-art' ? 'text-cyan-400 font-mono' :
-              'text-terminal-green'
-            } ${line.isMarkdown ? '' : 'whitespace-pre-wrap'} ${
-              line.clickableCommand ? 'cursor-pointer hover:brightness-125 transition-all duration-200' : ''
-            }`}
-            onClick={line.clickableCommand ? () => handleLineClick(line.clickableCommand!) : undefined}
-          >
-            {line.type === 'tagline' ? (
-              <div className={`transition-all duration-300 ${isGlitching ? 'animate-pulse opacity-50 blur-sm' : 'opacity-100'}`}>
-                <span className="text-terminal-green-dim italic">
-                  {taglines[currentTaglineIndex]}
-                </span>
+        {pagerMode ? (
+          // Pager mode - display content in full-screen pager
+          <div className="pager-content">
+            <div className="pager-header border-b border-terminal-green pb-2 mb-4">
+              <div className="text-terminal-green font-bold text-lg">{pagerTitle}</div>
+              <div className="text-terminal-green-dim text-sm mt-1">
+                Press 'q' or 'Escape' to exit | Use scroll wheel or arrow keys to navigate
               </div>
-            ) : line.isMarkdown ? (
-              <div className="prose prose-invert prose-green max-w-none">
-                <ReactMarkdown 
-                  components={{
-                    h1: ({children}) => <h1 className="text-terminal-green text-xl font-bold mb-4">{children}</h1>,
-                    h2: ({children}) => <h2 className="text-terminal-green text-lg font-bold mb-3">{children}</h2>,
-                    h3: ({children}) => <h3 className="text-terminal-green text-base font-bold mb-2">{children}</h3>,
-                    p: ({children}) => <p className="text-terminal-green mb-3 leading-relaxed">{children}</p>,
-                    ul: ({children}) => <ul className="text-terminal-green mb-3 ml-4 list-disc">{children}</ul>,
-                    ol: ({children}) => <ol className="text-terminal-green mb-3 ml-4 list-decimal">{children}</ol>,
-                    li: ({children}) => <li className="text-terminal-green mb-1">{children}</li>,
-                    strong: ({children}) => <strong className="text-terminal-green font-bold brightness-125">{children}</strong>,
-                    em: ({children}) => <em className="text-terminal-green italic">{children}</em>,
-                    blockquote: ({children}) => <blockquote className="text-terminal-green-dim border-l-2 border-terminal-green pl-4 italic mb-3">{children}</blockquote>,
-                    code: ({children}) => <code className="text-terminal-amber bg-black px-1 rounded">{children}</code>,
-                    pre: ({children}) => <pre className="text-terminal-amber bg-black p-3 rounded mb-3 overflow-x-auto">{children}</pre>,
-                  }}
-                >
-                  {line.text}
-                </ReactMarkdown>
+            </div>
+            <div className="prose prose-invert prose-green max-w-none">
+              <ReactMarkdown 
+                components={{
+                  h1: ({children}) => <h1 className="text-terminal-green text-xl font-bold mb-4">{children}</h1>,
+                  h2: ({children}) => <h2 className="text-terminal-green text-lg font-bold mb-3">{children}</h2>,
+                  h3: ({children}) => <h3 className="text-terminal-green text-base font-bold mb-2">{children}</h3>,
+                  p: ({children}) => <p className="text-terminal-green mb-3 leading-relaxed">{children}</p>,
+                  ul: ({children}) => <ul className="text-terminal-green mb-3 ml-4 list-disc">{children}</ul>,
+                  ol: ({children}) => <ol className="text-terminal-green mb-3 ml-4 list-decimal">{children}</ol>,
+                  li: ({children}) => <li className="text-terminal-green mb-1">{children}</li>,
+                  strong: ({children}) => <strong className="text-terminal-green font-bold brightness-125">{children}</strong>,
+                  em: ({children}) => <em className="text-terminal-green italic">{children}</em>,
+                  blockquote: ({children}) => <blockquote className="text-terminal-green-dim border-l-2 border-terminal-green pl-4 italic mb-3">{children}</blockquote>,
+                  code: ({children}) => <code className="text-terminal-amber bg-black px-1 rounded">{children}</code>,
+                  pre: ({children}) => <pre className="text-terminal-amber bg-black p-3 rounded mb-3 overflow-x-auto">{children}</pre>,
+                }}
+              >
+                {pagerContent}
+              </ReactMarkdown>
+            </div>
+          </div>
+        ) : (
+          // Normal terminal mode
+          <>
+            {terminalLines.map((line, index) => (
+              <div 
+                key={index} 
+                className={`mb-1 ${
+                  line.type === 'error' ? 'text-red-400' : 
+                  line.type === 'processing' ? 'text-terminal-yellow' : 
+                  line.type === 'ai-response' ? 'text-terminal-green-dim' :
+                  line.type === 'separator' ? 'text-terminal-amber opacity-60' :
+                  line.type === 'user-input' ? 'text-terminal-green font-bold brightness-125' :
+                  line.type === 'markdown' ? 'text-terminal-green' :
+                  line.type === 'ascii-art' ? 'text-cyan-400 font-mono text-sm sm:text-base' :
+                  'text-terminal-green'
+                } ${line.isMarkdown ? '' : 'whitespace-pre-wrap'} ${
+                  line.clickableCommand ? 'cursor-pointer hover:brightness-125 active:brightness-150 transition-all duration-200' : ''
+                }`}
+                onClick={line.clickableCommand ? () => handleLineClick(line.clickableCommand!) : undefined}
+              >
+                {line.type === 'tagline' ? (
+                  <div className={`transition-all duration-300 ${isGlitching ? 'animate-pulse opacity-50 blur-sm' : 'opacity-100'}`}>
+                    <span className="text-terminal-green-dim italic">
+                      {taglines[currentTaglineIndex]}
+                    </span>
+                  </div>
+                ) : line.isMarkdown ? (
+                  <div className="prose prose-invert prose-green max-w-none">
+                    <ReactMarkdown 
+                      components={{
+                        h1: ({children}) => <h1 className="text-terminal-green text-xl font-bold mb-4">{children}</h1>,
+                        h2: ({children}) => <h2 className="text-terminal-green text-lg font-bold mb-3">{children}</h2>,
+                        h3: ({children}) => <h3 className="text-terminal-green text-base font-bold mb-2">{children}</h3>,
+                        p: ({children}) => <p className="text-terminal-green mb-3 leading-relaxed">{children}</p>,
+                        ul: ({children}) => <ul className="text-terminal-green mb-3 ml-4 list-disc">{children}</ul>,
+                        ol: ({children}) => <ol className="text-terminal-green mb-3 ml-4 list-decimal">{children}</ol>,
+                        li: ({children}) => <li className="text-terminal-green mb-1">{children}</li>,
+                        strong: ({children}) => <strong className="text-terminal-green font-bold brightness-125">{children}</strong>,
+                        em: ({children}) => <em className="text-terminal-green italic">{children}</em>,
+                        blockquote: ({children}) => <blockquote className="text-terminal-green-dim border-l-2 border-terminal-green pl-4 italic mb-3">{children}</blockquote>,
+                        code: ({children}) => <code className="text-terminal-amber bg-black px-1 rounded">{children}</code>,
+                        pre: ({children}) => <pre className="text-terminal-amber bg-black p-3 rounded mb-3 overflow-x-auto">{children}</pre>,
+                      }}
+                    >
+                      {line.text}
+                    </ReactMarkdown>
+                  </div>
+                ) : (
+                  line.text
+                )}
               </div>
-            ) : (
-              line.text
+            ))}
+            
+            {systemReady && !isProcessing && !pagerMode && (
+              <div className="flex text-terminal-green font-bold brightness-125">
+                <span>&gt; {currentInput}</span>
+                <span className="terminal-cursor ml-1">█</span>
+              </div>
             )}
-          </div>
-        ))}
-        
-        {systemReady && !isProcessing && (
-          <div className="flex text-terminal-green font-bold brightness-125">
-            <span>&gt; {currentInput}</span>
-            <span className="terminal-cursor ml-1">█</span>
-          </div>
-        )}
-        
-        {isProcessing && (
-          <div className="text-terminal-green font-bold brightness-125 flex">
-            <span>&gt; {processingDots}</span>
-            <span className="terminal-cursor ml-1">█</span>
-          </div>
+            
+            {isProcessing && (
+              <div className="text-terminal-green font-bold brightness-125 flex">
+                <span>&gt; {processingDots}</span>
+                <span className="terminal-cursor ml-1">█</span>
+              </div>
+            )}
+          </>
         )}
         </div>
       </div>
       
       {/* ASCII Navigation Menu */}
-      <div className="absolute bottom-8 left-0 right-0 bg-black text-terminal-green p-3 text-sm font-mono border-t border-terminal-green-dim z-40 shadow-lg">
-        <div className="text-center text-terminal-green brightness-125 flex justify-center gap-4">
-          {isViewingContent ? (
+      <div className="nav-menu-mobile text-terminal-green text-sm sm:text-sm md:text-base font-mono z-40 shadow-lg">
+        <div className="text-center text-terminal-green brightness-125 flex justify-center gap-2 sm:gap-3 md:gap-4">
+          {pagerMode ? (
+            // Pager mode menu
+            <>
+              <span className="text-terminal-amber">
+                [ PAGER MODE ]
+              </span>
+              <span 
+                className="cursor-pointer hover:brightness-150 transition-all duration-200 text-terminal-amber"
+                onClick={() => closePager()}
+              >
+                [ Press 'q' or ESC to exit ]
+              </span>
+            </>
+          ) : isViewingContent ? (
             // Content viewing menu with pagination
             <>
               <span 
-                className="cursor-pointer hover:brightness-150 transition-all duration-200 text-terminal-amber"
+                className="touch-target cursor-pointer hover:brightness-150 active:brightness-150 transition-all duration-200 text-terminal-amber px-2 py-1"
                 onClick={() => handleLineClick('/pageup')}
               >
-                [ /pageup ]
+                [ ↑ ]
               </span>
               <span 
-                className="cursor-pointer hover:brightness-150 transition-all duration-200 text-terminal-amber"
+                className="touch-target cursor-pointer hover:brightness-150 active:brightness-150 transition-all duration-200 text-terminal-amber px-2 py-1"
                 onClick={() => handleLineClick('/pagedown')}
               >
-                [ /pagedown ]
+                [ ↓ ]
               </span>
               <span 
-                className="cursor-pointer hover:brightness-150 transition-all duration-200 text-terminal-amber"
+                className="touch-target cursor-pointer hover:brightness-150 active:brightness-150 transition-all duration-200 text-terminal-amber px-2 py-1"
                 onClick={() => handleLineClick('/back')}
               >
-                [ /back ]
+                [ ← Back ]
               </span>
             </>
           ) : (
             // Default menu
             <>
               <span 
-                className="cursor-pointer hover:brightness-150 transition-all duration-200"
+                className="touch-target cursor-pointer hover:brightness-150 active:brightness-150 transition-all duration-200 px-2 py-1"
                 onClick={() => handleLineClick('/menu')}
               >
-                [ /menu ]
+                [ Menu ]
               </span>
               <span 
-                className="cursor-pointer hover:brightness-150 transition-all duration-200"
+                className="touch-target cursor-pointer hover:brightness-150 active:brightness-150 transition-all duration-200 px-2 py-1"
                 onClick={() => handleLineClick('/help')}
               >
-                [ /help ]
+                [ Help ]
               </span>
               <span 
-                className="cursor-pointer hover:brightness-150 transition-all duration-200"
+                className="touch-target cursor-pointer hover:brightness-150 active:brightness-150 transition-all duration-200 px-2 py-1"
                 onClick={() => handleLineClick('/back')}
               >
-                [ /back ]
+                [ ← Back ]
               </span>
             </>
           )}
         </div>
       </div>
 
+      {/* Mobile Input Field */}
+      {isMobile && showMobileInput && (
+        <div className="fixed bottom-12 left-0 right-0 bg-black p-4 border-t border-terminal-green z-50">
+          <form onSubmit={(e) => { e.preventDefault(); handleMobileInputSubmit(); }} className="flex gap-2">
+            <input
+              ref={mobileInputRef}
+              type="text"
+              value={currentInput}
+              onChange={(e) => setCurrentInput(e.target.value)}
+              className="mobile-input flex-1"
+              placeholder="Enter command..."
+              autoCapitalize="off"
+              autoCorrect="off"
+              autoComplete="off"
+            />
+            <button
+              type="submit"
+              className="touch-target bg-terminal-green text-black px-4 py-2 rounded font-bold"
+              disabled={isProcessing}
+            >
+              →
+            </button>
+          </form>
+        </div>
+      )}
+
       {/* Status bar */}
-      <div className="absolute bottom-0 left-0 right-0 bg-terminal-green text-black p-1 flex justify-between text-sm z-50">
-        <span className="hidden md:block">DIGITAL CONSCIOUSNESS v3.7.42</span>
-        <span className="md:block flex-1 text-center md:text-left md:flex-initial">COHERENCEISM.INFO</span>
-        <span className="hidden md:block">STATUS: {isProcessing ? 'PROCESSING...' : 'COHERENT & READY'}</span>
+      <div className="absolute bottom-0 left-0 right-0 bg-terminal-green text-black p-1 flex justify-between text-xs sm:text-sm z-50">
+        <span className="hidden sm:block truncate">v3.7.42</span>
+        <span className="flex-1 text-center sm:text-left sm:flex-initial">COHERENCEISM.INFO</span>
+        <span className="hidden sm:block truncate">{isProcessing ? 'PROCESSING...' : 'READY'}</span>
       </div>
     </div>
   )

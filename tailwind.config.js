@@ -12,6 +12,7 @@ module.exports = {
       },
       colors: {
         'terminal-green': '#00ff00',
+        'terminal-green-bright': '#33ff33',
         'terminal-green-dim': '#00cc00',
         'terminal-amber': '#ffbf00',
         'terminal-dark': '#001100',

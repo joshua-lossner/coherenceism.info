@@ -65,6 +65,42 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+  
+  /* Mobile-first responsive text sizes */
+  .text-terminal-base {
+    @apply text-base sm:text-base md:text-base lg:text-base;
+  }
+  
+  .text-terminal-mobile {
+    @apply text-lg sm:text-base;
+  }
+  
+  /* Touch-friendly target sizes */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+  }
+  
+  /* Mobile-optimized padding */
+  .terminal-padding {
+    @apply p-4 sm:p-6 md:p-8;
+  }
+  
+  .terminal-padding-bottom {
+    @apply pb-24 sm:pb-28 md:pb-32;
+  }
+  
+  /* Mobile input field styles */
+  .mobile-input {
+    @apply bg-black text-terminal-green border border-terminal-green 
+           rounded px-3 py-2 w-full font-mono text-base
+           focus:outline-none focus:border-terminal-green-bright focus:ring-1 focus:ring-terminal-green;
+  }
+  
+  /* Responsive navigation menu */
+  .nav-menu-mobile {
+    @apply fixed bottom-0 left-0 right-0 bg-black border-t border-terminal-green-dim
+           p-2 sm:p-3 md:relative md:bottom-8;
+  }
 }
 
 /* Custom scrollbar */
