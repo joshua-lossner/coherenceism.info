@@ -89,6 +89,26 @@
     @apply pb-24 sm:pb-28 md:pb-32;
   }
   
+  /* Prevent horizontal overflow on mobile */
+  .terminal-container {
+    @apply w-full overflow-x-hidden;
+    max-width: 100vw;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+  
+  @media (min-width: 768px) {
+    .terminal-container {
+      max-width: 56rem; /* 896px - same as max-w-4xl */
+    }
+  }
+  
+  /* Ensure separator lines don't overflow */
+  .terminal-separator {
+    @apply overflow-hidden;
+    max-width: 100%;
+  }
+  
   /* Mobile input field styles */
   .mobile-input {
     @apply bg-black text-terminal-green border border-terminal-green 
@@ -98,8 +118,15 @@
   
   /* Responsive navigation menu */
   .nav-menu-mobile {
-    @apply fixed bottom-0 left-0 right-0 bg-black border-t border-terminal-green-dim
-           p-2 sm:p-3 md:relative md:bottom-8;
+    @apply fixed left-0 right-0 bg-black border-t border-terminal-green-dim
+           p-2 sm:p-3 z-40 shadow-lg;
+    bottom: 2rem; /* 32px for status bar height */
+  }
+  
+  @media (max-width: 640px) {
+    .nav-menu-mobile {
+      bottom: 1.5rem; /* Closer to bottom on mobile */
+    }
   }
 }
 

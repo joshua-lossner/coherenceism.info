@@ -1142,7 +1142,7 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
 
   return (
     <div 
-      className="min-h-screen bg-black text-terminal-green cursor-text relative overflow-hidden"
+      className="min-h-screen bg-black text-terminal-green cursor-text relative overflow-x-hidden"
       onClick={handleClick}
     >
       {/* Scanlines effect */}
@@ -1169,10 +1169,10 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
       {/* Hidden container for background music */}
       <div ref={musicRef} style={{ display: 'none' }} />
       
-      <div className="h-screen flex justify-start">
+      <div className="h-screen flex justify-center">
         <div 
           ref={terminalRef}
-          className="w-full md:max-w-4xl terminal-padding terminal-padding-bottom overflow-y-auto text-terminal-mobile md:text-base terminal-text scrollbar-hide"
+          className="terminal-container terminal-padding terminal-padding-bottom overflow-y-auto text-terminal-mobile md:text-base terminal-text scrollbar-hide"
         >
         {pagerMode ? (
           // Pager mode - display content in full-screen pager
@@ -1214,7 +1214,7 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
                   line.type === 'error' ? 'text-red-400' : 
                   line.type === 'processing' ? 'text-terminal-yellow' : 
                   line.type === 'ai-response' ? 'text-terminal-green-dim' :
-                  line.type === 'separator' ? 'text-terminal-amber opacity-60' :
+                  line.type === 'separator' ? 'text-terminal-amber opacity-60 terminal-separator' :
                   line.type === 'user-input' ? 'text-terminal-green font-bold brightness-125' :
                   line.type === 'markdown' ? 'text-terminal-green' :
                   line.type === 'ascii-art' ? 'text-cyan-400 font-mono text-sm sm:text-base' :
@@ -1341,7 +1341,7 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
 
       {/* Mobile Input Field */}
       {isMobile && showMobileInput && (
-        <div className="fixed bottom-12 left-0 right-0 bg-black p-4 border-t border-terminal-green z-50">
+        <div className="fixed bottom-20 left-4 right-4 bg-black p-3 border border-terminal-green rounded z-50 max-w-lg mx-auto">
           <form onSubmit={(e) => { e.preventDefault(); handleMobileInputSubmit(); }} className="flex gap-2">
             <input
               ref={mobileInputRef}
@@ -1356,10 +1356,17 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
             />
             <button
               type="submit"
-              className="touch-target bg-terminal-green text-black px-4 py-2 rounded font-bold"
+              className="touch-target bg-terminal-green text-black px-4 py-2 rounded font-bold min-w-[44px]"
               disabled={isProcessing}
             >
               →
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowMobileInput(false)}
+              className="touch-target bg-red-600 text-white px-4 py-2 rounded font-bold min-w-[44px]"
+            >
+              ✕
             </button>
           </form>
         </div>
