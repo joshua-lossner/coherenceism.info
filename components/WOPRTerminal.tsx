@@ -693,10 +693,7 @@ const WOPRTerminal = () => {
           journals.slice(0, 10).forEach((journal, index) => {
             const title = journal.title
             const date = journal.date ? ` (${journal.date})` : ''
-            addLine(`    ${index + 1}. ${title}`, 'ai-response', false, `${index + 1}`)
-            if (date) {
-              addLine(`       ${date}`, 'ai-response')
-            }
+            addLine(`    ${index + 1}. ${title}${date}`, 'ai-response', false, `${index + 1}`)
           })
           addLine("────────────────────────────────────────", 'separator')
           addLine("    Type the number to read an entry.", 'ai-response')
