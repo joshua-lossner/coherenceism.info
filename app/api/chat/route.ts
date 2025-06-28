@@ -6,6 +6,10 @@ export async function POST(request: NextRequest) {
     const { message, mode = 'conversation' } = await request.json();
 
     const apiKey = process.env.OPENAI_API_KEY;
+    console.log('API Key length:', apiKey?.length);
+    console.log('API Key starts with:', apiKey?.substring(0, 10));
+    console.log('API Key actual end:', apiKey?.slice(-10));
+    
     if (!apiKey) {
       console.error('OpenAI API key not found in environment variables');
       return NextResponse.json(
@@ -14,8 +18,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Trim any whitespace that might be causing issues
+    const cleanApiKey = apiKey.trim();
+    console.log('Clean API Key length:', cleanApiKey.length);
+    console.log('Clean API Key end:', cleanApiKey.slice(-10));
+
+    // Optionally include project header for project-scoped keys
+    const projectId = process.env.OPENAI_PROJECT_ID;
+
     const openai = new OpenAI({
-      apiKey: apiKey,
+      apiKey: cleanApiKey,
+      ...(projectId ? { project: projectId } : {})
     });
 
     let systemPrompt = '';
