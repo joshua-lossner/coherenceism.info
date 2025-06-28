@@ -1149,32 +1149,67 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
           </div>
         </div>
 
-        {/* Navigation Links */}
-        <div className="space-y-4">
-          <div className="space-y-3">
+        {/* Navigation Grid */}
+        <div className="w-full max-w-sm mx-auto">
+          <div className="grid grid-cols-2 gap-3">
             <button 
               onClick={() => handleMobileNavClick('journal')}
-              className="block w-full text-left text-terminal-green hover:text-terminal-amber transition-colors duration-200 text-lg font-mono"
+              className="group relative border-2 border-terminal-green hover:border-terminal-amber bg-black hover:bg-terminal-green hover:bg-opacity-10 transition-all duration-300 p-4 text-center"
             >
-              → JOURNAL
+              <div className="absolute inset-0 bg-terminal-green opacity-0 group-hover:opacity-5 transition-opacity duration-300"></div>
+              <div className="relative z-10">
+                <div className="text-terminal-green group-hover:text-terminal-amber transition-colors duration-300 text-lg font-mono font-bold mb-1">
+                  JOURNAL
+                </div>
+                <div className="text-terminal-green-dim group-hover:text-terminal-amber group-hover:text-opacity-80 text-xs font-mono">
+                  THOUGHTS
+                </div>
+              </div>
             </button>
+            
             <button 
               onClick={() => handleMobileNavClick('books')}
-              className="block w-full text-left text-terminal-green hover:text-terminal-amber transition-colors duration-200 text-lg font-mono"
+              className="group relative border-2 border-terminal-green hover:border-terminal-amber bg-black hover:bg-terminal-green hover:bg-opacity-10 transition-all duration-300 p-4 text-center"
             >
-              → BOOKS
+              <div className="absolute inset-0 bg-terminal-green opacity-0 group-hover:opacity-5 transition-opacity duration-300"></div>
+              <div className="relative z-10">
+                <div className="text-terminal-green group-hover:text-terminal-amber transition-colors duration-300 text-lg font-mono font-bold mb-1">
+                  BOOKS
+                </div>
+                <div className="text-terminal-green-dim group-hover:text-terminal-amber group-hover:text-opacity-80 text-xs font-mono">
+                  TEXTS
+                </div>
+              </div>
             </button>
+            
             <button 
               onClick={() => handleMobileNavClick('music')}
-              className="block w-full text-left text-terminal-green hover:text-terminal-amber transition-colors duration-200 text-lg font-mono"
+              className="group relative border-2 border-terminal-green hover:border-terminal-amber bg-black hover:bg-terminal-green hover:bg-opacity-10 transition-all duration-300 p-4 text-center"
             >
-              → MUSIC
+              <div className="absolute inset-0 bg-terminal-green opacity-0 group-hover:opacity-5 transition-opacity duration-300"></div>
+              <div className="relative z-10">
+                <div className="text-terminal-green group-hover:text-terminal-amber transition-colors duration-300 text-lg font-mono font-bold mb-1">
+                  MUSIC
+                </div>
+                <div className="text-terminal-green-dim group-hover:text-terminal-amber group-hover:text-opacity-80 text-xs font-mono">
+                  NEURAL
+                </div>
+              </div>
             </button>
+            
             <button 
               onClick={() => handleMobileNavClick('about')}
-              className="block w-full text-left text-terminal-green hover:text-terminal-amber transition-colors duration-200 text-lg font-mono"
+              className="group relative border-2 border-terminal-green hover:border-terminal-amber bg-black hover:bg-terminal-green hover:bg-opacity-10 transition-all duration-300 p-4 text-center"
             >
-              → ABOUT
+              <div className="absolute inset-0 bg-terminal-green opacity-0 group-hover:opacity-5 transition-opacity duration-300"></div>
+              <div className="relative z-10">
+                <div className="text-terminal-green group-hover:text-terminal-amber transition-colors duration-300 text-lg font-mono font-bold mb-1">
+                  ABOUT
+                </div>
+                <div className="text-terminal-green-dim group-hover:text-terminal-amber group-hover:text-opacity-80 text-xs font-mono">
+                  PHILOSOPHY
+                </div>
+              </div>
             </button>
           </div>
         </div>
