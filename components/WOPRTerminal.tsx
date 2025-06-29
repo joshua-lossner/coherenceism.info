@@ -347,14 +347,14 @@ const WOPRTerminal = () => {
       addLine("")
       addLine("MAIN MENU")
       addLine("")
-      addLine("/journal  - Read latest journal entries", 'normal', false, '/journal')
-      addLine("/books    - Browse Coherenceism texts", 'normal', false, '/books') 
-      addLine("/music    - Curated playlists and soundscapes", 'normal', false, '/music')
-      addLine("/about    - Introduction to Coherenceism", 'normal', false, '/about')
+      addLine("1. Journal - Read latest journal entries", 'normal', false, '1')
+      addLine("2. Books - Browse Coherenceism texts", 'normal', false, '2') 
+      addLine("3. Music - Curated playlists and soundscapes", 'normal', false, '3')
+      addLine("4. About - Introduction to Coherenceism", 'normal', false, '4')
       addLine("")
       addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'normal')
       addLine("")
-      addLine("Type a command above or 'help' for more options.")
+      addLine("Type a number above or 'help' for more options.")
       addLine("")
     }
   }, [isClient, isMobile])
@@ -643,14 +643,14 @@ const WOPRTerminal = () => {
         addLine("")
         addLine("MAIN MENU")
         addLine("")
-        addLine("/journal  - Read latest journal entries", 'normal', false, '/journal')
-        addLine("/books    - Browse Coherenceism texts", 'normal', false, '/books') 
-        addLine("/music    - Curated playlists and soundscapes", 'normal', false, '/music')
-        addLine("/about    - Introduction to Coherenceism", 'normal', false, '/about')
+        addLine("1. Journal - Read latest journal entries", 'normal', false, '1')
+        addLine("2. Books - Browse Coherenceism texts", 'normal', false, '2') 
+        addLine("3. Music - Curated playlists and soundscapes", 'normal', false, '3')
+        addLine("4. About - Introduction to Coherenceism", 'normal', false, '4')
         addLine("")
         addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'normal')
         addLine("")
-        addLine("Type a command above or 'help' for more options.")
+        addLine("Type a number above or 'help' for more options.")
         addLine("")
         break
 
@@ -808,7 +808,10 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
         break
 
       case '1':
-        if (currentMenu === 'journals') {
+        if (currentMenu === 'main') {
+          // Navigate to journal from main menu
+          processCommand('/journal')
+        } else if (currentMenu === 'journals') {
           setTerminalLines([])
           await new Promise(resolve => setTimeout(resolve, 100))
           if (journals.length > 0) {
@@ -855,7 +858,10 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
         break
 
       case '2':
-        if (currentMenu === 'journals') {
+        if (currentMenu === 'main') {
+          // Navigate to books from main menu
+          processCommand('/books')
+        } else if (currentMenu === 'journals') {
           setTerminalLines([])
           await new Promise(resolve => setTimeout(resolve, 100))
           if (journals.length > 1) {
@@ -898,7 +904,114 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
         break
 
       case '3':
+        if (currentMenu === 'main') {
+          // Navigate to music from main menu
+          processCommand('/music')
+        } else {
+          const entryIndex = parseInt(cmd) - 1
+          if (currentMenu === 'journals') {
+            setTerminalLines([])
+            await new Promise(resolve => setTimeout(resolve, 100))
+            if (journals.length > entryIndex) {
+              const journal = journals[entryIndex]
+              addMarkdownContent(journal.content, journal.date || 'Unknown')
+            } else {
+              await typeResponse(`Journal entry not available.`, false)
+            }
+          } else if (currentMenu === 'books') {
+          if (currentBook === '') {
+            // Show chapters for selected book
+            if (books.length > entryIndex) {
+              const book = books[entryIndex]
+              setCurrentBook(book.slug)
+              setTerminalLines([])
+              await new Promise(resolve => setTimeout(resolve, 100))
+              await typeResponse(`Loading chapters for "${book.title}"...`, false)
+              await fetchChapters(book.slug)
+              
+              if (chapters.length === 0) {
+                await typeResponse(`No chapters found for this book.`, false)
+              } else {
+                addLine("────────────────────────────────────────", 'separator')
+                addLine(`    ${book.title} - Chapters:`, 'ai-response')
+                addLine("────────────────────────────────────────", 'separator')
+                chapters.forEach((chapter, index) => {
+                  addLine(`    ${index + 1}. ${chapter.title}`, 'ai-response', false, `${index + 1}`)
+                })
+                addLine("────────────────────────────────────────", 'separator')
+                addLine("    Enter the number to read a chapter.", 'ai-response')
+                addLine("────────────────────────────────────────", 'separator')
+                addLine("")
+              }
+            }
+          } else {
+            // Show chapter content
+            if (chapters.length > entryIndex) {
+              const chapter = chapters[entryIndex]
+              setTerminalLines([])
+              await new Promise(resolve => setTimeout(resolve, 100))
+              addMarkdownContent(chapter.content, `Chapter: ${chapter.title}`)
+            } else {
+              await typeResponse(`Chapter not available.`, false)
+            }
+          }
+        } else if (currentMenu === 'music') {
+          if (entryIndex < musicTracks.length) {
+            const track = musicTracks[entryIndex]
+            playBackgroundMusic(track.sunoUrl)
+            await typeResponse(`♪ Opening: ${track.title} playlist in new tab...`, false)
+          }
+        }
+        break
+
       case '4':
+        if (currentMenu === 'main') {
+          // Navigate to about from main menu
+          processCommand('/about')
+        } else {
+          // Handle other menus with number 4
+          const entryIndex = parseInt(cmd) - 1
+          if (currentMenu === 'journals') {
+            setTerminalLines([])
+            await new Promise(resolve => setTimeout(resolve, 100))
+            if (journals.length > entryIndex) {
+              const journal = journals[entryIndex]
+              addMarkdownContent(journal.content, journal.date || 'Unknown')
+            } else {
+              await typeResponse(`Journal entry not available.`, false)
+            }
+          } else if (currentMenu === 'books') {
+            if (currentBook === '') {
+              // Show chapters for selected book
+              if (books.length > entryIndex) {
+                const book = books[entryIndex]
+                setCurrentBook(book.slug)
+                setTerminalLines([])
+                await new Promise(resolve => setTimeout(resolve, 100))
+                await typeResponse(`Loading chapters for "${book.title}"...`, false)
+                await fetchChapters(book.slug)
+              }
+            } else {
+              // Show chapter content
+              if (chapters.length > entryIndex) {
+                const chapter = chapters[entryIndex]
+                setTerminalLines([])
+                await new Promise(resolve => setTimeout(resolve, 100))
+                addMarkdownContent(chapter.content, `Chapter: ${chapter.title}`)
+              } else {
+                await typeResponse(`Chapter not available.`, false)
+              }
+            }
+          } else if (currentMenu === 'music') {
+            if (entryIndex < musicTracks.length) {
+              const track = musicTracks[entryIndex]
+              playBackgroundMusic(track.sunoUrl)
+              await typeResponse(`♪ Opening: ${track.title} playlist in new tab...`, false)
+            }
+          }
+        }
+        break
+
       case '5':
       case '6':
       case '7':
@@ -925,21 +1038,6 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
               await new Promise(resolve => setTimeout(resolve, 100))
               await typeResponse(`Loading chapters for "${book.title}"...`, false)
               await fetchChapters(book.slug)
-              
-              if (chapters.length === 0) {
-                await typeResponse(`No chapters found for this book.`, false)
-              } else {
-                addLine("────────────────────────────────────────", 'separator')
-                addLine(`    ${book.title} - Chapters:`, 'ai-response')
-                addLine("────────────────────────────────────────", 'separator')
-                chapters.forEach((chapter, index) => {
-                  addLine(`    ${index + 1}. ${chapter.title}`, 'ai-response', false, `${index + 1}`)
-                })
-                addLine("────────────────────────────────────────", 'separator')
-                addLine("    Enter the number to read a chapter.", 'ai-response')
-                addLine("────────────────────────────────────────", 'separator')
-                addLine("")
-              }
             }
           } else {
             // Show chapter content
