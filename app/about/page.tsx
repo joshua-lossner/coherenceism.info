@@ -48,7 +48,7 @@ export default function AboutPage() {
 
             <p>
               In our age of AI and digital transformation, Coherenceism provides tools for maintaining 
-              human agency while embracing technological evolution. It's not about resisting change, 
+              human agency while embracing technological evolution. It&apos;s not about resisting change, 
               but about participating consciously in the ongoing conversation between mind and machine.
             </p>
           </div>
@@ -85,7 +85,7 @@ export default function AboutPage() {
 
           <div className="text-center pt-6">
             <p className="text-terminal-green-dim italic">
-              "In coherence, we find connection."
+              &quot;In coherence, we find connection.&quot;
             </p>
           </div>
         </div>
