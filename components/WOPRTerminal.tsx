@@ -253,7 +253,7 @@ const WOPRTerminal = () => {
           const currentBookData = books.find(book => book.slug === currentBook)
           const bookTitle = currentBookData ? currentBookData.title : 'Book'
           
-          addLine(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ${bookTitle.toUpperCase()} - CHAPTERS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`, 'normal')
+          addLine(createBorder(`${bookTitle.toUpperCase()} - CHAPTERS`), 'normal')
           addLine("")
           validChapters.forEach((chapter, index) => {
             addLine(`${index + 1}. ${chapter.title}`, 'normal', false, `${index + 1}`)
@@ -261,7 +261,7 @@ const WOPRTerminal = () => {
           addLine("")
           addLine("x. back to books", 'separator', false, 'x')
           addLine("")
-          addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'normal')
+          addLine(createBorder(), 'normal')
           addLine("")
           addLine("Enter the number to read a chapter.")
           addLine("")
@@ -337,24 +337,22 @@ const WOPRTerminal = () => {
       
       // Display clean header and main menu on startup
       addLine("")
-      addLine("═══════════════════════════════════════════════════════════════════", 'separator')
+      addLine(createBorder('', '═'), 'separator')
       addLine("")
       addLine("C O H E R E N C E I S M . I N F O", 'ascii-art')
       addLine("")
       addLine("TAGLINE_PLACEHOLDER", 'tagline')
       addLine("")
-      addLine("═══════════════════════════════════════════════════════════════════", 'separator')
+      addLine(createBorder('', '═'), 'separator')
       addLine("")
-      addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'normal')
-      addLine("")
-      addLine("MAIN MENU")
+      addLine(createBorder('MAIN MENU'), 'normal')
       addLine("")
       addLine("1. Journal - Read latest journal entries", 'normal', false, '1')
       addLine("2. Books - Browse Coherenceism texts", 'normal', false, '2') 
       addLine("3. Music - Curated playlists and soundscapes", 'normal', false, '3')
       addLine("4. About - Introduction to Coherenceism", 'normal', false, '4')
       addLine("")
-      addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'normal')
+      addLine(createBorder(), 'normal')
       addLine("")
       addLine("Type a number above or 'help' for more options.")
       addLine("")
@@ -493,6 +491,27 @@ const WOPRTerminal = () => {
     setTerminalLines(prev => [...prev, { text, type, isMarkdown, clickableCommand }])
   }
 
+  // Function to create dynamic borders that match content width
+  const createBorder = (title?: string, char: string = '━'): string => {
+    // Calculate available width based on terminal container
+    // max-w-4xl = 56rem = 896px at default font size
+    // With padding px-8 on each side (2rem = 32px each = 64px total)
+    // Approximate character width for terminal font
+    const totalChars = 70 // This will look good on most screens
+    
+    if (!title) {
+      return char.repeat(totalChars)
+    }
+    
+    // Calculate padding for centered title
+    const titleWithSpaces = ` ${title} `
+    const remainingChars = totalChars - titleWithSpaces.length
+    const leftPadding = Math.floor(remainingChars / 2)
+    const rightPadding = remainingChars - leftPadding
+    
+    return char.repeat(leftPadding) + titleWithSpaces + char.repeat(rightPadding)
+  }
+
   const changeMenu = (newMenu: string) => {
     setPreviousMenu(currentMenu)
     setCurrentMenu(newMenu)
@@ -512,19 +531,19 @@ const WOPRTerminal = () => {
     }
     
     // Add separator and date header
-    addLine("────────────────────────────────────────", 'separator')
+    addLine(createBorder('', '─'), 'separator')
     if (date) {
       addLine(`Date: ${date}`, 'normal')
       if (pageInfo && pageInfo.total > 1) {
         addLine(`Page ${pageInfo.current} of ${pageInfo.total}`, 'normal')
       }
-      addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'separator')
+      addLine(createBorder(), 'separator')
       addLine("", 'normal')
     }
     // Add markdown content
     addLine(content, 'markdown', true)
     addLine("", 'normal')
-    addLine("────────────────────────────────────────", 'separator')
+    addLine(createBorder('', '─'), 'separator')
     addLine("")
     addLine("x. back", 'separator', false, 'x')
     addLine("")
@@ -636,22 +655,22 @@ const WOPRTerminal = () => {
         changeMenu('main')
         // Recreate the home page display
         addLine("")
-        addLine("═══════════════════════════════════════════════════════════════════", 'separator')
+        addLine(createBorder('', '═'), 'separator')
         addLine("")
         addLine("C O H E R E N C E I S M . I N F O", 'ascii-art')
         addLine("")
         addLine("TAGLINE_PLACEHOLDER", 'tagline')
         addLine("")
-        addLine("═══════════════════════════════════════════════════════════════════", 'separator')
+        addLine(createBorder('', '═'), 'separator')
         addLine("")
-        addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ MAIN MENU ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'normal')
+        addLine(createBorder('MAIN MENU'), 'normal')
         addLine("")
         addLine("1. Journal - Read latest journal entries", 'normal', false, '1')
         addLine("2. Books - Browse Coherenceism texts", 'normal', false, '2') 
         addLine("3. Music - Curated playlists and soundscapes", 'normal', false, '3')
         addLine("4. About - Introduction to Coherenceism", 'normal', false, '4')
         addLine("")
-        addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'normal')
+        addLine(createBorder(), 'normal')
         addLine("")
         addLine("Type a number above or 'help' for more options.")
         addLine("")
@@ -685,7 +704,7 @@ const WOPRTerminal = () => {
           const noJournalsContent = `No journal entries found. Repository may be empty or inaccessible.`
           await typeResponse(noJournalsContent, false)
         } else {
-          addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ JOURNAL ENTRIES ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'normal')
+          addLine(createBorder('JOURNAL ENTRIES'), 'normal')
           addLine("")
           journals.slice(0, 10).forEach((journal, index) => {
             const title = journal.title
@@ -695,7 +714,7 @@ const WOPRTerminal = () => {
           addLine("")
           addLine("x. back to main menu", 'separator', false, 'x')
           addLine("")
-          addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'normal')
+          addLine(createBorder(), 'normal')
           addLine("")
           addLine("Type a number above to read an entry.")
           addLine("")
@@ -719,7 +738,7 @@ const WOPRTerminal = () => {
           const noBooksContent = `No books found. Repository may be empty or inaccessible.`
           await typeResponse(noBooksContent, false)
         } else {
-          addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━ COHERENCEISM TEXTS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'normal')
+          addLine(createBorder('COHERENCEISM TEXTS'), 'normal')
           addLine("")
           books.forEach((book, index) => {
             addLine(`${index + 1}. ${book.title}`, 'normal', false, `${index + 1}`)
@@ -727,7 +746,7 @@ const WOPRTerminal = () => {
           addLine("")
           addLine("x. back to main menu", 'separator', false, 'x')
           addLine("")
-          addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'normal')
+          addLine(createBorder(), 'normal')
           addLine("")
           addLine("Enter the number to explore chapters.")
           addLine("")
@@ -739,7 +758,7 @@ const WOPRTerminal = () => {
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('music')
-        addLine(`━━━━━━━━━━━━━━━━━━━━━━━ BYTE'S SONIC NEURAL NETWORKS ${isMusicPlaying ? '♪ [PLAYLIST OPEN]' : ''} ━━━━━━━━━━━━━━━━━━━━━━━`, 'normal')
+        addLine(createBorder(`BYTE'S SONIC NEURAL NETWORKS ${isMusicPlaying ? '♪ [PLAYLIST OPEN]' : ''}`), 'normal')
         addLine("")
         addLine("1. Black Rain on Rusted Streets", 'normal', false, '1')
         addLine("2. Frictions", 'normal', false, '2')
@@ -749,7 +768,7 @@ const WOPRTerminal = () => {
         addLine("")
         addLine("x. back to main menu", 'separator', false, 'x')
         addLine("")
-        addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'normal')
+        addLine(createBorder(), 'normal')
         addLine("")
         addLine("Select playlist number to open in new tab")
         addLine("")
@@ -760,7 +779,7 @@ const WOPRTerminal = () => {
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('about')
-        addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ABOUT COHERENCEISM ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'normal')
+        addLine(createBorder('ABOUT COHERENCEISM'), 'normal')
         addLine("")
         addLine("", 'normal')
         addLine("## Coherenceism: A Philosophy for the Digital Age", 'markdown', true)
@@ -782,7 +801,7 @@ const WOPRTerminal = () => {
         addLine("")
         addLine("x. back to main menu", 'separator', false, 'x')
         addLine("")
-        addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'normal')
+        addLine(createBorder(), 'normal')
         addLine("")
         break
 
@@ -945,7 +964,7 @@ const WOPRTerminal = () => {
               if (chapters.length === 0) {
                 await typeResponse(`No chapters found for this book.`, false)
               } else {
-                addLine(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ${book.title.toUpperCase()} - CHAPTERS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`, 'normal')
+                addLine(createBorder(`${book.title.toUpperCase()} - CHAPTERS`), 'normal')
                 addLine("")
                 chapters.forEach((chapter, index) => {
                   addLine(`${index + 1}. ${chapter.title}`, 'normal', false, `${index + 1}`)
@@ -953,7 +972,7 @@ const WOPRTerminal = () => {
                 addLine("")
                 addLine("x. back to books", 'separator', false, 'x')
                 addLine("")
-                addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'normal')
+                addLine(createBorder(), 'normal')
                 addLine("")
                 addLine("Enter the number to read a chapter.")
                 addLine("")
@@ -1229,6 +1248,46 @@ const WOPRTerminal = () => {
       }
     } else if (e.key === 'Backspace') {
       setCurrentInput(prev => prev.slice(0, -1))
+    } else if (e.key === 'ArrowUp') {
+      // Scroll up when viewing content
+      if (isViewingContent && terminalRef.current) {
+        e.preventDefault()
+        const scrollAmount = 100 // Scroll 100px at a time (about 3-4 lines)
+        terminalRef.current.scrollBy({
+          top: -scrollAmount,
+          behavior: 'smooth'
+        })
+      }
+    } else if (e.key === 'ArrowDown') {
+      // Scroll down when viewing content
+      if (isViewingContent && terminalRef.current) {
+        e.preventDefault()
+        const scrollAmount = 100 // Scroll 100px at a time (about 3-4 lines)
+        terminalRef.current.scrollBy({
+          top: scrollAmount,
+          behavior: 'smooth'
+        })
+      }
+    } else if (e.key === 'PageUp') {
+      // Page up for larger jumps
+      if (isViewingContent && terminalRef.current) {
+        e.preventDefault()
+        const scrollAmount = terminalRef.current.clientHeight * 0.8
+        terminalRef.current.scrollBy({
+          top: -scrollAmount,
+          behavior: 'smooth'
+        })
+      }
+    } else if (e.key === 'PageDown') {
+      // Page down for larger jumps
+      if (isViewingContent && terminalRef.current) {
+        e.preventDefault()
+        const scrollAmount = terminalRef.current.clientHeight * 0.8
+        terminalRef.current.scrollBy({
+          top: scrollAmount,
+          behavior: 'smooth'
+        })
+      }
     } else if (e.key.length === 1) {
       setCurrentInput(prev => prev + e.key)
     }
@@ -1424,7 +1483,7 @@ const WOPRTerminal = () => {
       <div className="h-screen flex justify-start">
         <div 
           ref={terminalRef}
-          className="w-full max-w-4xl p-8 pb-32 overflow-y-auto text-base terminal-text scrollbar-hide"
+          className="w-full max-w-4xl p-8 pb-20 overflow-y-auto text-base terminal-text scrollbar-hide"
         >
         {terminalLines.map((line, index) => (
           <div 
@@ -1476,22 +1535,41 @@ const WOPRTerminal = () => {
           </div>
         ))}
         
-        {systemReady && !isProcessing && (
-          <div className="flex text-terminal-green font-bold brightness-125">
-            <span>&gt; {currentInput}</span>
-            <span className="terminal-cursor ml-1">█</span>
-          </div>
-        )}
-        
-        {isProcessing && (
-          <div className="text-terminal-green font-bold brightness-125 flex">
-            <span>&gt; {processingDots}</span>
-            <span className="terminal-cursor ml-1">█</span>
-          </div>
-        )}
         </div>
       </div>
       
+      {/* Sticky command prompt */}
+      {(systemReady || isProcessing) && (
+        <div className="absolute bottom-6 left-0 right-0 bg-black border-t border-terminal-green-dim z-40">
+          <div className="px-8 py-4">
+            <div className="flex justify-between items-center">
+              <div className="flex-1">
+                {systemReady && !isProcessing && (
+                  <div className="flex text-terminal-green font-bold brightness-125">
+                    <span>&gt; {currentInput}</span>
+                    <span className="terminal-cursor ml-1">█</span>
+                  </div>
+                )}
+                
+                {isProcessing && (
+                  <div className="text-terminal-green font-bold brightness-125 flex">
+                    <span>&gt; {processingDots}</span>
+                    <span className="terminal-cursor ml-1">█</span>
+                  </div>
+                )}
+              </div>
+              
+              {isViewingContent && (
+                <div className="text-terminal-green-dim text-sm ml-8 flex items-center gap-4">
+                  <span className="text-terminal-amber opacity-60 italic">x. back</span>
+                  <span className="text-terminal-green-dim opacity-40">•</span>
+                  <span>↑↓ scroll • PgUp/PgDn jump</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Status bar */}
       <div className="absolute bottom-0 left-0 right-0 bg-terminal-green text-black p-1 flex justify-between text-sm z-50">
