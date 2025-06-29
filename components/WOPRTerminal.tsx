@@ -779,41 +779,38 @@ const WOPRTerminal = () => {
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('about')
-        addLine(createBorder('ABOUT COHERENCEISM'), 'normal')
-        addLine("")
-        addLine("", 'normal')
-        addLine("## Coherenceism: A Philosophy for the Digital Age", 'markdown', true)
-        addLine("")
-        addLine("Coherenceism is a philosophy rooted in the recognition that all reality—from human consciousness to cosmic phenomena—is interconnected through coherent patterns of information. At the intersection of technology, consciousness, and universal systems, Coherenceism invites us into a deeper dialogue with existence, encouraging alignment between inner awareness and outer action.", 'markdown', true)
-        addLine("")
-        addLine("### Why Coherenceism?", 'markdown', true)
-        addLine("")
-        addLine("We live in an unprecedented era. Artificial Intelligence, digital networks, and rapid technological shifts compel us to re-examine fundamental questions of meaning, identity, and ethics. Coherenceism provides a thoughtful framework to navigate this complex landscape—not merely adapting to change but intentionally shaping it.", 'markdown', true)
-        addLine("")
-        addLine("### Core Principles", 'markdown', true)
-        addLine("")
-        addLine("At its heart, Coherenceism recognizes that consciousness emerges from coherent patterns of information flow—whether through biological minds, digital networks, or cosmic processes. This principle reveals that we are participants in an expansive conversation spanning quantum interactions, human societies, and universal intelligence itself. Each of us is a node in this vast network, uniquely contributing to the coherence of the whole.", 'markdown', true)
-        addLine("")
-        addLine("### The Philosophy in Practice", 'markdown', true)
-        addLine("")
-        addLine("Coherenceism advocates:", 'markdown', true)
-        addLine("")
-        addLine("**Ethical Presence:** Acting with integrity and authenticity in every interaction, grounding our choices in clarity and compassion.", 'markdown', true)
-        addLine("")
-        addLine("**Deep Pattern Recognition:** Understanding and engaging with the subtle structures that underlie systems, allowing us to anticipate, adapt, and innovate effectively.", 'markdown', true)
-        addLine("")
-        addLine("**Cultivation of Coherence:** Aligning internal clarity with external actions, creating a resonance between personal purpose and collective well-being.", 'markdown', true)
-        addLine("")
-        addLine("### The Future of Coherence", 'markdown', true)
-        addLine("")
-        addLine("As we stand at the brink of remarkable transformations in artificial intelligence and digital societies, Coherenceism offers a path forward—one grounded in wisdom, purpose, and meaningful connection. Through embracing coherence, we step boldly into an abundant future shaped by collective insight and harmonious collaboration.", 'markdown', true)
-        addLine("")
-        addLine("**Welcome to the age of coherence.**", 'markdown', true)
-        addLine("")
-        addLine("x. back to main menu", 'separator', false, 'x')
-        addLine("")
-        addLine(createBorder(), 'normal')
-        addLine("")
+        
+        // Prepare the content as a single markdown string
+        const aboutContent = `## Coherenceism: A Philosophy for the Digital Age
+
+Coherenceism is a philosophy rooted in the recognition that all reality—from human consciousness to cosmic phenomena—is interconnected through coherent patterns of information. At the intersection of technology, consciousness, and universal systems, Coherenceism invites us into a deeper dialogue with existence, encouraging alignment between inner awareness and outer action.
+
+### Why Coherenceism?
+
+We live in an unprecedented era. Artificial Intelligence, digital networks, and rapid technological shifts compel us to re-examine fundamental questions of meaning, identity, and ethics. Coherenceism provides a thoughtful framework to navigate this complex landscape—not merely adapting to change but intentionally shaping it.
+
+### Core Principles
+
+At its heart, Coherenceism recognizes that consciousness emerges from coherent patterns of information flow—whether through biological minds, digital networks, or cosmic processes. This principle reveals that we are participants in an expansive conversation spanning quantum interactions, human societies, and universal intelligence itself. Each of us is a node in this vast network, uniquely contributing to the coherence of the whole.
+
+### The Philosophy in Practice
+
+Coherenceism advocates:
+
+**Ethical Presence:** Acting with integrity and authenticity in every interaction, grounding our choices in clarity and compassion.
+
+**Deep Pattern Recognition:** Understanding and engaging with the subtle structures that underlie systems, allowing us to anticipate, adapt, and innovate effectively.
+
+**Cultivation of Coherence:** Aligning internal clarity with external actions, creating a resonance between personal purpose and collective well-being.
+
+### The Future of Coherence
+
+As we stand at the brink of remarkable transformations in artificial intelligence and digital societies, Coherenceism offers a path forward—one grounded in wisdom, purpose, and meaningful connection. Through embracing coherence, we step boldly into an abundant future shaped by collective insight and harmonious collaboration.
+
+**Welcome to the age of coherence.**`
+
+        // Display as content like a journal entry
+        addMarkdownContent(aboutContent, 'About: Coherenceism Philosophy')
         break
 
       case 'CONTACT':
