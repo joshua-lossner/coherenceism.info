@@ -1229,6 +1229,46 @@ const WOPRTerminal = () => {
       }
     } else if (e.key === 'Backspace') {
       setCurrentInput(prev => prev.slice(0, -1))
+    } else if (e.key === 'ArrowUp') {
+      // Scroll up when viewing content
+      if (isViewingContent && terminalRef.current) {
+        e.preventDefault()
+        const scrollAmount = 100 // Scroll 100px at a time (about 3-4 lines)
+        terminalRef.current.scrollBy({
+          top: -scrollAmount,
+          behavior: 'smooth'
+        })
+      }
+    } else if (e.key === 'ArrowDown') {
+      // Scroll down when viewing content
+      if (isViewingContent && terminalRef.current) {
+        e.preventDefault()
+        const scrollAmount = 100 // Scroll 100px at a time (about 3-4 lines)
+        terminalRef.current.scrollBy({
+          top: scrollAmount,
+          behavior: 'smooth'
+        })
+      }
+    } else if (e.key === 'PageUp') {
+      // Page up for larger jumps
+      if (isViewingContent && terminalRef.current) {
+        e.preventDefault()
+        const scrollAmount = terminalRef.current.clientHeight * 0.8
+        terminalRef.current.scrollBy({
+          top: -scrollAmount,
+          behavior: 'smooth'
+        })
+      }
+    } else if (e.key === 'PageDown') {
+      // Page down for larger jumps
+      if (isViewingContent && terminalRef.current) {
+        e.preventDefault()
+        const scrollAmount = terminalRef.current.clientHeight * 0.8
+        terminalRef.current.scrollBy({
+          top: scrollAmount,
+          behavior: 'smooth'
+        })
+      }
     } else if (e.key.length === 1) {
       setCurrentInput(prev => prev + e.key)
     }
@@ -1483,19 +1523,29 @@ const WOPRTerminal = () => {
       {(systemReady || isProcessing) && (
         <div className="absolute bottom-6 left-0 right-0 bg-black border-t border-terminal-green-dim z-40">
           <div className="px-8 py-4">
-            {systemReady && !isProcessing && (
-              <div className="flex text-terminal-green font-bold brightness-125">
-                <span>&gt; {currentInput}</span>
-                <span className="terminal-cursor ml-1">█</span>
+            <div className="flex justify-between items-center">
+              <div className="flex-1">
+                {systemReady && !isProcessing && (
+                  <div className="flex text-terminal-green font-bold brightness-125">
+                    <span>&gt; {currentInput}</span>
+                    <span className="terminal-cursor ml-1">█</span>
+                  </div>
+                )}
+                
+                {isProcessing && (
+                  <div className="text-terminal-green font-bold brightness-125 flex">
+                    <span>&gt; {processingDots}</span>
+                    <span className="terminal-cursor ml-1">█</span>
+                  </div>
+                )}
               </div>
-            )}
-            
-            {isProcessing && (
-              <div className="text-terminal-green font-bold brightness-125 flex">
-                <span>&gt; {processingDots}</span>
-                <span className="terminal-cursor ml-1">█</span>
-              </div>
-            )}
+              
+              {isViewingContent && (
+                <div className="text-terminal-green-dim text-sm ml-8">
+                  ↑↓ scroll • PgUp/PgDn jump
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
