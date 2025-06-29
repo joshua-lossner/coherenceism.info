@@ -5,7 +5,7 @@ A WarGames-inspired terminal interface for exploring Coherenceism philosophy, po
 ## 🖥️ Features
 
 - **Authentic 1980s Terminal**: Green phosphor display with CRT scanlines
-- **WOPR AI Assistant**: GPT-4 powered conversations about consciousness and technology
+- **Byte AI Assistant**: GPT-4 powered conversations about consciousness and technology
 - **Content Archive**: Browse philosophical texts and futuristic journal entries
 - **Interactive Commands**: Navigate through books, journals, and AI queries
 - **Retro Aesthetics**: JetBrains Mono font, terminal effects, and classic styling
@@ -32,18 +32,32 @@ npm run dev
 
 Visit `http://localhost:3000` to access the terminal.
 
-## 🎮 Commands
+## 🎮 Navigation
 
-- `help` - Display all available commands
-- `books` - Browse philosophical texts and chapters
-- `journals` - Read futuristic journal entries about digital consciousness
-- `query [question]` - Ask WOPR deep philosophical questions
-- `menu` - Return to main menu
-- `clear` - Clear terminal screen
+### Main Menu
+Navigate using numbers:
+- `1` or `1.` - Journal - Read latest journal entries
+- `2` or `2.` - Books - Browse Coherenceism texts
+- `3` or `3.` - Music - Curated playlists and soundscapes
+- `4` or `4.` - About - Introduction to Coherenceism
+
+### Navigation Controls
+- `x` - Go back to previous menu/screen
+- Numbers (`1-10`) - Select menu items
+- Both `2` and `2.` formats work for all numbers
+
+### Available Commands
+Type `/help` to see:
+- `/menu` - Return to main menu
+- `/help` - Display available commands and instructions
+- `/contact` - Information for reaching out
+- `/random` - Receive a random Byte-generated thought or humorous quip
+- `/voice` - Toggle audio output (Byte speaks responses aloud)
+- `/clear` - Clear terminal screen
 
 ## 🤖 AI Interaction
 
-**Direct Conversation**: Type anything to chat with WOPR about consciousness, technology, and philosophy.
+**Direct Conversation**: Type anything to chat with Byte about consciousness, technology, and philosophy.
 
 **Structured Queries**: Use `query [your question]` for focused philosophical discussions.
 
