@@ -1,0 +1,20 @@
+name: Enforce Branch Policy
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  check-source-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if PR is from test branch
+        run: |
+          if [ "${{ github.head_ref }}" != "test" ]; then
+            echo "❌ ERROR: Pull requests to main branch must come from 'test' branch only."
+            echo "Current source branch: ${{ github.head_ref }}"
+            echo "Please create your PR from test to main instead."
+            exit 1
+          else
+            echo "✅ SUCCESS: PR is from test branch to main. This is allowed."
+          fi
