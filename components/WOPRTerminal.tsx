@@ -1481,8 +1481,8 @@ const WOPRTerminal = () => {
       
       {/* Sticky command prompt */}
       {(systemReady || isProcessing) && (
-        <div className="absolute bottom-6 left-0 right-0 bg-black border-t border-terminal-green-dim mx-8 z-40">
-          <div className="max-w-4xl px-8 py-2">
+        <div className="absolute bottom-6 left-0 right-0 bg-black border-t border-terminal-green-dim z-40">
+          <div className="max-w-4xl mx-auto px-8 py-2">
             {systemReady && !isProcessing && (
               <div className="flex text-terminal-green font-bold brightness-125">
                 <span>&gt; {currentInput}</span>
