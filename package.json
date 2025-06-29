@@ -4,7 +4,6 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "dev:env": "OPENAI_API_KEY=\"$(cat .env.local | cut -d'=' -f2)\" next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

@@ -6,8 +6,6 @@ export async function POST(request: NextRequest) {
     const { message, mode = 'conversation' } = await request.json();
 
     const apiKey = process.env.OPENAI_API_KEY;
-    console.log('DEBUG: Raw API key from env:', apiKey ? `${apiKey.slice(0, 15)}...${apiKey.slice(-15)}` : 'undefined');
-    console.log('DEBUG: All env keys starting with OPENAI:', Object.keys(process.env).filter(k => k.startsWith('OPENAI')));
     
     if (!apiKey) {
       console.error('OpenAI API key not found in environment variables');
