@@ -256,8 +256,10 @@ const WOPRTerminal = () => {
           addLine("────────────────────────────────────────", 'separator')
           addLine(`    ${bookTitle} - Chapters:`, 'ai-response')
           addLine("────────────────────────────────────────", 'separator')
+          addLine("    1. Back to Books", 'ai-response', false, '1')
+          addLine("")
           validChapters.forEach((chapter, index) => {
-            addLine(`    ${index + 1}. ${chapter.title}`, 'ai-response', false, `${index + 1}`)
+            addLine(`    ${index + 2}. ${chapter.title}`, 'ai-response', false, `${index + 2}`)
           })
           addLine("────────────────────────────────────────", 'separator')
           addLine("    Enter the number to read a chapter.", 'ai-response')
@@ -690,10 +692,12 @@ const WOPRTerminal = () => {
           addLine("────────────────────────────────────────", 'separator')
           addLine("    Recent Journal Entries:", 'ai-response')
           addLine("────────────────────────────────────────", 'separator')
+          addLine("    1. Back to Main Menu", 'ai-response', false, '1')
+          addLine("")
           journals.slice(0, 10).forEach((journal, index) => {
             const title = journal.title
             const date = journal.date ? ` (${journal.date})` : ''
-            addLine(`    ${index + 1}. ${title}${date}`, 'ai-response', false, `${index + 1}`)
+            addLine(`    ${index + 2}. ${title}${date}`, 'ai-response', false, `${index + 2}`)
           })
           addLine("────────────────────────────────────────", 'separator')
           addLine("    Type the number to read an entry.", 'ai-response')
@@ -722,8 +726,10 @@ const WOPRTerminal = () => {
           addLine("────────────────────────────────────────", 'separator')
           addLine("    Coherenceism Texts:", 'ai-response')
           addLine("────────────────────────────────────────", 'separator')
+          addLine("    1. Back to Main Menu", 'ai-response', false, '1')
+          addLine("")
           books.forEach((book, index) => {
-            addLine(`    ${index + 1}. ${book.title}`, 'ai-response', false, `${index + 1}`)
+            addLine(`    ${index + 2}. ${book.title}`, 'ai-response', false, `${index + 2}`)
           })
           addLine("────────────────────────────────────────", 'separator')
           addLine("    Enter the number to explore chapters.", 'ai-response')
@@ -741,21 +747,22 @@ const WOPRTerminal = () => {
         addLine(`    🎵 BYTE'S SONIC NEURAL NETWORKS ${isMusicPlaying ? '♪ [PLAYLIST OPEN]' : ''}`, 'ai-response')
         addLine("────────────────────────────────────────", 'separator')
         addLine("")
-        addLine("    [1] Black Rain on Rusted Streets", 'ai-response', false, '1')
+        addLine("    1. Back to Main Menu", 'ai-response', false, '1')
+        addLine("")
+        addLine("    2. Black Rain on Rusted Streets", 'ai-response', false, '2')
         addLine("        - Grunge playlist for raw intensity", 'ai-response')
-        addLine("    [2] Frictions", 'ai-response', false, '2')
+        addLine("    3. Frictions", 'ai-response', false, '3')
         addLine("        - Blues-infused grunge playlist", 'ai-response')
-        addLine("    [3] Refined Reflections", 'ai-response', false, '3')
+        addLine("    4. Refined Reflections", 'ai-response', false, '4')
         addLine("        - Introspective songs on coherent living", 'ai-response')
-        addLine("    [4] Resonant Dream", 'ai-response', false, '4')
+        addLine("    5. Resonant Dream", 'ai-response', false, '5')
         addLine("        - Coherence tribute to Dr. King", 'ai-response')
-        addLine("    [5] Rust and Revolt", 'ai-response', false, '5')
+        addLine("    6. Rust and Revolt", 'ai-response', false, '6')
         addLine("        - Dark melodic rock challenging the system", 'ai-response')
         addLine("")
         addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'ai-response')
         addLine("")
-        addLine("    Select playlist [1-5] to open in new tab or return to ", 'ai-response')
-        addLine("    [/MENU]", 'ai-response', false, '/menu')
+        addLine("    Select playlist number to open in new tab", 'ai-response')
         addLine("────────────────────────────────────────", 'separator')
         addLine("")
         break
@@ -812,6 +819,30 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
           // Navigate to journal from main menu
           processCommand('/journal')
         } else if (currentMenu === 'journals') {
+          // Back to main menu
+          processCommand('/menu')
+        } else if (currentMenu === 'books') {
+          if (currentBook === '') {
+            // Back to main menu from books list
+            processCommand('/menu')
+          } else {
+            // Back to books list from chapters
+            setCurrentBook('')
+            setChaptersLoaded(false)
+            processCommand('/books')
+          }
+        } else if (currentMenu === 'music') {
+          // Back to main menu
+          processCommand('/menu')
+        }
+        break
+
+      case '2':
+        if (currentMenu === 'main') {
+          // Navigate to books from main menu
+          processCommand('/books')
+        } else if (currentMenu === 'journals') {
+          // First journal entry (index 0, shown as 2)
           setTerminalLines([])
           await new Promise(resolve => setTimeout(resolve, 100))
           if (journals.length > 0) {
@@ -821,60 +852,10 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
             await typeResponse(`Journal entry not available.`, false)
           }
         } else if (currentMenu === 'books') {
+          const entryIndex = parseInt(cmd) - 2  // Shifted because 1 is back
           if (currentBook === '') {
-            // Show chapters for selected book
-            if (books.length > 0) {
-              const book = books[0]
-              setCurrentBook(book.slug)
-              setChapters([]) // Clear chapters first
-              setChaptersLoaded(false) // Reset loaded state
-              setTerminalLines([])
-              await new Promise(resolve => setTimeout(resolve, 100))
-              await typeResponse(`Loading chapters for "${book.title}"...`, false)
-              await fetchChapters(book.slug)
-              
-              // Wait a moment for state to update, then check chapters
-              await new Promise(resolve => setTimeout(resolve, 200))
-              
-              // Re-fetch the current chapters state or use a callback approach
-              // We'll handle the display in the fetchChapters function instead
-            }
-          } else {
-            // Show chapter content
-            if (chapters.length > 0) {
-              const chapter = chapters[0]
-              setTerminalLines([])
-              await new Promise(resolve => setTimeout(resolve, 100))
-              addMarkdownContent(chapter.content, `Chapter: ${chapter.title}`)
-            } else {
-              await typeResponse(`Chapter not available.`, false)
-            }
-          }
-        } else if (currentMenu === 'music') {
-          const track = musicTracks[0]
-          playBackgroundMusic(track.sunoUrl)
-          await typeResponse(`♪ Opening: ${track.title} playlist in new tab...`, false)
-        }
-        break
-
-      case '2':
-        if (currentMenu === 'main') {
-          // Navigate to books from main menu
-          processCommand('/books')
-        } else if (currentMenu === 'journals') {
-          setTerminalLines([])
-          await new Promise(resolve => setTimeout(resolve, 100))
-          if (journals.length > 1) {
-            const journal = journals[1]
-            addMarkdownContent(journal.content, journal.date || 'Unknown')
-          } else {
-            await typeResponse(`Journal entry not available.`, false)
-          }
-        } else if (currentMenu === 'books') {
-          const entryIndex = parseInt(cmd) - 1
-          if (currentBook === '') {
-            // Show chapters for selected book
-            if (books.length > entryIndex) {
+            // Show chapters for selected book (first book, shown as 2)
+            if (books.length > entryIndex && entryIndex >= 0) {
               const book = books[entryIndex]
               setCurrentBook(book.slug)
               setChapters([]) // Clear chapters first
@@ -886,8 +867,8 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
               // Display logic is now handled inside fetchChapters
             }
           } else {
-            // Show chapter content
-            if (chapters.length > entryIndex) {
+            // Show chapter content (first chapter, shown as 2)
+            if (chapters.length > entryIndex && entryIndex >= 0) {
               const chapter = chapters[entryIndex]
               setTerminalLines([])
               await new Promise(resolve => setTimeout(resolve, 100))
@@ -897,7 +878,8 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
             }
           }
         } else if (currentMenu === 'music') {
-          const track = musicTracks[1]
+          // First music track (index 0, shown as 2 because 1 is back)
+          const track = musicTracks[0]
           playBackgroundMusic(track.sunoUrl)
           await typeResponse(`♪ Opening: ${track.title} playlist in new tab...`, false)
         }
@@ -908,11 +890,11 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
           // Navigate to music from main menu
           processCommand('/music')
         } else {
-          const entryIndex = parseInt(cmd) - 1
+          const entryIndex = parseInt(cmd) - 2  // Shifted because 1 is back
           if (currentMenu === 'journals') {
             setTerminalLines([])
             await new Promise(resolve => setTimeout(resolve, 100))
-            if (journals.length > entryIndex) {
+            if (journals.length > entryIndex && entryIndex >= 0) {
               const journal = journals[entryIndex]
               addMarkdownContent(journal.content, journal.date || 'Unknown')
             } else {
@@ -935,8 +917,10 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
                 addLine("────────────────────────────────────────", 'separator')
                 addLine(`    ${book.title} - Chapters:`, 'ai-response')
                 addLine("────────────────────────────────────────", 'separator')
+                addLine("    1. Back to Books", 'ai-response', false, '1')
+                addLine("")
                 chapters.forEach((chapter, index) => {
-                  addLine(`    ${index + 1}. ${chapter.title}`, 'ai-response', false, `${index + 1}`)
+                  addLine(`    ${index + 2}. ${chapter.title}`, 'ai-response', false, `${index + 2}`)
                 })
                 addLine("────────────────────────────────────────", 'separator')
                 addLine("    Enter the number to read a chapter.", 'ai-response')
@@ -956,7 +940,7 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
             }
           }
         } else if (currentMenu === 'music') {
-          if (entryIndex < musicTracks.length) {
+          if (entryIndex >= 0 && entryIndex < musicTracks.length) {
             const track = musicTracks[entryIndex]
             playBackgroundMusic(track.sunoUrl)
             await typeResponse(`♪ Opening: ${track.title} playlist in new tab...`, false)
@@ -971,7 +955,7 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
           processCommand('/about')
         } else {
           // Handle other menus with number 4
-          const entryIndex = parseInt(cmd) - 1
+          const entryIndex = parseInt(cmd) - 2  // Shifted because 1 is back
           if (currentMenu === 'journals') {
             setTerminalLines([])
             await new Promise(resolve => setTimeout(resolve, 100))
@@ -1019,7 +1003,7 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
       case '8':
       case '9':
       case '10':
-        const entryIndex = parseInt(cmd) - 1
+        const entryIndex = parseInt(cmd) - 2  // Shifted because 1 is back
         if (currentMenu === 'journals') {
           setTerminalLines([])
           await new Promise(resolve => setTimeout(resolve, 100))
@@ -1052,7 +1036,7 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
             }
           }
         } else if (currentMenu === 'music') {
-          if (entryIndex < musicTracks.length) {
+          if (entryIndex >= 0 && entryIndex < musicTracks.length) {
             const track = musicTracks[entryIndex]
             playBackgroundMusic(track.sunoUrl)
             await typeResponse(`♪ Opening: ${track.title} playlist in new tab...`, false)
