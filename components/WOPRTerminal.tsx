@@ -1541,8 +1541,10 @@ const WOPRTerminal = () => {
               </div>
               
               {isViewingContent && (
-                <div className="text-terminal-green-dim text-sm ml-8">
-                  ↑↓ scroll • PgUp/PgDn jump
+                <div className="text-terminal-green-dim text-sm ml-8 flex items-center gap-4">
+                  <span className="text-terminal-amber opacity-60 italic">x. back</span>
+                  <span className="text-terminal-green-dim opacity-40">•</span>
+                  <span>↑↓ scroll • PgUp/PgDn jump</span>
                 </div>
               )}
             </div>
