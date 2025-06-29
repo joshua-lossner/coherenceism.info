@@ -962,6 +962,7 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
             await typeResponse(`♪ Opening: ${track.title} playlist in new tab...`, false)
           }
         }
+        }
         break
 
       case '4':
