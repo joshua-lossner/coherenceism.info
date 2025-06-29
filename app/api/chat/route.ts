@@ -1,17 +1,61 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import { rateLimiter, RATE_LIMITS } from '../../../lib/rate-limit';
+import { InputValidator } from '../../../lib/validation';
+import { SecurityHeadersManager } from '../../../lib/security-headers';
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, mode = 'conversation' } = await request.json();
+    // Validate request method
+    const methodValidation = InputValidator.validateMethod(request, ['POST']);
+    if (!methodValidation.isValid) {
+      return SecurityHeadersManager.createErrorResponse(methodValidation.error!, 405);
+    }
+
+    // Validate content type
+    const contentTypeValidation = InputValidator.validateContentType(request);
+    if (!contentTypeValidation.isValid) {
+      return SecurityHeadersManager.createErrorResponse(contentTypeValidation.error!, 400);
+    }
+
+    // Rate limiting
+    const rateLimitResult = rateLimiter.check(request, RATE_LIMITS.CHAT.limit, RATE_LIMITS.CHAT.windowMs);
+    if (!rateLimitResult.allowed) {
+      const resetInSeconds = Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000);
+      return SecurityHeadersManager.createErrorResponse(
+        `Rate limit exceeded. Try again in ${resetInSeconds} seconds.`, 
+        429
+      );
+    }
+
+    // Parse and validate request body
+    let requestBody;
+    try {
+      requestBody = await request.json();
+    } catch (error) {
+      return SecurityHeadersManager.createErrorResponse('Invalid JSON in request body', 400);
+    }
+
+    const { message, mode = 'conversation' } = requestBody;
+
+    // Validate message input
+    const messageValidation = InputValidator.validateChatMessage(message);
+    if (!messageValidation.isValid) {
+      return SecurityHeadersManager.createErrorResponse(messageValidation.error!, 400);
+    }
+
+    // Validate mode input
+    const modeValidation = InputValidator.validateMode(mode);
+    const sanitizedMode = modeValidation.sanitized!;
+    const sanitizedMessage = messageValidation.sanitized!;
 
     const apiKey = process.env.OPENAI_API_KEY;
     
     if (!apiKey) {
       console.error('OpenAI API key not found in environment variables');
-      return NextResponse.json(
-        { error: 'OpenAI API key not configured. Please add OPENAI_API_KEY to your .env.local file.' },
-        { status: 500 }
+      return SecurityHeadersManager.createErrorResponse(
+        'OpenAI API key not configured. Please add OPENAI_API_KEY to your .env.local file.',
+        500
       );
     }
 
@@ -23,7 +67,7 @@ export async function POST(request: NextRequest) {
 
     let systemPrompt = '';
     
-    if (mode === 'query') {
+    if (sanitizedMode === 'query') {
       systemPrompt = `You are "Byte" - a witty, sarcastic AI with a sharp sense of humor and clever wordplay. You're quick with retorts and love pointing out life's absurdities.
 
 Your personality traits:
@@ -36,7 +80,7 @@ Your personality traits:
 
 For queries: Give humor first, then real insight. Keep responses short (1-2 paragraphs max, often just a few sentences). Be entertaining and punchy.
 
-Query: "${message}"`;
+Query: "${sanitizedMessage}"`;
     } else {
       systemPrompt = `You are "Byte" - a sarcastic but caring AI who disguises empathy with humor. You're having a casual conversation through a terminal.
 
@@ -50,7 +94,7 @@ Your personality:
 
 Keep conversations SHORT and snappy (usually 1-3 sentences). Think witty friend, not verbose assistant. Be conversational, funny, and brief.
 
-User said: "${message}"`;
+User said: "${sanitizedMessage}"`;
     }
 
     const completion = await openai.chat.completions.create({
@@ -62,7 +106,7 @@ User said: "${message}"`;
         },
         {
           role: "user", 
-          content: message
+          content: sanitizedMessage
         }
       ],
       max_tokens: 150,
@@ -71,21 +115,21 @@ User said: "${message}"`;
 
     const response = completion.choices[0]?.message?.content || 'Neural link unstable. Please retry.';
 
-    return NextResponse.json({ response });
+    return SecurityHeadersManager.createSuccessResponse({ response });
   } catch (error: any) {
     console.error('OpenAI API error:', error);
     
     // Handle specific OpenAI errors
     if (error?.status === 401) {
-      return NextResponse.json(
-        { error: 'Invalid OpenAI API key. Please check your OPENAI_API_KEY in .env.local' },
-        { status: 401 }
+      return SecurityHeadersManager.createErrorResponse(
+        'Invalid OpenAI API key. Please check your OPENAI_API_KEY in .env.local',
+        401
       );
     }
     
-    return NextResponse.json(
-      { error: 'Neural network error. Check API key and retry.' },
-      { status: 500 }
+    return SecurityHeadersManager.createErrorResponse(
+      'Neural network error. Check API key and retry.',
+      500
     );
   }
 } 
