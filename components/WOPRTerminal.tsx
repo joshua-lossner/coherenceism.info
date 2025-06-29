@@ -1424,7 +1424,7 @@ const WOPRTerminal = () => {
       <div className="h-screen flex justify-start">
         <div 
           ref={terminalRef}
-          className="w-full max-w-4xl p-8 pb-32 overflow-y-auto text-base terminal-text scrollbar-hide"
+          className="w-full max-w-4xl p-8 pb-20 overflow-y-auto text-base terminal-text scrollbar-hide"
         >
         {terminalLines.map((line, index) => (
           <div 
@@ -1476,22 +1476,29 @@ const WOPRTerminal = () => {
           </div>
         ))}
         
-        {systemReady && !isProcessing && (
-          <div className="flex text-terminal-green font-bold brightness-125">
-            <span>&gt; {currentInput}</span>
-            <span className="terminal-cursor ml-1">█</span>
-          </div>
-        )}
-        
-        {isProcessing && (
-          <div className="text-terminal-green font-bold brightness-125 flex">
-            <span>&gt; {processingDots}</span>
-            <span className="terminal-cursor ml-1">█</span>
-          </div>
-        )}
         </div>
       </div>
       
+      {/* Sticky command prompt */}
+      {(systemReady || isProcessing) && (
+        <div className="absolute bottom-6 left-0 right-0 bg-black border-t border-terminal-green-dim mx-8 z-40">
+          <div className="max-w-4xl px-8 py-2">
+            {systemReady && !isProcessing && (
+              <div className="flex text-terminal-green font-bold brightness-125">
+                <span>&gt; {currentInput}</span>
+                <span className="terminal-cursor ml-1">█</span>
+              </div>
+            )}
+            
+            {isProcessing && (
+              <div className="text-terminal-green font-bold brightness-125 flex">
+                <span>&gt; {processingDots}</span>
+                <span className="terminal-cursor ml-1">█</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Status bar */}
       <div className="absolute bottom-0 left-0 right-0 bg-terminal-green text-black p-1 flex justify-between text-sm z-50">
