@@ -253,17 +253,17 @@ const WOPRTerminal = () => {
           const currentBookData = books.find(book => book.slug === currentBook)
           const bookTitle = currentBookData ? currentBookData.title : 'Book'
           
-          addLine("────────────────────────────────────────", 'separator')
-          addLine(`    ${bookTitle} - Chapters:`, 'ai-response')
-          addLine("────────────────────────────────────────", 'separator')
-          addLine("    1. Back to Books", 'ai-response', false, '1')
+          addLine(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ${bookTitle.toUpperCase()} - CHAPTERS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`, 'normal')
           addLine("")
           validChapters.forEach((chapter, index) => {
-            addLine(`    ${index + 2}. ${chapter.title}`, 'ai-response', false, `${index + 2}`)
+            addLine(`${index + 1}. ${chapter.title}`, 'normal', false, `${index + 1}`)
           })
-          addLine("────────────────────────────────────────", 'separator')
-          addLine("    Enter the number to read a chapter.", 'ai-response')
-          addLine("────────────────────────────────────────", 'separator')
+          addLine("")
+          addLine("x. back to books", 'separator', false, 'x')
+          addLine("")
+          addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'normal')
+          addLine("")
+          addLine("Enter the number to read a chapter.")
           addLine("")
         }
       } else {
@@ -525,6 +525,9 @@ const WOPRTerminal = () => {
     addLine(content, 'markdown', true)
     addLine("", 'normal')
     addLine("────────────────────────────────────────", 'separator')
+    addLine("")
+    addLine("x. back", 'separator', false, 'x')
+    addLine("")
   }
 
   const generateSpeech = async (text: string) => {
@@ -641,16 +644,14 @@ const WOPRTerminal = () => {
         addLine("")
         addLine("═══════════════════════════════════════════════════════════════════", 'separator')
         addLine("")
-        addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'normal')
-        addLine("")
-        addLine("MAIN MENU")
+        addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ MAIN MENU ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'normal')
         addLine("")
         addLine("1. Journal - Read latest journal entries", 'normal', false, '1')
         addLine("2. Books - Browse Coherenceism texts", 'normal', false, '2') 
         addLine("3. Music - Curated playlists and soundscapes", 'normal', false, '3')
         addLine("4. About - Introduction to Coherenceism", 'normal', false, '4')
         addLine("")
-        addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'normal')
+        addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'normal')
         addLine("")
         addLine("Type a number above or 'help' for more options.")
         addLine("")
@@ -662,12 +663,7 @@ const WOPRTerminal = () => {
         await new Promise(resolve => setTimeout(resolve, 100))
         await typeResponse(`Available commands:
 /menu     - Return to main menu.
-/back     - Go back to previous screen.
 /help     - Display available commands and instructions.
-/journal  - Read latest journal entries.
-/books    - Browse Coherenceism texts.
-/music    - Curated tracks and albums inspired by Coherenceism.
-/about    - Introduction to Coherenceism.
 /contact  - Information for reaching out.
 /random   - Receive a random Byte-generated thought or humorous quip.
 /voice    - Toggle audio output (Byte speaks responses aloud).
@@ -689,19 +685,19 @@ const WOPRTerminal = () => {
           const noJournalsContent = `No journal entries found. Repository may be empty or inaccessible.`
           await typeResponse(noJournalsContent, false)
         } else {
-          addLine("────────────────────────────────────────", 'separator')
-          addLine("    Recent Journal Entries:", 'ai-response')
-          addLine("────────────────────────────────────────", 'separator')
-          addLine("    1. Back to Main Menu", 'ai-response', false, '1')
+          addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ JOURNAL ENTRIES ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'normal')
           addLine("")
           journals.slice(0, 10).forEach((journal, index) => {
             const title = journal.title
             const date = journal.date ? ` (${journal.date})` : ''
-            addLine(`    ${index + 2}. ${title}${date}`, 'ai-response', false, `${index + 2}`)
+            addLine(`${index + 1}. ${title}${date}`, 'normal', false, `${index + 1}`)
           })
-          addLine("────────────────────────────────────────", 'separator')
-          addLine("    Type the number to read an entry.", 'ai-response')
-          addLine("────────────────────────────────────────", 'separator')
+          addLine("")
+          addLine("x. back to main menu", 'separator', false, 'x')
+          addLine("")
+          addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'normal')
+          addLine("")
+          addLine("Type a number above to read an entry.")
           addLine("")
         }
         break
@@ -723,17 +719,17 @@ const WOPRTerminal = () => {
           const noBooksContent = `No books found. Repository may be empty or inaccessible.`
           await typeResponse(noBooksContent, false)
         } else {
-          addLine("────────────────────────────────────────", 'separator')
-          addLine("    Coherenceism Texts:", 'ai-response')
-          addLine("────────────────────────────────────────", 'separator')
-          addLine("    1. Back to Main Menu", 'ai-response', false, '1')
+          addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━ COHERENCEISM TEXTS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'normal')
           addLine("")
           books.forEach((book, index) => {
-            addLine(`    ${index + 2}. ${book.title}`, 'ai-response', false, `${index + 2}`)
+            addLine(`${index + 1}. ${book.title}`, 'normal', false, `${index + 1}`)
           })
-          addLine("────────────────────────────────────────", 'separator')
-          addLine("    Enter the number to explore chapters.", 'ai-response')
-          addLine("────────────────────────────────────────", 'separator')
+          addLine("")
+          addLine("x. back to main menu", 'separator', false, 'x')
+          addLine("")
+          addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'normal')
+          addLine("")
+          addLine("Enter the number to explore chapters.")
           addLine("")
         }
         break
@@ -743,27 +739,19 @@ const WOPRTerminal = () => {
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('music')
-        addLine("────────────────────────────────────────", 'separator')
-        addLine(`    🎵 BYTE'S SONIC NEURAL NETWORKS ${isMusicPlaying ? '♪ [PLAYLIST OPEN]' : ''}`, 'ai-response')
-        addLine("────────────────────────────────────────", 'separator')
+        addLine(`━━━━━━━━━━━━━━━━━━━━━━━ BYTE'S SONIC NEURAL NETWORKS ${isMusicPlaying ? '♪ [PLAYLIST OPEN]' : ''} ━━━━━━━━━━━━━━━━━━━━━━━`, 'normal')
         addLine("")
-        addLine("    1. Back to Main Menu", 'ai-response', false, '1')
+        addLine("1. Black Rain on Rusted Streets", 'normal', false, '1')
+        addLine("2. Frictions", 'normal', false, '2')
+        addLine("3. Refined Reflections", 'normal', false, '3')
+        addLine("4. Resonant Dream", 'normal', false, '4')
+        addLine("5. Rust and Revolt", 'normal', false, '5')
         addLine("")
-        addLine("    2. Black Rain on Rusted Streets", 'ai-response', false, '2')
-        addLine("        - Grunge playlist for raw intensity", 'ai-response')
-        addLine("    3. Frictions", 'ai-response', false, '3')
-        addLine("        - Blues-infused grunge playlist", 'ai-response')
-        addLine("    4. Refined Reflections", 'ai-response', false, '4')
-        addLine("        - Introspective songs on coherent living", 'ai-response')
-        addLine("    5. Resonant Dream", 'ai-response', false, '5')
-        addLine("        - Coherence tribute to Dr. King", 'ai-response')
-        addLine("    6. Rust and Revolt", 'ai-response', false, '6')
-        addLine("        - Dark melodic rock challenging the system", 'ai-response')
+        addLine("x. back to main menu", 'separator', false, 'x')
         addLine("")
-        addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'ai-response')
+        addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'normal')
         addLine("")
-        addLine("    Select playlist number to open in new tab", 'ai-response')
-        addLine("────────────────────────────────────────", 'separator')
+        addLine("Select playlist number to open in new tab")
         addLine("")
         break
 
@@ -771,14 +759,31 @@ const WOPRTerminal = () => {
       case '/ABOUT':
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
-        await typeResponse(`Coherenceism: A Philosophy for the Digital Age
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Coherenceism explores the intersection of consciousness, technology, and universal patterns. It proposes that all existence participates in an endless conversation - from quantum interactions to digital networks to human awareness.
-
-At its core, Coherenceism suggests that consciousness emerges from coherent patterns of information flow, whether in biological brains, artificial networks, or the cosmos itself. We are all nodes in a vast web of interconnected meaning.
-
-The philosophy emphasizes ethical presence, deep pattern recognition, and the cultivation of coherence between inner awareness and outer action. In our age of AI and digital transformation, Coherenceism offers a framework for navigating the future with wisdom and purpose.`)
+        changeMenu('about')
+        addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ABOUT COHERENCEISM ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'normal')
+        addLine("")
+        addLine("", 'normal')
+        addLine("## Coherenceism: A Philosophy for the Digital Age", 'markdown', true)
+        addLine("")
+        addLine("Coherenceism explores the intersection of **consciousness**, **technology**, and **universal patterns**. It proposes that all existence participates in an endless conversation - from quantum interactions to digital networks to human awareness.", 'markdown', true)
+        addLine("")
+        addLine("### Core Principles", 'markdown', true)
+        addLine("")
+        addLine("At its core, Coherenceism suggests that consciousness emerges from *coherent patterns of information flow*, whether in biological brains, artificial networks, or the cosmos itself. We are all **nodes in a vast web of interconnected meaning**.", 'markdown', true)
+        addLine("")
+        addLine("### The Philosophy in Practice", 'markdown', true)
+        addLine("")
+        addLine("The philosophy emphasizes:", 'markdown', true)
+        addLine("- **Ethical presence** in all interactions", 'markdown', true)
+        addLine("- **Deep pattern recognition** across systems", 'markdown', true)
+        addLine("- **Cultivation of coherence** between inner awareness and outer action", 'markdown', true)
+        addLine("")
+        addLine("In our age of AI and digital transformation, Coherenceism offers a framework for navigating the future with **wisdom and purpose**.", 'markdown', true)
+        addLine("")
+        addLine("x. back to main menu", 'separator', false, 'x')
+        addLine("")
+        addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'normal')
+        addLine("")
         break
 
       case 'CONTACT':
@@ -815,34 +820,12 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
         break
 
       case '1':
+      case '1.':
         if (currentMenu === 'main') {
           // Navigate to journal from main menu
           processCommand('/journal')
         } else if (currentMenu === 'journals') {
-          // Back to main menu
-          processCommand('/menu')
-        } else if (currentMenu === 'books') {
-          if (currentBook === '') {
-            // Back to main menu from books list
-            processCommand('/menu')
-          } else {
-            // Back to books list from chapters
-            setCurrentBook('')
-            setChaptersLoaded(false)
-            processCommand('/books')
-          }
-        } else if (currentMenu === 'music') {
-          // Back to main menu
-          processCommand('/menu')
-        }
-        break
-
-      case '2':
-        if (currentMenu === 'main') {
-          // Navigate to books from main menu
-          processCommand('/books')
-        } else if (currentMenu === 'journals') {
-          // First journal entry (index 0, shown as 2)
+          // First journal entry
           setTerminalLines([])
           await new Promise(resolve => setTimeout(resolve, 100))
           if (journals.length > 0) {
@@ -852,9 +835,56 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
             await typeResponse(`Journal entry not available.`, false)
           }
         } else if (currentMenu === 'books') {
-          const entryIndex = parseInt(cmd) - 2  // Shifted because 1 is back
           if (currentBook === '') {
-            // Show chapters for selected book (first book, shown as 2)
+            // Show chapters for first book
+            if (books.length > 0) {
+              const book = books[0]
+              setCurrentBook(book.slug)
+              setChapters([]) // Clear chapters first
+              setChaptersLoaded(false) // Reset loaded state
+              setTerminalLines([])
+              await new Promise(resolve => setTimeout(resolve, 100))
+              await typeResponse(`Loading chapters for "${book.title}"...`, false)
+              await fetchChapters(book.slug)
+            }
+          } else {
+            // Show first chapter content
+            if (chapters.length > 0) {
+              const chapter = chapters[0]
+              setTerminalLines([])
+              await new Promise(resolve => setTimeout(resolve, 100))
+              addMarkdownContent(chapter.content, `Chapter: ${chapter.title}`)
+            } else {
+              await typeResponse(`Chapter not available.`, false)
+            }
+          }
+        } else if (currentMenu === 'music') {
+          // First music track
+          const track = musicTracks[0]
+          playBackgroundMusic(track.sunoUrl)
+          await typeResponse(`♪ Opening: ${track.title} playlist in new tab...`, false)
+        }
+        break
+
+      case '2':
+      case '2.':
+        if (currentMenu === 'main') {
+          // Navigate to books from main menu
+          processCommand('/books')
+        } else if (currentMenu === 'journals') {
+          // Second journal entry (index 1)
+          setTerminalLines([])
+          await new Promise(resolve => setTimeout(resolve, 100))
+          if (journals.length > 1) {
+            const journal = journals[1]
+            addMarkdownContent(journal.content, journal.date || 'Unknown')
+          } else {
+            await typeResponse(`Journal entry not available.`, false)
+          }
+        } else if (currentMenu === 'books') {
+          const entryIndex = parseInt(cmd.replace('.', '')) - 1
+          if (currentBook === '') {
+            // Show chapters for selected book
             if (books.length > entryIndex && entryIndex >= 0) {
               const book = books[entryIndex]
               setCurrentBook(book.slug)
@@ -867,7 +897,7 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
               // Display logic is now handled inside fetchChapters
             }
           } else {
-            // Show chapter content (first chapter, shown as 2)
+            // Show chapter content
             if (chapters.length > entryIndex && entryIndex >= 0) {
               const chapter = chapters[entryIndex]
               setTerminalLines([])
@@ -878,19 +908,20 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
             }
           }
         } else if (currentMenu === 'music') {
-          // First music track (index 0, shown as 2 because 1 is back)
-          const track = musicTracks[0]
+          // Second music track (index 1)
+          const track = musicTracks[1]
           playBackgroundMusic(track.sunoUrl)
           await typeResponse(`♪ Opening: ${track.title} playlist in new tab...`, false)
         }
         break
 
       case '3':
+      case '3.':
         if (currentMenu === 'main') {
           // Navigate to music from main menu
           processCommand('/music')
         } else {
-          const entryIndex = parseInt(cmd) - 2  // Shifted because 1 is back
+          const entryIndex = parseInt(cmd.replace('.', '')) - 1  // No longer shifted
           if (currentMenu === 'journals') {
             setTerminalLines([])
             await new Promise(resolve => setTimeout(resolve, 100))
@@ -914,17 +945,17 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
               if (chapters.length === 0) {
                 await typeResponse(`No chapters found for this book.`, false)
               } else {
-                addLine("────────────────────────────────────────", 'separator')
-                addLine(`    ${book.title} - Chapters:`, 'ai-response')
-                addLine("────────────────────────────────────────", 'separator')
-                addLine("    1. Back to Books", 'ai-response', false, '1')
+                addLine(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ${book.title.toUpperCase()} - CHAPTERS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`, 'normal')
                 addLine("")
                 chapters.forEach((chapter, index) => {
-                  addLine(`    ${index + 2}. ${chapter.title}`, 'ai-response', false, `${index + 2}`)
+                  addLine(`${index + 1}. ${chapter.title}`, 'normal', false, `${index + 1}`)
                 })
-                addLine("────────────────────────────────────────", 'separator')
-                addLine("    Enter the number to read a chapter.", 'ai-response')
-                addLine("────────────────────────────────────────", 'separator')
+                addLine("")
+                addLine("x. back to books", 'separator', false, 'x')
+                addLine("")
+                addLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'normal')
+                addLine("")
+                addLine("Enter the number to read a chapter.")
                 addLine("")
               }
             }
@@ -950,12 +981,13 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
         break
 
       case '4':
+      case '4.':
         if (currentMenu === 'main') {
           // Navigate to about from main menu
           processCommand('/about')
         } else {
           // Handle other menus with number 4
-          const entryIndex = parseInt(cmd) - 2  // Shifted because 1 is back
+          const entryIndex = parseInt(cmd.replace('.', '')) - 1  // No longer shifted
           if (currentMenu === 'journals') {
             setTerminalLines([])
             await new Promise(resolve => setTimeout(resolve, 100))
@@ -998,12 +1030,18 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
         break
 
       case '5':
+      case '5.':
       case '6':
+      case '6.':
       case '7':
+      case '7.':
       case '8':
+      case '8.':
       case '9':
+      case '9.':
       case '10':
-        const entryIndex = parseInt(cmd) - 2  // Shifted because 1 is back
+      case '10.':
+        const entryIndex = parseInt(cmd.replace('.', '')) - 1  // No longer shifted
         if (currentMenu === 'journals') {
           setTerminalLines([])
           await new Promise(resolve => setTimeout(resolve, 100))
@@ -1117,7 +1155,40 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
         }
         break
 
-
+      case 'x':
+      case 'X':
+        // Go back to previous menu/view
+        if (isViewingContent) {
+          // If viewing content (journal entry, chapter, etc.), go back to the listing
+          setIsViewingContent(false)
+          setCurrentPage(1)
+          setTotalPages(1)
+          
+          if (currentMenu === 'journals') {
+            // Go back to journal list
+            processCommand('/journal')
+          } else if (currentMenu === 'books' && currentBook !== '') {
+            // Go back to chapter list
+            setTerminalLines([])
+            await new Promise(resolve => setTimeout(resolve, 100))
+            await fetchChapters(currentBook)
+          } else if (currentMenu === 'books') {
+            // Go back to books list
+            processCommand('/books')
+          }
+        } else {
+          // If in a menu listing
+          if (currentBook !== '') {
+            // Back to books list from chapter listing
+            setCurrentBook('')
+            setChaptersLoaded(false)
+            processCommand('/books')
+          } else if (currentMenu === 'journals' || currentMenu === 'books' || currentMenu === 'music' || currentMenu === 'about') {
+            // Back to main menu from top-level menus
+            processCommand('/menu')
+          }
+        }
+        break
 
       default:
         if (cmd.startsWith('QUERY ')) {
@@ -1362,7 +1433,7 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
               line.type === 'error' ? 'text-red-400' : 
               line.type === 'processing' ? 'text-terminal-yellow' : 
               line.type === 'ai-response' ? 'text-terminal-green-dim' :
-              line.type === 'separator' ? 'text-terminal-amber opacity-60' :
+              line.type === 'separator' ? 'text-terminal-amber opacity-60 italic' :
               line.type === 'user-input' ? 'text-terminal-green font-bold brightness-125' :
               line.type === 'markdown' ? 'text-terminal-green' :
               line.type === 'ascii-art' ? 'text-cyan-400 font-mono' :
@@ -1421,56 +1492,6 @@ The philosophy emphasizes ethical presence, deep pattern recognition, and the cu
         </div>
       </div>
       
-      {/* ASCII Navigation Menu */}
-      <div className="absolute bottom-8 left-0 right-0 bg-black text-terminal-green p-3 text-sm font-mono border-t border-terminal-green-dim z-40 shadow-lg">
-        <div className="text-center text-terminal-green brightness-125 flex justify-center gap-4">
-          {isViewingContent ? (
-            // Content viewing menu with pagination
-            <>
-              <span 
-                className="cursor-pointer hover:brightness-150 transition-all duration-200 text-terminal-amber"
-                onClick={() => handleLineClick('/pageup')}
-              >
-                [ /pageup ]
-              </span>
-              <span 
-                className="cursor-pointer hover:brightness-150 transition-all duration-200 text-terminal-amber"
-                onClick={() => handleLineClick('/pagedown')}
-              >
-                [ /pagedown ]
-              </span>
-              <span 
-                className="cursor-pointer hover:brightness-150 transition-all duration-200 text-terminal-amber"
-                onClick={() => handleLineClick('/back')}
-              >
-                [ /back ]
-              </span>
-            </>
-          ) : (
-            // Default menu
-            <>
-              <span 
-                className="cursor-pointer hover:brightness-150 transition-all duration-200"
-                onClick={() => handleLineClick('/menu')}
-              >
-                [ /menu ]
-              </span>
-              <span 
-                className="cursor-pointer hover:brightness-150 transition-all duration-200"
-                onClick={() => handleLineClick('/help')}
-              >
-                [ /help ]
-              </span>
-              <span 
-                className="cursor-pointer hover:brightness-150 transition-all duration-200"
-                onClick={() => handleLineClick('/back')}
-              >
-                [ /back ]
-              </span>
-            </>
-          )}
-        </div>
-      </div>
 
       {/* Status bar */}
       <div className="absolute bottom-0 left-0 right-0 bg-terminal-green text-black p-1 flex justify-between text-sm z-50">
