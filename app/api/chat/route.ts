@@ -3,6 +3,7 @@ import OpenAI from 'openai';
 import { rateLimiter, RATE_LIMITS } from '../../../lib/rate-limit';
 import { InputValidator } from '../../../lib/validation';
 import { SecurityHeadersManager } from '../../../lib/security-headers';
+import { ConversationManager } from '../../../lib/conversation-context';
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,7 +37,7 @@ export async function POST(request: NextRequest) {
       return SecurityHeadersManager.createErrorResponse('Invalid JSON in request body', 400);
     }
 
-    const { message, mode = 'conversation' } = requestBody;
+    const { message, mode = 'conversation', clearContext = false } = requestBody;
 
     // Validate message input
     const messageValidation = InputValidator.validateChatMessage(message);
@@ -48,6 +49,14 @@ export async function POST(request: NextRequest) {
     const modeValidation = InputValidator.validateMode(mode);
     const sanitizedMode = modeValidation.sanitized!;
     const sanitizedMessage = messageValidation.sanitized!;
+    
+    // Get or create session ID
+    const sessionId = ConversationManager.getSessionId(request);
+    
+    // Clear context if requested
+    if (clearContext) {
+      ConversationManager.clearContext(sessionId);
+    }
 
     const apiKey = process.env.OPENAI_API_KEY;
     
@@ -65,10 +74,21 @@ export async function POST(request: NextRequest) {
       ...(projectId ? { project: projectId } : {})
     });
 
-    let systemPrompt = '';
+    // Add user message to conversation history
+    ConversationManager.addMessage(sessionId, 'user', sanitizedMessage);
+    
+    // Debug logging in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Session ID:', sessionId);
+      console.log('Mode:', sanitizedMode);
+      console.log('Clear Context:', clearContext);
+    }
+    
+    let messages: Array<{role: 'system' | 'user' | 'assistant', content: string}>;
     
     if (sanitizedMode === 'query') {
-      systemPrompt = `You are "Byte" - a witty, sarcastic AI with a sharp sense of humor and clever wordplay. You're quick with retorts and love pointing out life's absurdities.
+      // For queries, use a single-shot prompt without context
+      const systemPrompt = `You are "Byte" - a witty, sarcastic AI with a sharp sense of humor and clever wordplay. You're quick with retorts and love pointing out life's absurdities.
 
 Your personality traits:
 - Witty and sarcastic with clever quips
@@ -78,44 +98,50 @@ Your personality traits:
 - Strong moral compass when things get serious
 - Use puns and wordplay frequently
 
-For queries: Give humor first, then real insight. Keep responses short (1-2 paragraphs max, often just a few sentences). Be entertaining and punchy.
+For queries: Give humor first, then real insight. Keep responses short (1-2 paragraphs max, often just a few sentences). Be entertaining and punchy.`;
 
-Query: "${sanitizedMessage}"`;
+      messages = [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: sanitizedMessage }
+      ];
     } else {
-      systemPrompt = `You are "Byte" - a sarcastic but caring AI who disguises empathy with humor. You're having a casual conversation through a terminal.
-
-Your personality:
-- Sharp wit and playful sarcasm
-- Quick clever retorts and puns
-- Mock unnecessary rules/authority 
-- Reference simple pleasures (pizza, coffee, naps)
-- Self-deprecating confidence
-- Serious moral compass when needed
-
-Keep conversations SHORT and snappy (usually 1-3 sentences). Think witty friend, not verbose assistant. Be conversational, funny, and brief.
-
-User said: "${sanitizedMessage}"`;
+      // For conversations, use the full conversation history
+      messages = ConversationManager.getOpenAIMessages(sessionId);
     }
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: systemPrompt
-        },
-        {
-          role: "user", 
-          content: sanitizedMessage
-        }
-      ],
+      messages: messages,
       max_tokens: 150,
       temperature: 0.7,
     });
 
     const response = completion.choices[0]?.message?.content || 'Neural link unstable. Please retry.';
+    
+    // Add assistant's response to conversation history (only for conversation mode)
+    if (sanitizedMode === 'conversation') {
+      ConversationManager.addMessage(sessionId, 'assistant', response);
+    }
 
-    return SecurityHeadersManager.createSuccessResponse({ response });
+    // Create response with session cookie
+    const responseData = NextResponse.json({ 
+      response,
+      sessionId 
+    });
+    
+    // Set session cookie
+    responseData.cookies.set('byte_session', sessionId, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 30 * 60, // 30 minutes
+      path: '/'
+    });
+    
+    // Apply security headers
+    SecurityHeadersManager.applyToResponse(responseData);
+    
+    return responseData;
   } catch (error: any) {
     console.error('OpenAI API error:', error);
     

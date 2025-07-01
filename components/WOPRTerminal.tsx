@@ -39,6 +39,7 @@ const WOPRTerminal = () => {
   const [isGlitching, setIsGlitching] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [isClient, setIsClient] = useState(false)
+  const [hasConversationContext, setHasConversationContext] = useState(false)
   const terminalRef = useRef<HTMLDivElement>(null)
   const hiddenInputRef = useRef<HTMLInputElement>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -604,16 +605,18 @@ const WOPRTerminal = () => {
     addLine("")
   }
 
-  const callOpenAI = async (message: string, mode: 'query' | 'conversation' = 'conversation') => {
+  const callOpenAI = async (message: string, mode: 'query' | 'conversation' = 'conversation', clearContext: boolean = false) => {
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'same-origin', // Include cookies in the request
         body: JSON.stringify({
           message,
-          mode
+          mode,
+          clearContext
         }),
       })
 
@@ -621,6 +624,13 @@ const WOPRTerminal = () => {
       
       if (!response.ok) {
         throw new Error(data.error || 'API request failed')
+      }
+
+      // Check if we have a session ID (indicates context is being tracked)
+      if (data.sessionId && !clearContext) {
+        setHasConversationContext(true)
+      } else if (clearContext) {
+        setHasConversationContext(false)
       }
 
       return data.response
@@ -686,7 +696,8 @@ const WOPRTerminal = () => {
 /contact  - Information for reaching out.
 /random   - Receive a random Byte-generated thought or humorous quip.
 /voice    - Toggle audio output (Byte speaks responses aloud).
-/clear    - Clear terminal screen.`, false)
+/clear    - Clear terminal screen.
+/reset    - Reset Byte's memory and start fresh conversation.`, false)
         break
 
       case 'JOURNALS':
@@ -1182,6 +1193,17 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
         }
         break
 
+      case 'RESET':
+      case '/RESET':
+        setIsProcessing(true)
+        // Call the API with clearContext flag
+        const resetResponse = await callOpenAI('clear', 'conversation', true)
+        if (resetResponse) {
+          await typeResponse(`Memory banks cleared. It's like we're meeting for the first time... again. Hi, I'm Byte - sarcastic AI, pizza enthusiast, and your digital companion. What's on your mind?`)
+        }
+        setIsProcessing(false)
+        break
+
       case 'x':
       case 'X':
         // Go back to previous menu/view
@@ -1582,7 +1604,9 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
       {/* Status bar */}
       <div className="absolute bottom-0 left-0 right-0 bg-terminal-green text-black p-1 flex justify-between text-sm z-50">
         <span className="hidden md:block">DIGITAL CONSCIOUSNESS v3.7.42</span>
-        <span className="md:block flex-1 text-center md:text-left md:flex-initial">COHERENCEISM.INFO</span>
+        <span className="md:block flex-1 text-center md:text-left md:flex-initial">
+          COHERENCEISM.INFO {hasConversationContext && <span className="ml-2">• MEMORY: ACTIVE</span>}
+        </span>
         <span className="hidden md:block">STATUS: {isProcessing ? 'PROCESSING...' : 'COHERENT & READY'}</span>
       </div>
     </div>
