@@ -128,5 +128,55 @@
     "fileSize": 4785482,
     "chunks": 6,
     "duration": 299.09262500000006
+  },
+  {
+    "contentHash": "57375c66efc8fb5c-chunk-0",
+    "contentType": "journal",
+    "contentId": "2025-06-17-system-book.md-chunk-0",
+    "audioPath": "audio/narrations/journals/57375c66efc8fb5c-chunk-0.mp3",
+    "createdAt": 1751417047621,
+    "fileSize": 1023209,
+    "chunks": 1,
+    "duration": 63.9505625
+  },
+  {
+    "contentHash": "57375c66efc8fb5c-chunk-1",
+    "contentType": "journal",
+    "contentId": "2025-06-17-system-book.md-chunk-1",
+    "audioPath": "audio/narrations/journals/57375c66efc8fb5c-chunk-1.mp3",
+    "createdAt": 1751417047623,
+    "fileSize": 1047032,
+    "chunks": 1,
+    "duration": 65.4395
+  },
+  {
+    "contentHash": "57375c66efc8fb5c-chunk-2",
+    "contentType": "journal",
+    "contentId": "2025-06-17-system-book.md-chunk-2",
+    "audioPath": "audio/narrations/journals/57375c66efc8fb5c-chunk-2.mp3",
+    "createdAt": 1751417047624,
+    "fileSize": 1000639,
+    "chunks": 1,
+    "duration": 62.5399375
+  },
+  {
+    "contentHash": "57375c66efc8fb5c-chunk-3",
+    "contentType": "journal",
+    "contentId": "2025-06-17-system-book.md-chunk-3",
+    "audioPath": "audio/narrations/journals/57375c66efc8fb5c-chunk-3.mp3",
+    "createdAt": 1751417047625,
+    "fileSize": 926660,
+    "chunks": 1,
+    "duration": 57.91625
+  },
+  {
+    "contentHash": "57375c66efc8fb5c",
+    "contentType": "journal",
+    "contentId": "2025-06-17-system-book.md",
+    "audioPath": "audio/narrations/journals/57375c66efc8fb5c-chunk-0.mp3",
+    "createdAt": 1751417047625,
+    "fileSize": 3997540,
+    "chunks": 4,
+    "duration": 249.84625
   }
 ]
