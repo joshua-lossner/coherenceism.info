@@ -19,6 +19,11 @@ export class AudioCacheManager {
   
   // Ensure directories exist
   static ensureDirectories() {
+    // Skip directory creation on Vercel (read-only filesystem)
+    if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+      return;
+    }
+    
     const dirs = [
       this.CACHE_DIR,
       path.join(this.CACHE_DIR, 'journals'),
@@ -41,6 +46,11 @@ export class AudioCacheManager {
   
   // Load metadata from file
   static loadMetadata(): AudioCacheEntry[] {
+    // On Vercel, return empty metadata (no persistent storage)
+    if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+      return [];
+    }
+    
     try {
       if (fs.existsSync(this.METADATA_FILE)) {
         const data = fs.readFileSync(this.METADATA_FILE, 'utf8');
@@ -54,6 +64,12 @@ export class AudioCacheManager {
   
   // Save metadata to file
   static saveMetadata(entries: AudioCacheEntry[]) {
+    // Skip file operations on Vercel (read-only filesystem)
+    if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+      console.log('Skipping metadata save on production/Vercel environment');
+      return;
+    }
+    
     try {
       this.ensureDirectories();
       fs.writeFileSync(this.METADATA_FILE, JSON.stringify(entries, null, 2));
@@ -88,6 +104,14 @@ export class AudioCacheManager {
     chunks?: number,
     duration?: number
   ): string {
+    // On Vercel, we can't store files - return a placeholder URL
+    if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+      console.log(`Would store audio for ${contentHash} in production environment`);
+      // Return a data URL as fallback (not ideal but works for testing)
+      const base64Audio = audioBuffer.toString('base64');
+      return `data:audio/mpeg;base64,${base64Audio}`;
+    }
+    
     this.ensureDirectories();
     
     const filename = `${contentHash}.mp3`;
