@@ -195,8 +195,9 @@ export async function POST(request: NextRequest) {
         } catch (error) {
           if (retryCount >= maxRetries) {
             console.error(`Final error processing chunk ${i + 1}:`, error);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             return SecurityHeadersManager.createErrorResponse(
-              `Speech synthesis failed at chunk ${i + 1} of ${chunks.length}: ${error.message}`, 
+              `Speech synthesis failed at chunk ${i + 1} of ${chunks.length}: ${errorMessage}`, 
               500
             );
           }
