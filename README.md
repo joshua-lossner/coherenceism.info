@@ -6,6 +6,7 @@ A WarGames-inspired terminal interface for exploring Coherenceism philosophy, po
 
 - **Authentic 1980s Terminal**: Green phosphor display with CRT scanlines
 - **Byte AI Assistant**: GPT-4 powered conversations about consciousness and technology
+- **Audio Narration**: Byte narrates all content with intelligent caching and seamless playback
 - **Content Archive**: Browse philosophical texts and futuristic journal entries
 - **Interactive Commands**: Navigate through books, journals, and AI queries
 - **Retro Aesthetics**: JetBrains Mono font, terminal effects, and classic styling
@@ -19,10 +20,11 @@ cd coherenceism.info
 npm install
 ```
 
-### 2. Configure OpenAI API Key
+### 2. Configure API Keys
 Create a `.env.local` file in the root directory:
 ```bash
 OPENAI_API_KEY=your_openai_api_key_here
+ELEVENLABS_API_KEY=your_elevenlabs_api_key_here
 ```
 
 ### 3. Run Development Server
@@ -55,6 +57,11 @@ Type `/help` to see:
 - `/voice` - Toggle audio output (Byte speaks responses aloud)
 - `/clear` - Clear terminal screen
 
+### Content Navigation Commands
+When viewing journal entries or book chapters:
+- `n` or `n.` - Narrate current content (Byte reads it aloud)
+- `p` or `p.` - Pause/resume narration
+
 ## 🤖 AI Interaction
 
 **Direct Conversation**: Type anything to chat with Byte about consciousness, technology, and philosophy.
@@ -67,12 +74,35 @@ Type `/help` to see:
 - **TypeScript** - Type safety
 - **Tailwind CSS** - Styling and terminal effects
 - **OpenAI API** - GPT-4 integration for AI conversations
+- **ElevenLabs API** - High-quality text-to-speech for audio narration
 
 ## 📝 Environment Variables
 
 | Variable | Description | Required |
 |----------|-------------|----------|
 | `OPENAI_API_KEY` | Your OpenAI API key for GPT-4 access | Yes |
+| `ELEVENLABS_API_KEY` | Your ElevenLabs API key for audio narration | Yes |
+
+## 🎧 Audio Narration System
+
+The audio narration feature allows Byte to read journal entries and book chapters aloud using ElevenLabs' advanced text-to-speech technology.
+
+### How It Works
+- **Intelligent Chunking**: Long content is automatically split into ~950 character chunks at natural boundaries
+- **Smart Caching**: Audio files are cached by content hash to avoid regenerating identical narrations
+- **Sequential Playback**: Chunks play seamlessly in sequence for uninterrupted listening
+- **Auto-cleanup**: Cached audio files are automatically removed after 30 days
+
+### Storage Location
+Audio files are stored in `public/audio/narrations/` and organized by content type:
+- Journals: `public/audio/narrations/journals/`
+- Books: `public/audio/narrations/books/`
+
+### Usage
+1. Navigate to any journal entry or book chapter
+2. Type `n` to start narration
+3. Use `p` to pause/resume playback
+4. Narration automatically stops when navigating away
 
 ## 🎨 Theme
 
