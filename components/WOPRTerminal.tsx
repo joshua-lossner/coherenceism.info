@@ -40,9 +40,14 @@ const WOPRTerminal = () => {
   const [isMobile, setIsMobile] = useState(false)
   const [isClient, setIsClient] = useState(false)
   const [hasConversationContext, setHasConversationContext] = useState(false)
+  const [currentNarrationUrls, setCurrentNarrationUrls] = useState<string[]>([])
+  const [currentChunkIndex, setCurrentChunkIndex] = useState(0)
+  const [isNarrationPlaying, setIsNarrationPlaying] = useState(false)
+  const [currentContent, setCurrentContent] = useState<{text: string, type: string, id: string} | null>(null)
   const terminalRef = useRef<HTMLDivElement>(null)
   const hiddenInputRef = useRef<HTMLInputElement>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const narrationRef = useRef<HTMLAudioElement | null>(null)
   const musicRef = useRef<HTMLDivElement>(null)
   const isInitializedRef = useRef(false)
 
@@ -518,7 +523,7 @@ const WOPRTerminal = () => {
     setCurrentMenu(newMenu)
   }
 
-  const addMarkdownContent = (content: string, date?: string, pageInfo?: {current: number, total: number}) => {
+  const addMarkdownContent = (content: string, date?: string, pageInfo?: {current: number, total: number}, contentType?: string, contentId?: string) => {
     // Set flag to prevent auto-scrolling when markdown is displayed
     setIsDisplayingMarkdown(true)
     setIsViewingContent(true)
@@ -529,6 +534,15 @@ const WOPRTerminal = () => {
     } else {
       setCurrentPage(1)
       setTotalPages(1)
+    }
+    
+    // Store current content for narration
+    if (contentType && contentId) {
+      setCurrentContent({
+        text: content,
+        type: contentType,
+        id: contentId
+      })
     }
     
     // Add separator and date header
@@ -547,6 +561,9 @@ const WOPRTerminal = () => {
     addLine(createBorder('', '─'), 'separator')
     addLine("")
     addLine("x. back", 'separator', false, 'x')
+    if (contentType && contentId) {
+      addLine("n. narrate - Have Byte narrate this content", 'separator', false, 'n')
+    }
     addLine("")
   }
 
@@ -572,6 +589,132 @@ const WOPRTerminal = () => {
     } catch (error) {
       console.error('Speech generation error:', error)
       return null
+    }
+  }
+
+  const generateNarration = async (text: string, contentType: string, contentId: string) => {
+    try {
+      setIsProcessing(true)
+      await typeResponse(`Byte is preparing narration... This may take a moment.`, false)
+      
+      const response = await fetch('/api/narrate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({ 
+          text, 
+          contentType, 
+          contentId 
+        }),
+      })
+
+      const data = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Narration generation failed')
+      }
+
+      let statusMessage = ''
+      if (data.cached) {
+        statusMessage = `Retrieved from cache`
+      } else {
+        statusMessage = `Generated fresh audio`
+        if (data.chunks && data.chunks > 1) {
+          statusMessage += ` (${data.chunks} chunks processed)`
+        }
+      }
+      
+      if (data.duration) {
+        const minutes = Math.floor(data.duration / 60)
+        const seconds = Math.round(data.duration % 60)
+        statusMessage += ` • Duration: ${minutes}:${seconds.toString().padStart(2, '0')}`
+      }
+      
+      await typeResponse(`${statusMessage}. Starting narration...`, false)
+      
+      // Auto-play the narration (playNarration will set currentNarrationUrls)
+      playNarration(data.audioUrls || [], 0)
+      
+      return data.audioUrls
+    } catch (error: any) {
+      console.error('Narration generation error:', error)
+      await typeResponse(`Narration failed: ${error.message}`, false)
+      return null
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const playNarration = (audioUrls: string[], startIndex: number = 0) => {
+    // Prevent double-calls
+    if (isNarrationPlaying && currentNarrationUrls.length > 0) {
+      console.log('Narration already playing, ignoring duplicate call')
+      return
+    }
+    
+    console.log('playNarration called:', {
+      urlCount: audioUrls.length,
+      startIndex,
+      urls: audioUrls
+    })
+    
+    if (narrationRef.current && audioUrls.length > 0) {
+      setCurrentNarrationUrls(audioUrls)
+      setCurrentChunkIndex(startIndex)
+      narrationRef.current.src = audioUrls[startIndex]
+      narrationRef.current.play().then(() => {
+        setIsNarrationPlaying(true)
+        console.log(`Started playing chunk ${startIndex + 1} of ${audioUrls.length}`)
+      }).catch(console.error)
+    }
+  }
+
+  const playNextChunk = () => {
+    console.log('playNextChunk called:', {
+      currentUrls: currentNarrationUrls.length,
+      currentIndex: currentChunkIndex,
+      hasMore: currentChunkIndex < currentNarrationUrls.length - 1
+    })
+    
+    if (currentNarrationUrls.length > 0 && currentChunkIndex < currentNarrationUrls.length - 1) {
+      const nextIndex = currentChunkIndex + 1
+      console.log(`Playing chunk ${nextIndex + 1} of ${currentNarrationUrls.length}`)
+      setCurrentChunkIndex(nextIndex)
+      if (narrationRef.current) {
+        narrationRef.current.src = currentNarrationUrls[nextIndex]
+        narrationRef.current.play().catch(console.error)
+      }
+    } else {
+      // End of narration
+      console.log('Narration complete')
+      setIsNarrationPlaying(false)
+      setCurrentChunkIndex(0)
+    }
+  }
+
+  const pauseNarration = () => {
+    if (narrationRef.current) {
+      narrationRef.current.pause()
+      setIsNarrationPlaying(false)
+    }
+  }
+
+  const stopNarration = () => {
+    if (narrationRef.current) {
+      narrationRef.current.pause()
+      narrationRef.current.currentTime = 0
+      setIsNarrationPlaying(false)
+      setCurrentChunkIndex(0)
+    }
+  }
+
+  const resumeNarration = () => {
+    if (narrationRef.current && currentNarrationUrls.length > 0) {
+      narrationRef.current.play().then(() => {
+        setIsNarrationPlaying(true)
+      }).catch(console.error)
     }
   }
 
@@ -657,11 +800,15 @@ const WOPRTerminal = () => {
     switch (cmd) {
       case 'MENU':
       case '/MENU':
+        stopNarration() // Stop narration immediately
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         setIsViewingContent(false)
         setCurrentPage(1)
         setTotalPages(1)
+        setCurrentContent(null)
+        setCurrentNarrationUrls([])
+        setCurrentChunkIndex(0)
         changeMenu('main')
         // Recreate the home page display
         addLine("")
@@ -702,6 +849,9 @@ const WOPRTerminal = () => {
 
       case 'JOURNALS':
       case '/JOURNAL':
+        stopNarration() // Stop narration when navigating to journals
+        setCurrentNarrationUrls([]) // Clear narration state
+        setCurrentChunkIndex(0)
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('journals')
@@ -734,6 +884,9 @@ const WOPRTerminal = () => {
 
       case 'BOOKS':
       case '/BOOKS':
+        stopNarration() // Stop narration when navigating to books
+        setCurrentNarrationUrls([]) // Clear narration state
+        setCurrentChunkIndex(0)
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('books')
@@ -766,6 +919,9 @@ const WOPRTerminal = () => {
 
       case 'MUSIC':
       case '/MUSIC':
+        stopNarration() // Stop narration when navigating to music
+        setCurrentNarrationUrls([]) // Clear narration state
+        setCurrentChunkIndex(0)
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('music')
@@ -787,6 +943,9 @@ const WOPRTerminal = () => {
 
       case 'ABOUT':
       case '/ABOUT':
+        stopNarration() // Stop narration when navigating to about
+        setCurrentNarrationUrls([]) // Clear narration state
+        setCurrentChunkIndex(0)
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('about')
@@ -821,7 +980,7 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
 **Welcome to the age of coherence.**`
 
         // Display as content like a journal entry
-        addMarkdownContent(aboutContent, 'About: Coherenceism Philosophy')
+        addMarkdownContent(aboutContent, 'About: Coherenceism Philosophy', undefined, 'about', 'coherenceism-philosophy')
         break
 
       case 'CONTACT':
@@ -868,7 +1027,7 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
           await new Promise(resolve => setTimeout(resolve, 100))
           if (journals.length > 0) {
             const journal = journals[0]
-            addMarkdownContent(journal.content, journal.date || 'Unknown')
+            addMarkdownContent(journal.content, journal.date || 'Unknown', undefined, 'journal', journal.filename || 'journal-1')
           } else {
             await typeResponse(`Journal entry not available.`, false)
           }
@@ -891,7 +1050,7 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
               const chapter = chapters[0]
               setTerminalLines([])
               await new Promise(resolve => setTimeout(resolve, 100))
-              addMarkdownContent(chapter.content, `Chapter: ${chapter.title}`)
+              addMarkdownContent(chapter.content, `Chapter: ${chapter.title}`, undefined, 'chapter', `${currentBook}-${chapter.filename || chapter.id}`)
             } else {
               await typeResponse(`Chapter not available.`, false)
             }
@@ -915,7 +1074,7 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
           await new Promise(resolve => setTimeout(resolve, 100))
           if (journals.length > 1) {
             const journal = journals[1]
-            addMarkdownContent(journal.content, journal.date || 'Unknown')
+            addMarkdownContent(journal.content, journal.date || 'Unknown', undefined, 'journal', journal.filename || 'journal-2')
           } else {
             await typeResponse(`Journal entry not available.`, false)
           }
@@ -940,7 +1099,7 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
               const chapter = chapters[entryIndex]
               setTerminalLines([])
               await new Promise(resolve => setTimeout(resolve, 100))
-              addMarkdownContent(chapter.content, `Chapter: ${chapter.title}`)
+              addMarkdownContent(chapter.content, `Chapter: ${chapter.title}`, undefined, 'chapter', `${currentBook}-${chapter.filename || chapter.id}`)
             } else {
               await typeResponse(`Chapter not available.`, false)
             }
@@ -965,7 +1124,7 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
             await new Promise(resolve => setTimeout(resolve, 100))
             if (journals.length > entryIndex && entryIndex >= 0) {
               const journal = journals[entryIndex]
-              addMarkdownContent(journal.content, journal.date || 'Unknown')
+              addMarkdownContent(journal.content, journal.date || 'Unknown', undefined, 'journal', journal.filename || `journal-${entryIndex + 1}`)
             } else {
               await typeResponse(`Journal entry not available.`, false)
             }
@@ -1003,7 +1162,7 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
               const chapter = chapters[entryIndex]
               setTerminalLines([])
               await new Promise(resolve => setTimeout(resolve, 100))
-              addMarkdownContent(chapter.content, `Chapter: ${chapter.title}`)
+              addMarkdownContent(chapter.content, `Chapter: ${chapter.title}`, undefined, 'chapter', `${currentBook}-${chapter.filename || chapter.id}`)
             } else {
               await typeResponse(`Chapter not available.`, false)
             }
@@ -1031,7 +1190,7 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
             await new Promise(resolve => setTimeout(resolve, 100))
             if (journals.length > entryIndex) {
               const journal = journals[entryIndex]
-              addMarkdownContent(journal.content, journal.date || 'Unknown')
+              addMarkdownContent(journal.content, journal.date || 'Unknown', undefined, 'journal', journal.filename || `journal-${entryIndex + 1}`)
             } else {
               await typeResponse(`Journal entry not available.`, false)
             }
@@ -1052,7 +1211,7 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
                 const chapter = chapters[entryIndex]
                 setTerminalLines([])
                 await new Promise(resolve => setTimeout(resolve, 100))
-                addMarkdownContent(chapter.content, `Chapter: ${chapter.title}`)
+                addMarkdownContent(chapter.content, `Chapter: ${chapter.title}`, undefined, 'chapter', `${currentBook}-${chapter.filename || chapter.id}`)
               } else {
                 await typeResponse(`Chapter not available.`, false)
               }
@@ -1085,7 +1244,7 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
           await new Promise(resolve => setTimeout(resolve, 100))
           if (journals.length > entryIndex) {
             const journal = journals[entryIndex]
-            addMarkdownContent(journal.content, journal.date || 'Unknown')
+            addMarkdownContent(journal.content, journal.date || 'Unknown', undefined, 'journal', journal.filename || `journal-${entryIndex + 1}`)
           } else {
             await typeResponse(`Journal entry not available.`, false)
           }
@@ -1106,7 +1265,7 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
               const chapter = chapters[entryIndex]
               setTerminalLines([])
               await new Promise(resolve => setTimeout(resolve, 100))
-              addMarkdownContent(chapter.content, `Chapter: ${chapter.title}`)
+              addMarkdownContent(chapter.content, `Chapter: ${chapter.title}`, undefined, 'chapter', `${currentBook}-${chapter.filename || chapter.id}`)
             } else {
               await typeResponse(`Chapter not available.`, false)
             }
@@ -1125,6 +1284,10 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
         setIsViewingContent(false)
         setCurrentPage(1)
         setTotalPages(1)
+        setCurrentContent(null)
+        setCurrentNarrationUrls([])
+        setCurrentChunkIndex(0)
+        stopNarration()
         
         if (previousMenu === 'main' || currentMenu === 'main') {
           // If we're at main or previous was main, go to main menu
@@ -1168,11 +1331,15 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
 
       case 'CLEAR':
       case '/CLEAR':
+        stopNarration() // Stop narration immediately when clearing
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         setIsViewingContent(false)
         setCurrentPage(1)
         setTotalPages(1)
+        setCurrentContent(null)
+        setCurrentNarrationUrls([])
+        setCurrentChunkIndex(0)
         addLine("Terminal cleared")
         addLine("")
         addLine("Ready for input...")
@@ -1202,6 +1369,43 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
           await typeResponse(`Memory banks cleared. It's like we're meeting for the first time... again. Hi, I'm Byte - sarcastic AI, pizza enthusiast, and your digital companion. What's on your mind?`)
         }
         setIsProcessing(false)
+        break
+
+      case 'N':
+      case 'N.':
+      case 'NARRATE':
+      case '/NARRATE':
+      case 'SPEAK':
+      case '/SPEAK':
+        if (!currentContent) {
+          await typeResponse(`No content available to narrate. Navigate to a journal entry or book chapter first.`, false)
+        } else {
+          const audioUrl = await generateNarration(
+            currentContent.text, 
+            currentContent.type, 
+            currentContent.id
+          )
+          if (audioUrl) {
+            playNarration(audioUrl)
+          }
+        }
+        break
+
+      case 'P':
+      case 'P.':
+      case 'PAUSE':
+      case '/PAUSE':
+        if (currentNarrationUrls.length === 0) {
+          await typeResponse(`No narration available to pause. Use 'n' to start narration first.`, false)
+        } else {
+          if (isNarrationPlaying) {
+            pauseNarration()
+            await typeResponse(`Narration paused.`, false)
+          } else {
+            resumeNarration()
+            await typeResponse(`Narration resumed.`, false)
+          }
+        }
         break
 
       case 'x':
@@ -1507,6 +1711,22 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
         style={{ display: 'none' }}
       />
       
+      {/* Hidden audio element for narration */}
+      <audio
+        ref={narrationRef}
+        onEnded={() => {
+          console.log('Audio chunk ended, calling playNextChunk')
+          playNextChunk()
+        }}
+        onError={(e) => {
+          console.error('Audio error:', e)
+          setIsNarrationPlaying(false)
+        }}
+        onPlay={() => setIsNarrationPlaying(true)}
+        onPause={() => setIsNarrationPlaying(false)}
+        style={{ display: 'none' }}
+      />
+      
       {/* Hidden container for background music */}
       <div ref={musicRef} style={{ display: 'none' }} />
       
@@ -1592,6 +1812,28 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
               {isViewingContent && (
                 <div className="text-terminal-green-dim text-sm ml-8 flex items-center gap-4">
                   <span className="text-terminal-amber opacity-60 italic">x. back</span>
+                  {currentContent && currentNarrationUrls.length === 0 && (
+                    <>
+                      <span className="text-terminal-green-dim opacity-40">•</span>
+                      <span className="text-terminal-amber opacity-60 italic">n. narrate</span>
+                    </>
+                  )}
+                  {currentNarrationUrls.length > 0 && (
+                    <>
+                      <span className="text-terminal-green-dim opacity-40">•</span>
+                      <span className="text-terminal-amber opacity-60 italic">
+                        p. {isNarrationPlaying ? 'pause' : 'resume'}
+                      </span>
+                      {currentNarrationUrls.length > 1 && (
+                        <>
+                          <span className="text-terminal-green-dim opacity-40">•</span>
+                          <span className="text-terminal-green-dim opacity-60 text-xs">
+                            {currentChunkIndex + 1}/{currentNarrationUrls.length}
+                          </span>
+                        </>
+                      )}
+                    </>
+                  )}
                   <span className="text-terminal-green-dim opacity-40">•</span>
                   <span>↑↓ scroll • PgUp/PgDn jump</span>
                 </div>

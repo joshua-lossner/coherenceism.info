@@ -1,0 +1,182 @@
+[
+  {
+    "contentHash": "034ef2d162f2b73c-chunk-0",
+    "contentType": "journal",
+    "contentId": "2025-06-30-expanding-moments.md-chunk-0",
+    "audioPath": "audio/narrations/journals/034ef2d162f2b73c-chunk-0.mp3",
+    "createdAt": 1751414111641,
+    "fileSize": 901165,
+    "chunks": 1,
+    "duration": 56.3228125
+  },
+  {
+    "contentHash": "034ef2d162f2b73c-chunk-1",
+    "contentType": "journal",
+    "contentId": "2025-06-30-expanding-moments.md-chunk-1",
+    "audioPath": "audio/narrations/journals/034ef2d162f2b73c-chunk-1.mp3",
+    "createdAt": 1751414111643,
+    "fileSize": 858115,
+    "chunks": 1,
+    "duration": 53.6321875
+  },
+  {
+    "contentHash": "034ef2d162f2b73c-chunk-2",
+    "contentType": "journal",
+    "contentId": "2025-06-30-expanding-moments.md-chunk-2",
+    "audioPath": "audio/narrations/journals/034ef2d162f2b73c-chunk-2.mp3",
+    "createdAt": 1751414111644,
+    "fileSize": 960097,
+    "chunks": 1,
+    "duration": 60.0060625
+  },
+  {
+    "contentHash": "034ef2d162f2b73c-chunk-3",
+    "contentType": "journal",
+    "contentId": "2025-06-30-expanding-moments.md-chunk-3",
+    "audioPath": "audio/narrations/journals/034ef2d162f2b73c-chunk-3.mp3",
+    "createdAt": 1751414111645,
+    "fileSize": 989772,
+    "chunks": 1,
+    "duration": 61.86075
+  },
+  {
+    "contentHash": "034ef2d162f2b73c-chunk-4",
+    "contentType": "journal",
+    "contentId": "2025-06-30-expanding-moments.md-chunk-4",
+    "audioPath": "audio/narrations/journals/034ef2d162f2b73c-chunk-4.mp3",
+    "createdAt": 1751414111645,
+    "fileSize": 316440,
+    "chunks": 1,
+    "duration": 19.7775
+  },
+  {
+    "contentHash": "034ef2d162f2b73c",
+    "contentType": "journal",
+    "contentId": "2025-06-30-expanding-moments.md",
+    "audioPath": "audio/narrations/journals/034ef2d162f2b73c-chunk-0.mp3",
+    "createdAt": 1751414111646,
+    "fileSize": 4025589,
+    "chunks": 5,
+    "duration": 251.5993125
+  },
+  {
+    "contentHash": "166551b9800e5e8c-chunk-0",
+    "contentType": "journal",
+    "contentId": "2025-06-29-fault-line.md-chunk-0",
+    "audioPath": "audio/narrations/journals/166551b9800e5e8c-chunk-0.mp3",
+    "createdAt": 1751415109766,
+    "fileSize": 824678,
+    "chunks": 1,
+    "duration": 51.542375
+  },
+  {
+    "contentHash": "166551b9800e5e8c-chunk-1",
+    "contentType": "journal",
+    "contentId": "2025-06-29-fault-line.md-chunk-1",
+    "audioPath": "audio/narrations/journals/166551b9800e5e8c-chunk-1.mp3",
+    "createdAt": 1751415109768,
+    "fileSize": 856443,
+    "chunks": 1,
+    "duration": 53.5276875
+  },
+  {
+    "contentHash": "166551b9800e5e8c-chunk-2",
+    "contentType": "journal",
+    "contentId": "2025-06-29-fault-line.md-chunk-2",
+    "audioPath": "audio/narrations/journals/166551b9800e5e8c-chunk-2.mp3",
+    "createdAt": 1751415109769,
+    "fileSize": 969710,
+    "chunks": 1,
+    "duration": 60.606875
+  },
+  {
+    "contentHash": "166551b9800e5e8c-chunk-3",
+    "contentType": "journal",
+    "contentId": "2025-06-29-fault-line.md-chunk-3",
+    "audioPath": "audio/narrations/journals/166551b9800e5e8c-chunk-3.mp3",
+    "createdAt": 1751415109770,
+    "fileSize": 1014849,
+    "chunks": 1,
+    "duration": 63.4280625
+  },
+  {
+    "contentHash": "166551b9800e5e8c-chunk-4",
+    "contentType": "journal",
+    "contentId": "2025-06-29-fault-line.md-chunk-4",
+    "audioPath": "audio/narrations/journals/166551b9800e5e8c-chunk-4.mp3",
+    "createdAt": 1751415109771,
+    "fileSize": 965948,
+    "chunks": 1,
+    "duration": 60.37175
+  },
+  {
+    "contentHash": "166551b9800e5e8c-chunk-5",
+    "contentType": "journal",
+    "contentId": "2025-06-29-fault-line.md-chunk-5",
+    "audioPath": "audio/narrations/journals/166551b9800e5e8c-chunk-5.mp3",
+    "createdAt": 1751415109772,
+    "fileSize": 153854,
+    "chunks": 1,
+    "duration": 9.615875
+  },
+  {
+    "contentHash": "166551b9800e5e8c",
+    "contentType": "journal",
+    "contentId": "2025-06-29-fault-line.md",
+    "audioPath": "audio/narrations/journals/166551b9800e5e8c-chunk-0.mp3",
+    "createdAt": 1751415109772,
+    "fileSize": 4785482,
+    "chunks": 6,
+    "duration": 299.09262500000006
+  },
+  {
+    "contentHash": "57375c66efc8fb5c-chunk-0",
+    "contentType": "journal",
+    "contentId": "2025-06-17-system-book.md-chunk-0",
+    "audioPath": "audio/narrations/journals/57375c66efc8fb5c-chunk-0.mp3",
+    "createdAt": 1751417047621,
+    "fileSize": 1023209,
+    "chunks": 1,
+    "duration": 63.9505625
+  },
+  {
+    "contentHash": "57375c66efc8fb5c-chunk-1",
+    "contentType": "journal",
+    "contentId": "2025-06-17-system-book.md-chunk-1",
+    "audioPath": "audio/narrations/journals/57375c66efc8fb5c-chunk-1.mp3",
+    "createdAt": 1751417047623,
+    "fileSize": 1047032,
+    "chunks": 1,
+    "duration": 65.4395
+  },
+  {
+    "contentHash": "57375c66efc8fb5c-chunk-2",
+    "contentType": "journal",
+    "contentId": "2025-06-17-system-book.md-chunk-2",
+    "audioPath": "audio/narrations/journals/57375c66efc8fb5c-chunk-2.mp3",
+    "createdAt": 1751417047624,
+    "fileSize": 1000639,
+    "chunks": 1,
+    "duration": 62.5399375
+  },
+  {
+    "contentHash": "57375c66efc8fb5c-chunk-3",
+    "contentType": "journal",
+    "contentId": "2025-06-17-system-book.md-chunk-3",
+    "audioPath": "audio/narrations/journals/57375c66efc8fb5c-chunk-3.mp3",
+    "createdAt": 1751417047625,
+    "fileSize": 926660,
+    "chunks": 1,
+    "duration": 57.91625
+  },
+  {
+    "contentHash": "57375c66efc8fb5c",
+    "contentType": "journal",
+    "contentId": "2025-06-17-system-book.md",
+    "audioPath": "audio/narrations/journals/57375c66efc8fb5c-chunk-0.mp3",
+    "createdAt": 1751417047625,
+    "fileSize": 3997540,
+    "chunks": 4,
+    "duration": 249.84625
+  }
+]
