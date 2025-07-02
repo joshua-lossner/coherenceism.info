@@ -127,48 +127,86 @@ export async function POST(request: NextRequest) {
     const audioBuffers: Buffer[] = [];
     
     for (let i = 0; i < chunks.length; i++) {
-      const chunk = chunks[i];
+      const chunk = chunks[i].trim();
+      
+      // Skip empty chunks
+      if (chunk.length < 3) {
+        console.log(`Skipping empty chunk ${i + 1}`);
+        continue;
+      }
+      
       console.log(`Generating audio for chunk ${i + 1}/${chunks.length} (${chunk.length} chars)`);
       
-      try {
-        const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`, {
-          method: 'POST',
-          headers: {
-            'Accept': 'audio/mpeg',
-            'Content-Type': 'application/json',
-            'xi-api-key': ELEVENLABS_API_KEY,
-          },
-          body: JSON.stringify({
-            text: chunk,
-            model_id: 'eleven_monolingual_v1',
-            voice_settings: {
-              stability: 0.6,
-              similarity_boost: 0.8,
-              style: 0.2,
-              use_speaker_boost: true
+      let retryCount = 0;
+      const maxRetries = 2;
+      
+      while (retryCount <= maxRetries) {
+        try {
+          const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`, {
+            method: 'POST',
+            headers: {
+              'Accept': 'audio/mpeg',
+              'Content-Type': 'application/json',
+              'xi-api-key': ELEVENLABS_API_KEY,
+            },
+            body: JSON.stringify({
+              text: chunk,
+              model_id: 'eleven_monolingual_v1',
+              voice_settings: {
+                stability: 0.6,
+                similarity_boost: 0.8,
+                style: 0.2,
+                use_speaker_boost: true
+              }
+            }),
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`ElevenLabs API error for chunk ${i + 1} (attempt ${retryCount + 1}):`, {
+              status: response.status,
+              statusText: response.statusText,
+              error: errorText,
+              chunkLength: chunk.length,
+              chunkPreview: chunk.substring(0, 100) + '...'
+            });
+            
+            if (retryCount < maxRetries && (response.status === 429 || response.status >= 500)) {
+              retryCount++;
+              const delay = Math.pow(2, retryCount) * 1000; // Exponential backoff
+              console.log(`Retrying chunk ${i + 1} in ${delay}ms...`);
+              await new Promise(resolve => setTimeout(resolve, delay));
+              continue;
             }
-          }),
-        });
+            
+            throw new Error(`Speech synthesis failed for chunk ${i + 1}: ${response.status} ${response.statusText}`);
+          }
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error(`ElevenLabs API error for chunk ${i + 1}:`, response.status, errorText);
-          throw new Error(`Speech synthesis failed for chunk ${i + 1}`);
+          const chunkBuffer = Buffer.from(await response.arrayBuffer());
+          
+          // Validate audio buffer
+          if (chunkBuffer.length === 0) {
+            throw new Error(`Empty audio buffer for chunk ${i + 1}`);
+          }
+          
+          audioBuffers.push(chunkBuffer);
+          break; // Success, exit retry loop
+          
+        } catch (error) {
+          if (retryCount >= maxRetries) {
+            console.error(`Final error processing chunk ${i + 1}:`, error);
+            return SecurityHeadersManager.createErrorResponse(
+              `Speech synthesis failed at chunk ${i + 1} of ${chunks.length}: ${error.message}`, 
+              500
+            );
+          }
+          retryCount++;
         }
-
-        const chunkBuffer = Buffer.from(await response.arrayBuffer());
-        audioBuffers.push(chunkBuffer);
-        
-        // Small delay between API calls to avoid rate limiting
-        if (i < chunks.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 500));
-        }
-      } catch (error) {
-        console.error(`Error processing chunk ${i + 1}:`, error);
-        return SecurityHeadersManager.createErrorResponse(
-          `Speech synthesis failed at chunk ${i + 1} of ${chunks.length}`, 
-          500
-        );
+      }
+      
+      // Small delay between API calls to avoid rate limiting
+      if (i < chunks.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 500));
       }
     }
     
