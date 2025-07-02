@@ -648,6 +648,12 @@ const WOPRTerminal = () => {
   }
 
   const playNarration = (audioUrls: string[], startIndex: number = 0) => {
+    // Prevent double-calls
+    if (isNarrationPlaying && currentNarrationUrls.length > 0) {
+      console.log('Narration already playing, ignoring duplicate call')
+      return
+    }
+    
     console.log('playNarration called:', {
       urlCount: audioUrls.length,
       startIndex,
@@ -655,7 +661,7 @@ const WOPRTerminal = () => {
     })
     
     if (narrationRef.current && audioUrls.length > 0) {
-      setCurrentNarrationUrls(audioUrls) // Make sure we set the URLs here
+      setCurrentNarrationUrls(audioUrls)
       setCurrentChunkIndex(startIndex)
       narrationRef.current.src = audioUrls[startIndex]
       narrationRef.current.play().then(() => {
