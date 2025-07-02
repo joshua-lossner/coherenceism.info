@@ -1,0 +1,85 @@
+User-agent: *
+Disallow: /
+
+# Explicitly block major search engines and AI crawlers
+User-agent: Googlebot
+Disallow: /
+
+User-agent: Bingbot
+Disallow: /
+
+User-agent: Slurp
+Disallow: /
+
+User-agent: DuckDuckBot
+Disallow: /
+
+User-agent: Baiduspider
+Disallow: /
+
+User-agent: YandexBot
+Disallow: /
+
+# AI/ML Training Crawlers
+User-agent: GPTBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: Claude-Web
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+# Social Media Crawlers
+User-agent: facebookexternalhit
+Disallow: /
+
+User-agent: Twitterbot
+Disallow: /
+
+User-agent: LinkedInBot
+Disallow: /
+
+# SEO/Analytics Crawlers
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+# Archive Crawlers
+User-agent: ia_archiver
+Disallow: /
+
+User-agent: archive.org_bot
+Disallow: /
+
+# Commercial Crawlers
+User-agent: MegaIndex
+Disallow: /
+
+User-agent: SeznamBot
+Disallow: /
+
+User-agent: Mail.RU_Bot
+Disallow: /
+
+# Crawl-delay for any bots that ignore Disallow
+Crawl-delay: 86400
+
+# No sitemap provided intentionally
