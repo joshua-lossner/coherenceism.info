@@ -22,8 +22,8 @@ export class AudioCacheManager {
     const dirs = [
       this.CACHE_DIR,
       path.join(this.CACHE_DIR, 'journals'),
-      path.join(this.CACHE_DIR, 'books'),
       path.join(this.CACHE_DIR, 'chapters'),
+      path.join(this.CACHE_DIR, 'about'),
       path.dirname(this.METADATA_FILE)
     ];
     
@@ -91,7 +91,9 @@ export class AudioCacheManager {
     this.ensureDirectories();
     
     const filename = `${contentHash}.mp3`;
-    const relativePath = `audio/narrations/${contentType}s/${filename}`;
+    const dirName = contentType === 'journal' ? 'journals' : 
+                   contentType === 'chapter' ? 'chapters' : 'about';
+    const relativePath = `audio/narrations/${dirName}/${filename}`;
     const fullPath = path.join(process.cwd(), 'public', relativePath);
     
     // Write audio file
