@@ -25,6 +25,7 @@ Create a `.env.local` file in the root directory:
 ```bash
 OPENAI_API_KEY=your_openai_api_key_here
 ELEVENLABS_API_KEY=your_elevenlabs_api_key_here
+BLOB_READ_WRITE_TOKEN=your_vercel_blob_token_here
 ```
 
 ### 3. Run Development Server
@@ -82,6 +83,7 @@ When viewing journal entries or book chapters:
 |----------|-------------|----------|
 | `OPENAI_API_KEY` | Your OpenAI API key for GPT-4 access | Yes |
 | `ELEVENLABS_API_KEY` | Your ElevenLabs API key for audio narration | Yes |
+| `BLOB_READ_WRITE_TOKEN` | Your Vercel Blob token for audio file storage | Yes |
 
 ## 🎧 Audio Narration System
 
@@ -89,14 +91,14 @@ The audio narration feature allows Byte to read journal entries and book chapter
 
 ### How It Works
 - **Intelligent Chunking**: Long content is automatically split into ~950 character chunks at natural boundaries
-- **Smart Caching**: Audio files are cached by content hash to avoid regenerating identical narrations
+- **Smart Caching**: Audio files are cached using Vercel Blob storage by content hash to avoid regenerating identical narrations
 - **Sequential Playback**: Chunks play seamlessly in sequence for uninterrupted listening
 - **Auto-cleanup**: Cached audio files are automatically removed after 30 days
 
-### Storage Location
-Audio files are stored in `public/audio/narrations/` and organized by content type:
-- Journals: `public/audio/narrations/journals/`
-- Books: `public/audio/narrations/books/`
+### Storage & Delivery
+- **Vercel Blob Storage**: S3-backed, globally distributed storage for audio files
+- **CDN Delivery**: Fast audio streaming worldwide through Vercel's global network
+- **Persistent Caching**: Audio survives deployments and is shared across all users
 
 ### Usage
 1. Navigate to any journal entry or book chapter
