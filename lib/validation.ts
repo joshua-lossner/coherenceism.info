@@ -147,4 +147,49 @@ export class InputValidator {
 
     return { isValid: true };
   }
+
+  // Validate narration text input (allows longer text for chunking)
+  static validateNarrationText(text: unknown): ValidationResult {
+    // Check if text exists and is a string
+    if (!text || typeof text !== 'string') {
+      return {
+        isValid: false,
+        error: 'Text must be a non-empty string',
+      };
+    }
+
+    // Check length limits (much higher for narration since we chunk)
+    if (text.length === 0) {
+      return {
+        isValid: false,
+        error: 'Text cannot be empty',
+      };
+    }
+
+    // Allow up to 50,000 characters (will be chunked)
+    if (text.length > 50000) {
+      return {
+        isValid: false,
+        error: 'Text too long for narration (max 50,000 characters)',
+      };
+    }
+
+    // Sanitize: clean up for speech synthesis
+    const sanitized = text
+      .trim()
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') // Remove control characters
+      .substring(0, 50000);
+
+    if (sanitized.length < 3) {
+      return {
+        isValid: false,
+        error: 'Text too short or contains only invalid characters',
+      };
+    }
+
+    return {
+      isValid: true,
+      sanitized,
+    };
+  }
 }
