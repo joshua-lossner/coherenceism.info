@@ -2,7 +2,7 @@ import './globals.css'
 import { Analytics } from '@vercel/analytics/next'
 
 export const metadata = {
-  title: 'WOPR COHERENCE ARCHIVE v3.7.42',
+  title: 'WOPR COHERENCE ARCHIVE',
   description: 'Neural Terminal Interface - Coherenceism Archive System',
   robots: {
     index: false,
