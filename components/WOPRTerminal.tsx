@@ -2311,7 +2311,22 @@ ${release.fullDescription}`
                 
                 <div className="flex-1"></div>
                 
-                <div className="text-terminal-green-dim text-xs font-mono">
+                {/* Standard buttons always available */}
+                <button
+                  onClick={() => processCommand('/menu')}
+                  className="px-4 py-1 border border-terminal-green bg-black text-terminal-green hover:bg-terminal-green hover:text-black transition-all duration-200 font-mono text-sm"
+                >
+                  [<span className="underline">M</span>ENU]
+                </button>
+                
+                <button
+                  onClick={() => processCommand('/help')}
+                  className="px-4 py-1 border border-terminal-green bg-black text-terminal-green hover:bg-terminal-green hover:text-black transition-all duration-200 font-mono text-sm ml-2"
+                >
+                  [<span className="underline">H</span>ELP]
+                </button>
+                
+                <div className="text-terminal-green-dim text-xs font-mono ml-4">
                   ↑↓ SCROLL • PgUp/PgDn JUMP
                 </div>
               </div>
