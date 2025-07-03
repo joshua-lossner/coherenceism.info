@@ -1068,7 +1068,13 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
         } else {
           // Display up to 10 most recent releases
           changelogData.slice(0, 10).forEach((release, index) => {
-            addLine(`${index + 1}. v${release.version} - ${release.title}`, 'normal', false, `${index + 1}`)
+            // Condense the title by truncating if too long
+            const maxTitleLength = 50
+            const condensedTitle = release.title.length > maxTitleLength 
+              ? release.title.substring(0, maxTitleLength) + '...'
+              : release.title
+            
+            addLine(`${index + 1}. v${release.version} - ${condensedTitle}`, 'normal', false, `${index + 1}`)
             addLine(`   ${release.description}`, 'ai-response')
             addLine("")
           })
@@ -1570,6 +1576,9 @@ ${release.fullDescription}`
           } else if (currentMenu === 'about') {
             // Go back to main menu from about
             processCommand('/menu')
+          } else if (currentMenu === 'changelog') {
+            // Go back to changelog list from release detail
+            processCommand('/changelog')
           }
         } else {
           // If in a menu listing
