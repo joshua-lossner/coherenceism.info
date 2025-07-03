@@ -1,4 +1,4 @@
-# WOPR COHERENCE ARCHIVE v3.7.42
+# WOPR COHERENCE ARCHIVE
 
 A WarGames-inspired terminal interface for exploring Coherenceism philosophy, powered by OpenAI's GPT-4.
 
@@ -84,6 +84,7 @@ When viewing journal entries or book chapters:
 | `OPENAI_API_KEY` | Your OpenAI API key for GPT-4 access | Yes |
 | `ELEVENLABS_API_KEY` | Your ElevenLabs API key for audio narration | Yes |
 | `BLOB_READ_WRITE_TOKEN` | Your Vercel Blob token for audio file storage | Yes |
+| `GITHUB_TOKEN` | GitHub personal access token for changelog (increases API rate limit) | No |
 
 ## 🎧 Audio Narration System
 

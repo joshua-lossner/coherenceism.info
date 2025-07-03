@@ -44,6 +44,9 @@ const WOPRTerminal = () => {
   const [currentChunkIndex, setCurrentChunkIndex] = useState(0)
   const [isNarrationPlaying, setIsNarrationPlaying] = useState(false)
   const [currentContent, setCurrentContent] = useState<{text: string, type: string, id: string} | null>(null)
+  const [changelog, setChangelog] = useState<any[]>([])
+  const [changelogLoaded, setChangelogLoaded] = useState(false)
+  const [changelogPage, setChangelogPage] = useState(1)
   const terminalRef = useRef<HTMLDivElement>(null)
   const hiddenInputRef = useRef<HTMLInputElement>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -842,6 +845,7 @@ const WOPRTerminal = () => {
 /menu     - Return to main menu.
 /help     - Display available commands and instructions.
 /contact  - Information for reaching out.
+/changelog- View release notes and version history.
 /random   - Receive a random Byte-generated thought or humorous quip.
 /voice    - Toggle audio output (Byte speaks responses aloud).
 /clear    - Clear terminal screen.
@@ -1007,6 +1011,112 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
         addLine("")
         break
 
+      case 'CHANGELOG':
+      case '/CHANGELOG':
+        setTerminalLines([])
+        await new Promise(resolve => setTimeout(resolve, 100))
+        changeMenu('changelog')
+        // Reset to page 1 when navigating to changelog fresh
+        if (previousMenu !== 'changelog') {
+          setChangelogPage(1)
+        }
+        
+        // Fetch changelog data if not loaded
+        let changelogData = changelog
+        if (!changelogLoaded) {
+          setIsProcessing(true)
+          try {
+            console.log('Fetching changelog from API...')
+            const response = await fetch('/api/changelog')
+            changelogData = await response.json()
+            
+            console.log('Changelog response:', { 
+              ok: response.ok, 
+              status: response.status,
+              isArray: Array.isArray(changelogData),
+              dataLength: Array.isArray(changelogData) ? changelogData.length : 'not array',
+              data: changelogData
+            })
+            
+            if (response.ok && Array.isArray(changelogData)) {
+              setChangelog(changelogData)
+              setChangelogLoaded(true)
+              console.log('Changelog loaded successfully:', changelogData.length, 'entries')
+            } else {
+              console.error('Changelog API error:', changelogData)
+              const errorData = changelogData as any
+              
+              if (errorData?.rateLimited) {
+                await typeResponse(`GitHub API rate limit exceeded. The changelog uses GitHub's API which has a limit of 60 requests per hour for unauthenticated users. Please try again in about an hour.`, false)
+              } else {
+                const errorMessage = errorData?.error || 'Unknown error'
+                await typeResponse(`Failed to load changelog: ${errorMessage}`, false)
+              }
+              setIsProcessing(false)
+              break
+            }
+          } catch (error) {
+            console.error('Changelog fetch error:', error)
+            await typeResponse(`Connection error: ${error instanceof Error ? error.message : 'Unknown error'}`, false)
+            setIsProcessing(false)
+            break
+          }
+          setIsProcessing(false)
+        }
+        
+        // Display changelog - use the fresh data, not the state variable
+        addLine(createBorder('RELEASE NOTES & VERSION HISTORY'), 'normal')
+        addLine("")
+        addLine("Recent releases and updates to the WOPR Coherence Archive:", 'normal')
+        addLine("")
+        
+        if (!Array.isArray(changelogData) || changelogData.length === 0) {
+          addLine("No releases found. This could be due to:", 'ai-response')
+          addLine("• No merged pull requests in the repository", 'ai-response')
+          addLine("• GitHub API rate limiting", 'ai-response')
+          addLine("• Connection issues", 'ai-response')
+          addLine("")
+        } else {
+          // Pagination logic
+          const entriesPerPage = 5
+          const totalPages = Math.ceil(changelogData.length / entriesPerPage)
+          const startIndex = (changelogPage - 1) * entriesPerPage
+          const endIndex = startIndex + entriesPerPage
+          const pageEntries = changelogData.slice(startIndex, endIndex)
+          
+          // Display current page of releases
+          pageEntries.forEach((release, index) => {
+            const displayNumber = index + 1
+            addLine(`${displayNumber}. ${release.version} : ${release.title}`, 'normal', false, `${displayNumber}`)
+          })
+          
+          addLine("")
+          
+          // Pagination info and controls
+          if (totalPages > 1) {
+            addLine(createBorder('', '─'), 'separator')
+            addLine(`Page ${changelogPage} of ${totalPages} • ${changelogData.length} total releases`, 'ai-response')
+            addLine("")
+            
+            if (changelogPage < totalPages) {
+              addLine("n. next page", 'separator', false, 'n')
+            }
+            if (changelogPage > 1) {
+              addLine("p. previous page", 'separator', false, 'p')
+            }
+            addLine("")
+          }
+          
+          addLine("Select a number to view detailed release notes.")
+          addLine("")
+        }
+        
+        addLine("x. back to help", 'separator', false, 'x')
+        addLine("")
+        addLine(createBorder(), 'normal')
+        addLine("")
+        break
+
       case 'RANDOM':
       case '/RANDOM':
         setIsProcessing(true)
@@ -1062,6 +1172,29 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
           const track = musicTracks[0]
           playBackgroundMusic(track.sunoUrl)
           await typeResponse(`♪ Opening: ${track.title} playlist in new tab...`, false)
+        } else if (currentMenu === 'changelog') {
+          // Show detailed release notes for selected entry
+          const entriesPerPage = 5
+          const pageOffset = (changelogPage - 1) * entriesPerPage
+          const actualIndex = pageOffset + 0 // First entry on current page
+          
+          if (changelog.length > actualIndex) {
+            const release = changelog[actualIndex]
+            setTerminalLines([])
+            await new Promise(resolve => setTimeout(resolve, 100))
+            
+            // Format the full description as markdown
+            const releaseNotes = `# v${release.version} - ${release.title}
+
+**Release Date:** ${release.date}  
+**Pull Request:** #${release.prNumber}
+
+${release.fullDescription}`
+            
+            addMarkdownContent(releaseNotes, `Release Notes: v${release.version}`, undefined, 'release', `v${release.version}`)
+          } else {
+            await typeResponse(`Release notes not available.`, false)
+          }
         }
         break
 
@@ -1111,6 +1244,28 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
           const track = musicTracks[1]
           playBackgroundMusic(track.sunoUrl)
           await typeResponse(`♪ Opening: ${track.title} playlist in new tab...`, false)
+        } else if (currentMenu === 'changelog') {
+          // Show detailed release notes for second entry
+          const entriesPerPage = 5
+          const pageOffset = (changelogPage - 1) * entriesPerPage
+          const actualIndex = pageOffset + 1 // Second entry on current page
+          
+          if (changelog.length > actualIndex) {
+            const release = changelog[actualIndex]
+            setTerminalLines([])
+            await new Promise(resolve => setTimeout(resolve, 100))
+            
+            const releaseNotes = `# v${release.version} - ${release.title}
+
+**Release Date:** ${release.date}  
+**Pull Request:** #${release.prNumber}
+
+${release.fullDescription}`
+            
+            addMarkdownContent(releaseNotes, `Release Notes: v${release.version}`, undefined, 'release', `v${release.version}`)
+          } else {
+            await typeResponse(`Release notes not available.`, false)
+          }
         }
         break
 
@@ -1175,6 +1330,28 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
             playBackgroundMusic(track.sunoUrl)
             await typeResponse(`♪ Opening: ${track.title} playlist in new tab...`, false)
           }
+        } else if (currentMenu === 'changelog') {
+          // Show detailed release notes for selected entry
+          const entriesPerPage = 5
+          const pageOffset = (changelogPage - 1) * entriesPerPage
+          const actualIndex = pageOffset + entryIndex
+          
+          if (changelog.length > actualIndex && actualIndex >= pageOffset && entryIndex < entriesPerPage) {
+            const release = changelog[actualIndex]
+            setTerminalLines([])
+            await new Promise(resolve => setTimeout(resolve, 100))
+            
+            const releaseNotes = `# v${release.version} - ${release.title}
+
+**Release Date:** ${release.date}  
+**Pull Request:** #${release.prNumber}
+
+${release.fullDescription}`
+            
+            addMarkdownContent(releaseNotes, `Release Notes: v${release.version}`, undefined, 'release', `v${release.version}`)
+          } else {
+            await typeResponse(`Release notes not available.`, false)
+          }
         }
         }
         break
@@ -1223,6 +1400,28 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
               const track = musicTracks[entryIndex]
               playBackgroundMusic(track.sunoUrl)
               await typeResponse(`♪ Opening: ${track.title} playlist in new tab...`, false)
+            }
+          } else if (currentMenu === 'changelog') {
+            // Show detailed release notes for selected entry
+            const entriesPerPage = 5
+            const pageOffset = (changelogPage - 1) * entriesPerPage
+            const actualIndex = pageOffset + entryIndex
+            
+            if (changelog.length > actualIndex && actualIndex >= pageOffset && entryIndex < entriesPerPage) {
+              const release = changelog[actualIndex]
+              setTerminalLines([])
+              await new Promise(resolve => setTimeout(resolve, 100))
+              
+              const releaseNotes = `# v${release.version} - ${release.title}
+
+**Release Date:** ${release.date}  
+**Pull Request:** #${release.prNumber}
+
+${release.fullDescription}`
+              
+              addMarkdownContent(releaseNotes, `Release Notes: v${release.version}`, undefined, 'release', `v${release.version}`)
+            } else {
+              await typeResponse(`Release notes not available.`, false)
             }
           }
         }
@@ -1277,6 +1476,28 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
             const track = musicTracks[entryIndex]
             playBackgroundMusic(track.sunoUrl)
             await typeResponse(`♪ Opening: ${track.title} playlist in new tab...`, false)
+          }
+        } else if (currentMenu === 'changelog') {
+          // Show detailed release notes for selected entry
+          const entriesPerPage = 5
+          const pageOffset = (changelogPage - 1) * entriesPerPage
+          const actualIndex = pageOffset + entryIndex
+          
+          if (changelog.length > actualIndex && actualIndex >= pageOffset && entryIndex < entriesPerPage) {
+            const release = changelog[actualIndex]
+            setTerminalLines([])
+            await new Promise(resolve => setTimeout(resolve, 100))
+            
+            const releaseNotes = `# v${release.version} - ${release.title}
+
+**Release Date:** ${release.date}  
+**Pull Request:** #${release.prNumber}
+
+${release.fullDescription}`
+            
+            addMarkdownContent(releaseNotes, `Release Notes: v${release.version}`, undefined, 'release', `v${release.version}`)
+          } else {
+            await typeResponse(`Release notes not available.`, false)
           }
         }
         break
@@ -1379,7 +1600,59 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
       case '/NARRATE':
       case 'SPEAK':
       case '/SPEAK':
-        if (!currentContent) {
+        if (currentMenu === 'changelog' && !isViewingContent) {
+          // Handle next page in changelog
+          const entriesPerPage = 5
+          const totalPages = Math.ceil(changelog.length / entriesPerPage)
+          if (changelogPage < totalPages) {
+            const nextPage = changelogPage + 1
+            setChangelogPage(nextPage)
+            
+            // Manually refresh the display without re-fetching
+            setTerminalLines([])
+            await new Promise(resolve => setTimeout(resolve, 100))
+            
+            // Redisplay changelog with new page
+            addLine(createBorder('RELEASE NOTES & VERSION HISTORY'), 'normal')
+            addLine("")
+            addLine("Recent releases and updates to the WOPR Coherence Archive:", 'normal')
+            addLine("")
+            
+            const startIndex = (nextPage - 1) * entriesPerPage
+            const endIndex = startIndex + entriesPerPage
+            const pageEntries = changelog.slice(startIndex, endIndex)
+            
+            pageEntries.forEach((release, index) => {
+              const displayNumber = index + 1
+              addLine(`${displayNumber}. ${release.version} : ${release.title}`, 'normal', false, `${displayNumber}`)
+            })
+            
+            addLine("")
+            
+            if (totalPages > 1) {
+              addLine(createBorder('', '─'), 'separator')
+              addLine(`Page ${nextPage} of ${totalPages} • ${changelog.length} total releases`, 'ai-response')
+              addLine("")
+              
+              if (nextPage < totalPages) {
+                addLine("n. next page", 'separator', false, 'n')
+              }
+              if (nextPage > 1) {
+                addLine("p. previous page", 'separator', false, 'p')
+              }
+              addLine("")
+            }
+            
+            addLine("Select a number to view detailed release notes.")
+            addLine("")
+            addLine("x. back to help", 'separator', false, 'x')
+            addLine("")
+            addLine(createBorder(), 'normal')
+            addLine("")
+          } else {
+            await typeResponse(`Already on the last page.`, false)
+          }
+        } else if (!currentContent) {
           await typeResponse(`No content available to narrate. Navigate to a journal entry or book chapter first.`, false)
         } else {
           const audioUrl = await generateNarration(
@@ -1397,7 +1670,59 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
       case 'P.':
       case 'PAUSE':
       case '/PAUSE':
-        if (currentNarrationUrls.length === 0) {
+        if (currentMenu === 'changelog' && !isViewingContent) {
+          // Handle previous page in changelog
+          const entriesPerPage = 5
+          const totalPages = Math.ceil(changelog.length / entriesPerPage)
+          if (changelogPage > 1) {
+            const prevPage = changelogPage - 1
+            setChangelogPage(prevPage)
+            
+            // Manually refresh the display without re-fetching
+            setTerminalLines([])
+            await new Promise(resolve => setTimeout(resolve, 100))
+            
+            // Redisplay changelog with new page
+            addLine(createBorder('RELEASE NOTES & VERSION HISTORY'), 'normal')
+            addLine("")
+            addLine("Recent releases and updates to the WOPR Coherence Archive:", 'normal')
+            addLine("")
+            
+            const startIndex = (prevPage - 1) * entriesPerPage
+            const endIndex = startIndex + entriesPerPage
+            const pageEntries = changelog.slice(startIndex, endIndex)
+            
+            pageEntries.forEach((release, index) => {
+              const displayNumber = index + 1
+              addLine(`${displayNumber}. ${release.version} : ${release.title}`, 'normal', false, `${displayNumber}`)
+            })
+            
+            addLine("")
+            
+            if (totalPages > 1) {
+              addLine(createBorder('', '─'), 'separator')
+              addLine(`Page ${prevPage} of ${totalPages} • ${changelog.length} total releases`, 'ai-response')
+              addLine("")
+              
+              if (prevPage < totalPages) {
+                addLine("n. next page", 'separator', false, 'n')
+              }
+              if (prevPage > 1) {
+                addLine("p. previous page", 'separator', false, 'p')
+              }
+              addLine("")
+            }
+            
+            addLine("Select a number to view detailed release notes.")
+            addLine("")
+            addLine("x. back to help", 'separator', false, 'x')
+            addLine("")
+            addLine(createBorder(), 'normal')
+            addLine("")
+          } else {
+            await typeResponse(`Already on the first page.`, false)
+          }
+        } else if (currentNarrationUrls.length === 0) {
           await typeResponse(`No narration available to pause. Use 'n' to start narration first.`, false)
         } else {
           if (isNarrationPlaying) {
@@ -1437,6 +1762,9 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
           } else if (currentMenu === 'about') {
             // Go back to main menu from about
             processCommand('/menu')
+          } else if (currentMenu === 'changelog') {
+            // Go back to changelog list from release detail
+            processCommand('/changelog')
           }
         } else {
           // If in a menu listing
@@ -1445,8 +1773,8 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
             setCurrentBook('')
             setChaptersLoaded(false)
             processCommand('/books')
-          } else if (currentMenu === 'help' || currentMenu === 'contact') {
-            // Back to previous menu from help or contact
+          } else if (currentMenu === 'help' || currentMenu === 'contact' || currentMenu === 'changelog') {
+            // Back to previous menu from help, contact, or changelog
             if (previousMenu === 'journals') {
               processCommand('/journal')
             } else if (previousMenu === 'books') {
@@ -1457,6 +1785,8 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
               processCommand('/about')
             } else if (previousMenu === 'help') {
               processCommand('/help')
+            } else if (previousMenu === 'changelog') {
+              processCommand('/changelog')
             } else {
               processCommand('/menu')
             }
@@ -1833,7 +2163,7 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
                 )}
               </div>
               
-              {(isViewingContent || currentMenu === 'about' || currentMenu === 'help' || currentMenu === 'contact') && (
+              {(isViewingContent || currentMenu === 'about' || currentMenu === 'help' || currentMenu === 'contact' || currentMenu === 'changelog') && (
                 <div className="text-terminal-green-dim text-sm ml-8 flex items-center gap-4">
                   <span className="text-terminal-amber opacity-60 italic">x. back</span>
                   {currentContent && currentNarrationUrls.length === 0 && (
@@ -1869,7 +2199,7 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
 
       {/* Status bar */}
       <div className="absolute bottom-0 left-0 right-0 bg-terminal-green text-black p-1 flex justify-between text-sm z-50">
-        <span className="hidden md:block">DIGITAL CONSCIOUSNESS v3.7.42</span>
+        <span className="hidden md:block">DIGITAL CONSCIOUSNESS {changelog[0]?.version ? `v${changelog[0].version}` : 'v3.7.42'}</span>
         <span className="md:block flex-1 text-center md:text-left md:flex-initial">
           COHERENCEISM.INFO {hasConversationContext && <span className="ml-2">• MEMORY: ACTIVE</span>}
         </span>
