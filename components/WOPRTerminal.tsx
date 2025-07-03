@@ -837,6 +837,7 @@ const WOPRTerminal = () => {
       case '/HELP':
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
+        changeMenu('help')
         await typeResponse(`Available commands:
 /menu     - Return to main menu.
 /help     - Display available commands and instructions.
@@ -1443,6 +1444,19 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
             setCurrentBook('')
             setChaptersLoaded(false)
             processCommand('/books')
+          } else if (currentMenu === 'help') {
+            // Back to previous menu from help
+            if (previousMenu === 'journals') {
+              processCommand('/journal')
+            } else if (previousMenu === 'books') {
+              processCommand('/books')
+            } else if (previousMenu === 'music') {
+              processCommand('/music')
+            } else if (previousMenu === 'about') {
+              processCommand('/about')
+            } else {
+              processCommand('/menu')
+            }
           } else if (currentMenu === 'journals' || currentMenu === 'books' || currentMenu === 'music') {
             // Back to main menu from top-level menus
             processCommand('/menu')
@@ -1816,7 +1830,7 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
                 )}
               </div>
               
-              {(isViewingContent || currentMenu === 'about') && (
+              {(isViewingContent || currentMenu === 'about' || currentMenu === 'help') && (
                 <div className="text-terminal-green-dim text-sm ml-8 flex items-center gap-4">
                   <span className="text-terminal-amber opacity-60 italic">x. back</span>
                   {currentContent && currentNarrationUrls.length === 0 && (
