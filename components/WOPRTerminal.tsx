@@ -1330,6 +1330,28 @@ ${release.fullDescription}`
             playBackgroundMusic(track.sunoUrl)
             await typeResponse(`♪ Opening: ${track.title} playlist in new tab...`, false)
           }
+        } else if (currentMenu === 'changelog') {
+          // Show detailed release notes for selected entry
+          const entriesPerPage = 5
+          const pageOffset = (changelogPage - 1) * entriesPerPage
+          const actualIndex = pageOffset + entryIndex
+          
+          if (changelog.length > actualIndex && actualIndex >= pageOffset && entryIndex < entriesPerPage) {
+            const release = changelog[actualIndex]
+            setTerminalLines([])
+            await new Promise(resolve => setTimeout(resolve, 100))
+            
+            const releaseNotes = `# v${release.version} - ${release.title}
+
+**Release Date:** ${release.date}  
+**Pull Request:** #${release.prNumber}
+
+${release.fullDescription}`
+            
+            addMarkdownContent(releaseNotes, `Release Notes: v${release.version}`, undefined, 'release', `v${release.version}`)
+          } else {
+            await typeResponse(`Release notes not available.`, false)
+          }
         }
         }
         break
@@ -1378,6 +1400,28 @@ ${release.fullDescription}`
               const track = musicTracks[entryIndex]
               playBackgroundMusic(track.sunoUrl)
               await typeResponse(`♪ Opening: ${track.title} playlist in new tab...`, false)
+            }
+          } else if (currentMenu === 'changelog') {
+            // Show detailed release notes for selected entry
+            const entriesPerPage = 5
+            const pageOffset = (changelogPage - 1) * entriesPerPage
+            const actualIndex = pageOffset + entryIndex
+            
+            if (changelog.length > actualIndex && actualIndex >= pageOffset && entryIndex < entriesPerPage) {
+              const release = changelog[actualIndex]
+              setTerminalLines([])
+              await new Promise(resolve => setTimeout(resolve, 100))
+              
+              const releaseNotes = `# v${release.version} - ${release.title}
+
+**Release Date:** ${release.date}  
+**Pull Request:** #${release.prNumber}
+
+${release.fullDescription}`
+              
+              addMarkdownContent(releaseNotes, `Release Notes: v${release.version}`, undefined, 'release', `v${release.version}`)
+            } else {
+              await typeResponse(`Release notes not available.`, false)
             }
           }
         }
