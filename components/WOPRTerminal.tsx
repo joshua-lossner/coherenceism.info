@@ -1082,9 +1082,9 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
           pageEntries.forEach((release, index) => {
             const displayNumber = index + 1
             addLine(`${displayNumber}. ${release.title}`, 'normal', false, `${displayNumber}`)
-            addLine(`   ${release.description}`, 'ai-response')
-            addLine("")
           })
+          
+          addLine("")
           
           // Pagination info and controls
           if (totalPages > 1) {
