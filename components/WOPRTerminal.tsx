@@ -317,6 +317,28 @@ const WOPRTerminal = () => {
     }
   }, [booksLoaded])
 
+  // Fetch changelog data on component mount for footer version
+  useEffect(() => {
+    const fetchChangelogForVersion = async () => {
+      if (!changelogLoaded) {
+        try {
+          const response = await fetch('/api/changelog')
+          if (response.ok) {
+            const changelogData = await response.json()
+            if (Array.isArray(changelogData) && changelogData.length > 0) {
+              setChangelog(changelogData)
+              setChangelogLoaded(true)
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching changelog for version:', error)
+        }
+      }
+    }
+    
+    fetchChangelogForVersion()
+  }, [changelogLoaded])
+
   // Client-side hydration and mobile detection
   useEffect(() => {
     // Mark as client-side and check mobile
