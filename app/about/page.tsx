@@ -1,8 +1,22 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function AboutPage() {
+  const router = useRouter()
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'x' || event.key === 'X') {
+        router.push('/')
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [router])
   return (
     <div className="h-screen bg-black text-terminal-green overflow-y-auto">
       <div className="max-w-2xl mx-auto p-4 pb-8">
