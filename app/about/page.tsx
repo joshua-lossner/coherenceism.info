@@ -10,12 +10,15 @@ export default function AboutPage() {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'x' || event.key === 'X') {
+        event.preventDefault()
+        event.stopPropagation()
         router.push('/')
       }
     }
 
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
+    // Add event listener with capture to intercept before other handlers
+    window.addEventListener('keydown', handleKeyDown, true)
+    return () => window.removeEventListener('keydown', handleKeyDown, true)
   }, [router])
   return (
     <div className="h-screen bg-black text-terminal-green overflow-y-auto">
