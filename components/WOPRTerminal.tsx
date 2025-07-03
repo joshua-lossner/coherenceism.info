@@ -592,16 +592,6 @@ const WOPRTerminal = () => {
     addLine(createBorder('', '═'), 'separator')
     addLine("")
     
-    // Add separator and date header
-    addLine(createBorder('', '─'), 'separator')
-    if (date) {
-      addLine(`Date: ${date}`, 'normal')
-      if (pageInfo && pageInfo.total > 1) {
-        addLine(`Page ${pageInfo.current} of ${pageInfo.total}`, 'normal')
-      }
-      addLine(createBorder(), 'separator')
-      addLine("", 'normal')
-    }
     // Add markdown content
     addLine(content, 'markdown', true)
     addLine("", 'normal')
