@@ -1068,13 +1068,7 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
         } else {
           // Display up to 10 most recent releases
           changelogData.slice(0, 10).forEach((release, index) => {
-            // Condense the title by truncating if too long
-            const maxTitleLength = 50
-            const condensedTitle = release.title.length > maxTitleLength 
-              ? release.title.substring(0, maxTitleLength) + '...'
-              : release.title
-            
-            addLine(`${index + 1}. v${release.version} - ${condensedTitle}`, 'normal', false, `${index + 1}`)
+            addLine(`${index + 1}. ${release.title}`, 'normal', false, `${index + 1}`)
             addLine(`   ${release.description}`, 'ai-response')
             addLine("")
           })
