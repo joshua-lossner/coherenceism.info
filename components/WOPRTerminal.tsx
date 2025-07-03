@@ -46,6 +46,7 @@ const WOPRTerminal = () => {
   const [currentContent, setCurrentContent] = useState<{text: string, type: string, id: string} | null>(null)
   const [changelog, setChangelog] = useState<any[]>([])
   const [changelogLoaded, setChangelogLoaded] = useState(false)
+  const [changelogPage, setChangelogPage] = useState(1)
   const terminalRef = useRef<HTMLDivElement>(null)
   const hiddenInputRef = useRef<HTMLInputElement>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -1015,6 +1016,10 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('changelog')
+        // Reset to page 1 when navigating to changelog fresh
+        if (previousMenu !== 'changelog') {
+          setChangelogPage(1)
+        }
         
         // Fetch changelog data if not loaded
         let changelogData = changelog
@@ -1066,12 +1071,35 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
           addLine("• Connection issues", 'ai-response')
           addLine("")
         } else {
-          // Display up to 10 most recent releases
-          changelogData.slice(0, 10).forEach((release, index) => {
-            addLine(`${index + 1}. ${release.title}`, 'normal', false, `${index + 1}`)
+          // Pagination logic
+          const entriesPerPage = 5
+          const totalPages = Math.ceil(changelogData.length / entriesPerPage)
+          const startIndex = (changelogPage - 1) * entriesPerPage
+          const endIndex = startIndex + entriesPerPage
+          const pageEntries = changelogData.slice(startIndex, endIndex)
+          
+          // Display current page of releases
+          pageEntries.forEach((release, index) => {
+            const displayNumber = index + 1
+            addLine(`${displayNumber}. ${release.title}`, 'normal', false, `${displayNumber}`)
             addLine(`   ${release.description}`, 'ai-response')
             addLine("")
           })
+          
+          // Pagination info and controls
+          if (totalPages > 1) {
+            addLine(createBorder('', '─'), 'separator')
+            addLine(`Page ${changelogPage} of ${totalPages} • ${changelogData.length} total releases`, 'ai-response')
+            addLine("")
+            
+            if (changelogPage < totalPages) {
+              addLine("n. next page", 'separator', false, 'n')
+            }
+            if (changelogPage > 1) {
+              addLine("p. previous page", 'separator', false, 'p')
+            }
+            addLine("")
+          }
           
           addLine("Select a number to view detailed release notes.")
           addLine("")
@@ -1139,10 +1167,13 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
           playBackgroundMusic(track.sunoUrl)
           await typeResponse(`♪ Opening: ${track.title} playlist in new tab...`, false)
         } else if (currentMenu === 'changelog') {
-          // Show detailed release notes for first entry
-          const entryIndex = 0
-          if (changelog.length > entryIndex) {
-            const release = changelog[entryIndex]
+          // Show detailed release notes for selected entry
+          const entriesPerPage = 5
+          const pageOffset = (changelogPage - 1) * entriesPerPage
+          const actualIndex = pageOffset + 0 // First entry on current page
+          
+          if (changelog.length > actualIndex) {
+            const release = changelog[actualIndex]
             setTerminalLines([])
             await new Promise(resolve => setTimeout(resolve, 100))
             
@@ -1209,9 +1240,12 @@ ${release.fullDescription}`
           await typeResponse(`♪ Opening: ${track.title} playlist in new tab...`, false)
         } else if (currentMenu === 'changelog') {
           // Show detailed release notes for second entry
-          const entryIndex = 1
-          if (changelog.length > entryIndex) {
-            const release = changelog[entryIndex]
+          const entriesPerPage = 5
+          const pageOffset = (changelogPage - 1) * entriesPerPage
+          const actualIndex = pageOffset + 1 // Second entry on current page
+          
+          if (changelog.length > actualIndex) {
+            const release = changelog[actualIndex]
             setTerminalLines([])
             await new Promise(resolve => setTimeout(resolve, 100))
             
@@ -1395,8 +1429,12 @@ ${release.fullDescription}`
           }
         } else if (currentMenu === 'changelog') {
           // Show detailed release notes for selected entry
-          if (changelog.length > entryIndex && entryIndex >= 0) {
-            const release = changelog[entryIndex]
+          const entriesPerPage = 5
+          const pageOffset = (changelogPage - 1) * entriesPerPage
+          const actualIndex = pageOffset + entryIndex
+          
+          if (changelog.length > actualIndex && actualIndex >= pageOffset && entryIndex < entriesPerPage) {
+            const release = changelog[actualIndex]
             setTerminalLines([])
             await new Promise(resolve => setTimeout(resolve, 100))
             
@@ -1512,7 +1550,17 @@ ${release.fullDescription}`
       case '/NARRATE':
       case 'SPEAK':
       case '/SPEAK':
-        if (!currentContent) {
+        if (currentMenu === 'changelog' && !isViewingContent) {
+          // Handle next page in changelog
+          const entriesPerPage = 5
+          const totalPages = Math.ceil(changelog.length / entriesPerPage)
+          if (changelogPage < totalPages) {
+            setChangelogPage(changelogPage + 1)
+            processCommand('/changelog')
+          } else {
+            await typeResponse(`Already on the last page.`, false)
+          }
+        } else if (!currentContent) {
           await typeResponse(`No content available to narrate. Navigate to a journal entry or book chapter first.`, false)
         } else {
           const audioUrl = await generateNarration(
@@ -1530,7 +1578,15 @@ ${release.fullDescription}`
       case 'P.':
       case 'PAUSE':
       case '/PAUSE':
-        if (currentNarrationUrls.length === 0) {
+        if (currentMenu === 'changelog' && !isViewingContent) {
+          // Handle previous page in changelog
+          if (changelogPage > 1) {
+            setChangelogPage(changelogPage - 1)
+            processCommand('/changelog')
+          } else {
+            await typeResponse(`Already on the first page.`, false)
+          }
+        } else if (currentNarrationUrls.length === 0) {
           await typeResponse(`No narration available to pause. Use 'n' to start narration first.`, false)
         } else {
           if (isNarrationPlaying) {
