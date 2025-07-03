@@ -44,6 +44,8 @@ const WOPRTerminal = () => {
   const [currentChunkIndex, setCurrentChunkIndex] = useState(0)
   const [isNarrationPlaying, setIsNarrationPlaying] = useState(false)
   const [currentContent, setCurrentContent] = useState<{text: string, type: string, id: string} | null>(null)
+  const [changelog, setChangelog] = useState<any[]>([])
+  const [changelogLoaded, setChangelogLoaded] = useState(false)
   const terminalRef = useRef<HTMLDivElement>(null)
   const hiddenInputRef = useRef<HTMLInputElement>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -842,6 +844,7 @@ const WOPRTerminal = () => {
 /menu     - Return to main menu.
 /help     - Display available commands and instructions.
 /contact  - Information for reaching out.
+/changelog- View release notes and version history.
 /random   - Receive a random Byte-generated thought or humorous quip.
 /voice    - Toggle audio output (Byte speaks responses aloud).
 /clear    - Clear terminal screen.
@@ -1007,6 +1010,57 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
         addLine("")
         break
 
+      case 'CHANGELOG':
+      case '/CHANGELOG':
+        setTerminalLines([])
+        await new Promise(resolve => setTimeout(resolve, 100))
+        changeMenu('changelog')
+        
+        // Fetch changelog data if not loaded
+        if (!changelogLoaded) {
+          setIsProcessing(true)
+          try {
+            const response = await fetch('/api/changelog')
+            const changelogData = await response.json()
+            
+            if (response.ok && Array.isArray(changelogData)) {
+              setChangelog(changelogData)
+              setChangelogLoaded(true)
+            } else {
+              await typeResponse(`Failed to load changelog. Please try again later.`, false)
+              setIsProcessing(false)
+              break
+            }
+          } catch (error) {
+            console.error('Changelog fetch error:', error)
+            await typeResponse(`Connection error. Unable to fetch changelog data.`, false)
+            setIsProcessing(false)
+            break
+          }
+          setIsProcessing(false)
+        }
+        
+        // Display changelog
+        addLine(createBorder('RELEASE NOTES & VERSION HISTORY'), 'normal')
+        addLine("")
+        addLine("Recent releases and updates to the WOPR Coherence Archive:", 'normal')
+        addLine("")
+        
+        // Display up to 10 most recent releases
+        changelog.slice(0, 10).forEach((release, index) => {
+          addLine(`${index + 1}. v${release.version} - ${release.title}`, 'normal', false, `${index + 1}`)
+          addLine(`   ${release.description}`, 'ai-response')
+          addLine("")
+        })
+        
+        addLine("x. back to help", 'separator', false, 'x')
+        addLine("")
+        addLine(createBorder(), 'normal')
+        addLine("")
+        addLine("Select a number to view detailed release notes.")
+        addLine("")
+        break
+
       case 'RANDOM':
       case '/RANDOM':
         setIsProcessing(true)
@@ -1062,6 +1116,26 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
           const track = musicTracks[0]
           playBackgroundMusic(track.sunoUrl)
           await typeResponse(`♪ Opening: ${track.title} playlist in new tab...`, false)
+        } else if (currentMenu === 'changelog') {
+          // Show detailed release notes for first entry
+          const entryIndex = 0
+          if (changelog.length > entryIndex) {
+            const release = changelog[entryIndex]
+            setTerminalLines([])
+            await new Promise(resolve => setTimeout(resolve, 100))
+            
+            // Format the full description as markdown
+            const releaseNotes = `# v${release.version} - ${release.title}
+
+**Release Date:** ${release.date}  
+**Pull Request:** #${release.prNumber}
+
+${release.fullDescription}`
+            
+            addMarkdownContent(releaseNotes, `Release Notes: v${release.version}`, undefined, 'release', `v${release.version}`)
+          } else {
+            await typeResponse(`Release notes not available.`, false)
+          }
         }
         break
 
@@ -1111,6 +1185,25 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
           const track = musicTracks[1]
           playBackgroundMusic(track.sunoUrl)
           await typeResponse(`♪ Opening: ${track.title} playlist in new tab...`, false)
+        } else if (currentMenu === 'changelog') {
+          // Show detailed release notes for second entry
+          const entryIndex = 1
+          if (changelog.length > entryIndex) {
+            const release = changelog[entryIndex]
+            setTerminalLines([])
+            await new Promise(resolve => setTimeout(resolve, 100))
+            
+            const releaseNotes = `# v${release.version} - ${release.title}
+
+**Release Date:** ${release.date}  
+**Pull Request:** #${release.prNumber}
+
+${release.fullDescription}`
+            
+            addMarkdownContent(releaseNotes, `Release Notes: v${release.version}`, undefined, 'release', `v${release.version}`)
+          } else {
+            await typeResponse(`Release notes not available.`, false)
+          }
         }
         break
 
@@ -1277,6 +1370,24 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
             const track = musicTracks[entryIndex]
             playBackgroundMusic(track.sunoUrl)
             await typeResponse(`♪ Opening: ${track.title} playlist in new tab...`, false)
+          }
+        } else if (currentMenu === 'changelog') {
+          // Show detailed release notes for selected entry
+          if (changelog.length > entryIndex && entryIndex >= 0) {
+            const release = changelog[entryIndex]
+            setTerminalLines([])
+            await new Promise(resolve => setTimeout(resolve, 100))
+            
+            const releaseNotes = `# v${release.version} - ${release.title}
+
+**Release Date:** ${release.date}  
+**Pull Request:** #${release.prNumber}
+
+${release.fullDescription}`
+            
+            addMarkdownContent(releaseNotes, `Release Notes: v${release.version}`, undefined, 'release', `v${release.version}`)
+          } else {
+            await typeResponse(`Release notes not available.`, false)
           }
         }
         break
@@ -1445,8 +1556,8 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
             setCurrentBook('')
             setChaptersLoaded(false)
             processCommand('/books')
-          } else if (currentMenu === 'help' || currentMenu === 'contact') {
-            // Back to previous menu from help or contact
+          } else if (currentMenu === 'help' || currentMenu === 'contact' || currentMenu === 'changelog') {
+            // Back to previous menu from help, contact, or changelog
             if (previousMenu === 'journals') {
               processCommand('/journal')
             } else if (previousMenu === 'books') {
@@ -1457,6 +1568,8 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
               processCommand('/about')
             } else if (previousMenu === 'help') {
               processCommand('/help')
+            } else if (previousMenu === 'changelog') {
+              processCommand('/changelog')
             } else {
               processCommand('/menu')
             }
@@ -1833,7 +1946,7 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
                 )}
               </div>
               
-              {(isViewingContent || currentMenu === 'about' || currentMenu === 'help' || currentMenu === 'contact') && (
+              {(isViewingContent || currentMenu === 'about' || currentMenu === 'help' || currentMenu === 'contact' || currentMenu === 'changelog') && (
                 <div className="text-terminal-green-dim text-sm ml-8 flex items-center gap-4">
                   <span className="text-terminal-amber opacity-60 italic">x. back</span>
                   {currentContent && currentNarrationUrls.length === 0 && (
