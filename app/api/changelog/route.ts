@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     console.log('Fetching from GitHub API...')
     // Fetch merged PRs from GitHub
     const response = await fetch(
-      'https://api.github.com/repos/joshua-lossner/coherenceism.info/pulls?state=closed&sort=updated&direction=desc&per_page=50',
+      'https://api.github.com/repos/joshua-lossner/coherenceism.info/pulls?state=closed&per_page=100',
       {
         headers: {
           'Accept': 'application/vnd.github.v3+json',
@@ -103,6 +103,13 @@ export async function GET(request: NextRequest) {
         description: description.substring(0, 150) + (description.length > 150 ? '...' : ''),
         fullDescription: pr.body || 'No description available.'
       }
+    })
+
+    // Sort by merge date descending (most recent first)
+    changelog.sort((a, b) => {
+      const dateA = new Date(a.date).getTime()
+      const dateB = new Date(b.date).getTime()
+      return dateB - dateA
     })
 
     console.log('Generated changelog entries:', changelog.length)
