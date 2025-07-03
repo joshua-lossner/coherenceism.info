@@ -262,6 +262,17 @@ const WOPRTerminal = () => {
           const currentBookData = books.find(book => book.slug === currentBook)
           const bookTitle = currentBookData ? currentBookData.title : 'Book'
           
+          // Add banner
+          addLine("")
+          addLine(createBorder('', '═'), 'separator')
+          addLine("")
+          addLine("C O H E R E N C E I S M . I N F O", 'ascii-art')
+          addLine("")
+          addLine("TAGLINE_PLACEHOLDER", 'tagline')
+          addLine("")
+          addLine(createBorder('', '═'), 'separator')
+          addLine("")
+          
           addLine(createBorder(`${bookTitle.toUpperCase()} - CHAPTERS`), 'normal')
           addLine("")
           validChapters.forEach((chapter, index) => {
@@ -570,6 +581,17 @@ const WOPRTerminal = () => {
       })
     }
     
+    // Add banner first
+    addLine("")
+    addLine(createBorder('', '═'), 'separator')
+    addLine("")
+    addLine("C O H E R E N C E I S M . I N F O", 'ascii-art')
+    addLine("")
+    addLine("TAGLINE_PLACEHOLDER", 'tagline')
+    addLine("")
+    addLine(createBorder('', '═'), 'separator')
+    addLine("")
+    
     // Add separator and date header
     addLine(createBorder('', '─'), 'separator')
     if (date) {
@@ -863,6 +885,16 @@ const WOPRTerminal = () => {
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('help')
+        // Add banner
+        addLine("")
+        addLine(createBorder('', '═'), 'separator')
+        addLine("")
+        addLine("C O H E R E N C E I S M . I N F O", 'ascii-art')
+        addLine("")
+        addLine("TAGLINE_PLACEHOLDER", 'tagline')
+        addLine("")
+        addLine(createBorder('', '═'), 'separator')
+        addLine("")
         await typeResponse(`Available commands:
 /menu     - Return to main menu.
 /help     - Display available commands and instructions.
@@ -892,7 +924,17 @@ const WOPRTerminal = () => {
           const noJournalsContent = `No journal entries found. Repository may be empty or inaccessible.`
           await typeResponse(noJournalsContent, false)
         } else {
-          addLine(createBorder('JOURNAL ENTRIES'), 'normal')
+          // Add banner
+        addLine("")
+        addLine(createBorder('', '═'), 'separator')
+        addLine("")
+        addLine("C O H E R E N C E I S M . I N F O", 'ascii-art')
+        addLine("")
+        addLine("TAGLINE_PLACEHOLDER", 'tagline')
+        addLine("")
+        addLine(createBorder('', '═'), 'separator')
+        addLine("")
+        addLine(createBorder('JOURNAL ENTRIES'), 'normal')
           addLine("")
           journals.slice(0, 10).forEach((journal, index) => {
             const title = journal.title
@@ -929,6 +971,16 @@ const WOPRTerminal = () => {
           const noBooksContent = `No books found. Repository may be empty or inaccessible.`
           await typeResponse(noBooksContent, false)
         } else {
+          // Add banner
+          addLine("")
+          addLine(createBorder('', '═'), 'separator')
+          addLine("")
+          addLine("C O H E R E N C E I S M . I N F O", 'ascii-art')
+          addLine("")
+          addLine("TAGLINE_PLACEHOLDER", 'tagline')
+          addLine("")
+          addLine(createBorder('', '═'), 'separator')
+          addLine("")
           addLine(createBorder('COHERENCEISM TEXTS'), 'normal')
           addLine("")
           books.forEach((book, index) => {
@@ -952,6 +1004,16 @@ const WOPRTerminal = () => {
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('music')
+        // Add banner
+        addLine("")
+        addLine(createBorder('', '═'), 'separator')
+        addLine("")
+        addLine("C O H E R E N C E I S M . I N F O", 'ascii-art')
+        addLine("")
+        addLine("TAGLINE_PLACEHOLDER", 'tagline')
+        addLine("")
+        addLine(createBorder('', '═'), 'separator')
+        addLine("")
         addLine(createBorder(`BYTE'S SONIC NEURAL NETWORKS ${isMusicPlaying ? '♪ [PLAYLIST OPEN]' : ''}`), 'normal')
         addLine("")
         addLine("1. Black Rain on Rusted Streets", 'normal', false, '1')
@@ -1015,6 +1077,16 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('contact')
+        // Add banner
+        addLine("")
+        addLine(createBorder('', '═'), 'separator')
+        addLine("")
+        addLine("C O H E R E N C E I S M . I N F O", 'ascii-art')
+        addLine("")
+        addLine("TAGLINE_PLACEHOLDER", 'tagline')
+        addLine("")
+        addLine(createBorder('', '═'), 'separator')
+        addLine("")
         addLine("────────────────────────────────────────", 'separator')
         addLine("    📡 CONTACT & CONNECTION PROTOCOLS", 'ai-response')
         addLine("────────────────────────────────────────", 'separator')
