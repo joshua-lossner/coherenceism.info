@@ -1475,6 +1475,27 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (!systemReady || isProcessing) return
 
+    // Handle immediate commands when viewing content
+    if (isViewingContent && (e.key === 'x' || e.key === 'X')) {
+      e.preventDefault()
+      processCommand('x')
+      return
+    }
+
+    // Handle 'n' for narration when viewing content
+    if (isViewingContent && currentContent && (e.key === 'n' || e.key === 'N')) {
+      e.preventDefault()
+      processCommand('n')
+      return
+    }
+
+    // Handle 'p' for pause/resume when narration is available
+    if (isViewingContent && currentNarrationUrls.length > 0 && (e.key === 'p' || e.key === 'P')) {
+      e.preventDefault()
+      processCommand('p')
+      return
+    }
+
     if (e.key === 'Enter') {
       if (currentInput.trim()) {
         processCommand(currentInput)
