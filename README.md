@@ -1,4 +1,4 @@
-# WOPR COHERENCE ARCHIVE v3.7.42
+# WOPR COHERENCE ARCHIVE
 
 A WarGames-inspired terminal interface for exploring Coherenceism philosophy, powered by OpenAI's GPT-4.
 
