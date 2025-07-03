@@ -69,9 +69,12 @@ export async function GET(request: NextRequest) {
     const prs: GitHubPR[] = await response.json()
     console.log('Total PRs fetched:', prs.length)
     
-    // Filter merged PRs and convert to changelog entries
-    const mergedPrs = prs.filter(pr => pr.merged_at !== null)
-    console.log('Merged PRs found:', mergedPrs.length)
+    // Filter merged PRs to main branch only
+    const mergedPrs = prs.filter(pr => 
+      pr.merged_at !== null && 
+      pr.base.ref === 'main'
+    )
+    console.log('Merged PRs to main found:', mergedPrs.length)
     
     if (mergedPrs.length === 0) {
       console.log('No merged PRs found. Sample PRs:', prs.slice(0, 3).map(pr => ({

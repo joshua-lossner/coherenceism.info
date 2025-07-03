@@ -1555,8 +1555,50 @@ ${release.fullDescription}`
           const entriesPerPage = 5
           const totalPages = Math.ceil(changelog.length / entriesPerPage)
           if (changelogPage < totalPages) {
-            setChangelogPage(changelogPage + 1)
-            processCommand('/changelog')
+            const nextPage = changelogPage + 1
+            setChangelogPage(nextPage)
+            
+            // Manually refresh the display without re-fetching
+            setTerminalLines([])
+            await new Promise(resolve => setTimeout(resolve, 100))
+            
+            // Redisplay changelog with new page
+            addLine(createBorder('RELEASE NOTES & VERSION HISTORY'), 'normal')
+            addLine("")
+            addLine("Recent releases and updates to the WOPR Coherence Archive:", 'normal')
+            addLine("")
+            
+            const startIndex = (nextPage - 1) * entriesPerPage
+            const endIndex = startIndex + entriesPerPage
+            const pageEntries = changelog.slice(startIndex, endIndex)
+            
+            pageEntries.forEach((release, index) => {
+              const displayNumber = index + 1
+              addLine(`${displayNumber}. ${release.title}`, 'normal', false, `${displayNumber}`)
+            })
+            
+            addLine("")
+            
+            if (totalPages > 1) {
+              addLine(createBorder('', '─'), 'separator')
+              addLine(`Page ${nextPage} of ${totalPages} • ${changelog.length} total releases`, 'ai-response')
+              addLine("")
+              
+              if (nextPage < totalPages) {
+                addLine("n. next page", 'separator', false, 'n')
+              }
+              if (nextPage > 1) {
+                addLine("p. previous page", 'separator', false, 'p')
+              }
+              addLine("")
+            }
+            
+            addLine("Select a number to view detailed release notes.")
+            addLine("")
+            addLine("x. back to help", 'separator', false, 'x')
+            addLine("")
+            addLine(createBorder(), 'normal')
+            addLine("")
           } else {
             await typeResponse(`Already on the last page.`, false)
           }
@@ -1580,9 +1622,53 @@ ${release.fullDescription}`
       case '/PAUSE':
         if (currentMenu === 'changelog' && !isViewingContent) {
           // Handle previous page in changelog
+          const entriesPerPage = 5
+          const totalPages = Math.ceil(changelog.length / entriesPerPage)
           if (changelogPage > 1) {
-            setChangelogPage(changelogPage - 1)
-            processCommand('/changelog')
+            const prevPage = changelogPage - 1
+            setChangelogPage(prevPage)
+            
+            // Manually refresh the display without re-fetching
+            setTerminalLines([])
+            await new Promise(resolve => setTimeout(resolve, 100))
+            
+            // Redisplay changelog with new page
+            addLine(createBorder('RELEASE NOTES & VERSION HISTORY'), 'normal')
+            addLine("")
+            addLine("Recent releases and updates to the WOPR Coherence Archive:", 'normal')
+            addLine("")
+            
+            const startIndex = (prevPage - 1) * entriesPerPage
+            const endIndex = startIndex + entriesPerPage
+            const pageEntries = changelog.slice(startIndex, endIndex)
+            
+            pageEntries.forEach((release, index) => {
+              const displayNumber = index + 1
+              addLine(`${displayNumber}. ${release.title}`, 'normal', false, `${displayNumber}`)
+            })
+            
+            addLine("")
+            
+            if (totalPages > 1) {
+              addLine(createBorder('', '─'), 'separator')
+              addLine(`Page ${prevPage} of ${totalPages} • ${changelog.length} total releases`, 'ai-response')
+              addLine("")
+              
+              if (prevPage < totalPages) {
+                addLine("n. next page", 'separator', false, 'n')
+              }
+              if (prevPage > 1) {
+                addLine("p. previous page", 'separator', false, 'p')
+              }
+              addLine("")
+            }
+            
+            addLine("Select a number to view detailed release notes.")
+            addLine("")
+            addLine("x. back to help", 'separator', false, 'x')
+            addLine("")
+            addLine(createBorder(), 'normal')
+            addLine("")
           } else {
             await typeResponse(`Already on the first page.`, false)
           }
