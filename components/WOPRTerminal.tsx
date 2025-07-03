@@ -1411,11 +1411,15 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
       case 'x':
       case 'X':
         // Go back to previous menu/view
-        if (isViewingContent) {
-          // If viewing content (journal entry, chapter, etc.), go back to the listing
+        if (isViewingContent || currentMenu === 'about') {
+          // If viewing content (journal entry, chapter, about page, etc.), go back to the listing
           setIsViewingContent(false)
           setCurrentPage(1)
           setTotalPages(1)
+          setCurrentContent(null)
+          setCurrentNarrationUrls([])
+          setCurrentChunkIndex(0)
+          stopNarration()
           
           if (currentMenu === 'journals') {
             // Go back to journal list
@@ -1428,6 +1432,9 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
           } else if (currentMenu === 'books') {
             // Go back to books list
             processCommand('/books')
+          } else if (currentMenu === 'about') {
+            // Go back to main menu from about
+            processCommand('/menu')
           }
         } else {
           // If in a menu listing
@@ -1436,7 +1443,7 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
             setCurrentBook('')
             setChaptersLoaded(false)
             processCommand('/books')
-          } else if (currentMenu === 'journals' || currentMenu === 'books' || currentMenu === 'music' || currentMenu === 'about') {
+          } else if (currentMenu === 'journals' || currentMenu === 'books' || currentMenu === 'music') {
             // Back to main menu from top-level menus
             processCommand('/menu')
           }
@@ -1475,8 +1482,8 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (!systemReady || isProcessing) return
 
-    // Handle immediate commands when viewing content
-    if (isViewingContent && (e.key === 'x' || e.key === 'X')) {
+    // Handle immediate commands when viewing content or in about menu
+    if ((isViewingContent || currentMenu === 'about') && (e.key === 'x' || e.key === 'X')) {
       e.preventDefault()
       processCommand('x')
       return
@@ -1830,7 +1837,7 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
                 )}
               </div>
               
-              {isViewingContent && (
+              {(isViewingContent || currentMenu === 'about') && (
                 <div className="text-terminal-green-dim text-sm ml-8 flex items-center gap-4">
                   <span className="text-terminal-amber opacity-60 italic">x. back</span>
                   {currentContent && currentNarrationUrls.length === 0 && (
