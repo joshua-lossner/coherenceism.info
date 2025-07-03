@@ -988,6 +988,7 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
       case '/CONTACT':
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
+        changeMenu('contact')
         addLine("────────────────────────────────────────", 'separator')
         addLine("    📡 CONTACT & CONNECTION PROTOCOLS", 'ai-response')
         addLine("────────────────────────────────────────", 'separator')
@@ -1444,8 +1445,8 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
             setCurrentBook('')
             setChaptersLoaded(false)
             processCommand('/books')
-          } else if (currentMenu === 'help') {
-            // Back to previous menu from help
+          } else if (currentMenu === 'help' || currentMenu === 'contact') {
+            // Back to previous menu from help or contact
             if (previousMenu === 'journals') {
               processCommand('/journal')
             } else if (previousMenu === 'books') {
@@ -1454,6 +1455,8 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
               processCommand('/music')
             } else if (previousMenu === 'about') {
               processCommand('/about')
+            } else if (previousMenu === 'help') {
+              processCommand('/help')
             } else {
               processCommand('/menu')
             }
@@ -1830,7 +1833,7 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
                 )}
               </div>
               
-              {(isViewingContent || currentMenu === 'about' || currentMenu === 'help') && (
+              {(isViewingContent || currentMenu === 'about' || currentMenu === 'help' || currentMenu === 'contact') && (
                 <div className="text-terminal-green-dim text-sm ml-8 flex items-center gap-4">
                   <span className="text-terminal-amber opacity-60 italic">x. back</span>
                   {currentContent && currentNarrationUrls.length === 0 && (
