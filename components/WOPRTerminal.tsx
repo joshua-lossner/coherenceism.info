@@ -1149,6 +1149,16 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
         }
         
         // Display changelog - use the fresh data, not the state variable
+        // Add banner
+        addLine("")
+        addLine(createBorder('', '═'), 'separator')
+        addLine("")
+        addLine("C O H E R E N C E I S M . I N F O", 'ascii-art')
+        addLine("")
+        addLine("TAGLINE_PLACEHOLDER", 'tagline')
+        addLine("")
+        addLine(createBorder('', '═'), 'separator')
+        addLine("")
         addLine(createBorder('RELEASE NOTES & VERSION HISTORY'), 'normal')
         addLine("")
         addLine("Recent releases and updates to the WOPR Coherence Archive:", 'normal')
@@ -1697,6 +1707,16 @@ ${release.fullDescription}`
             await new Promise(resolve => setTimeout(resolve, 100))
             
             // Redisplay changelog with new page
+            // Add banner
+            addLine("")
+            addLine(createBorder('', '═'), 'separator')
+            addLine("")
+            addLine("C O H E R E N C E I S M . I N F O", 'ascii-art')
+            addLine("")
+            addLine("TAGLINE_PLACEHOLDER", 'tagline')
+            addLine("")
+            addLine(createBorder('', '═'), 'separator')
+            addLine("")
             addLine(createBorder('RELEASE NOTES & VERSION HISTORY'), 'normal')
             addLine("")
             addLine("Recent releases and updates to the WOPR Coherence Archive:", 'normal')
@@ -1767,6 +1787,16 @@ ${release.fullDescription}`
             await new Promise(resolve => setTimeout(resolve, 100))
             
             // Redisplay changelog with new page
+            // Add banner
+            addLine("")
+            addLine(createBorder('', '═'), 'separator')
+            addLine("")
+            addLine("C O H E R E N C E I S M . I N F O", 'ascii-art')
+            addLine("")
+            addLine("TAGLINE_PLACEHOLDER", 'tagline')
+            addLine("")
+            addLine(createBorder('', '═'), 'separator')
+            addLine("")
             addLine(createBorder('RELEASE NOTES & VERSION HISTORY'), 'normal')
             addLine("")
             addLine("Recent releases and updates to the WOPR Coherence Archive:", 'normal')
