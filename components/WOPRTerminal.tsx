@@ -1017,12 +1017,13 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
         changeMenu('changelog')
         
         // Fetch changelog data if not loaded
+        let changelogData = changelog
         if (!changelogLoaded) {
           setIsProcessing(true)
           try {
             console.log('Fetching changelog from API...')
             const response = await fetch('/api/changelog')
-            const changelogData = await response.json()
+            changelogData = await response.json()
             
             console.log('Changelog response:', { 
               ok: response.ok, 
@@ -1051,13 +1052,13 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
           setIsProcessing(false)
         }
         
-        // Display changelog
+        // Display changelog - use the fresh data, not the state variable
         addLine(createBorder('RELEASE NOTES & VERSION HISTORY'), 'normal')
         addLine("")
         addLine("Recent releases and updates to the WOPR Coherence Archive:", 'normal')
         addLine("")
         
-        if (changelog.length === 0) {
+        if (!Array.isArray(changelogData) || changelogData.length === 0) {
           addLine("No releases found. This could be due to:", 'ai-response')
           addLine("• No merged pull requests in the repository", 'ai-response')
           addLine("• GitHub API rate limiting", 'ai-response')
@@ -1065,7 +1066,7 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
           addLine("")
         } else {
           // Display up to 10 most recent releases
-          changelog.slice(0, 10).forEach((release, index) => {
+          changelogData.slice(0, 10).forEach((release, index) => {
             addLine(`${index + 1}. v${release.version} - ${release.title}`, 'normal', false, `${index + 1}`)
             addLine(`   ${release.description}`, 'ai-response')
             addLine("")
