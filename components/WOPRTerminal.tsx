@@ -1081,7 +1081,7 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
           // Display current page of releases
           pageEntries.forEach((release, index) => {
             const displayNumber = index + 1
-            addLine(`${displayNumber}. ${release.title}`, 'normal', false, `${displayNumber}`)
+            addLine(`${displayNumber}. ${release.version} : ${release.title}`, 'normal', false, `${displayNumber}`)
           })
           
           addLine("")
@@ -1574,7 +1574,7 @@ ${release.fullDescription}`
             
             pageEntries.forEach((release, index) => {
               const displayNumber = index + 1
-              addLine(`${displayNumber}. ${release.title}`, 'normal', false, `${displayNumber}`)
+              addLine(`${displayNumber}. ${release.version} : ${release.title}`, 'normal', false, `${displayNumber}`)
             })
             
             addLine("")
@@ -1644,7 +1644,7 @@ ${release.fullDescription}`
             
             pageEntries.forEach((release, index) => {
               const displayNumber = index + 1
-              addLine(`${displayNumber}. ${release.title}`, 'normal', false, `${displayNumber}`)
+              addLine(`${displayNumber}. ${release.version} : ${release.title}`, 'normal', false, `${displayNumber}`)
             })
             
             addLine("")
