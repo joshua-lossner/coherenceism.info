@@ -1039,7 +1039,8 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
               console.log('Changelog loaded successfully:', changelogData.length, 'entries')
             } else {
               console.error('Changelog API error:', changelogData)
-              await typeResponse(`Failed to load changelog: ${changelogData.error || 'Unknown error'}`, false)
+              const errorMessage = (changelogData as any)?.error || 'Unknown error'
+              await typeResponse(`Failed to load changelog: ${errorMessage}`, false)
               setIsProcessing(false)
               break
             }
