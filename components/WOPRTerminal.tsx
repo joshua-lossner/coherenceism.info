@@ -317,6 +317,28 @@ const WOPRTerminal = () => {
     }
   }, [booksLoaded])
 
+  // Fetch changelog data on component mount for footer version
+  useEffect(() => {
+    const fetchChangelogForVersion = async () => {
+      if (!changelogLoaded) {
+        try {
+          const response = await fetch('/api/changelog')
+          if (response.ok) {
+            const changelogData = await response.json()
+            if (Array.isArray(changelogData) && changelogData.length > 0) {
+              setChangelog(changelogData)
+              setChangelogLoaded(true)
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching changelog for version:', error)
+        }
+      }
+    }
+    
+    fetchChangelogForVersion()
+  }, [changelogLoaded])
+
   // Client-side hydration and mobile detection
   useEffect(() => {
     // Mark as client-side and check mobile
@@ -2199,7 +2221,7 @@ ${release.fullDescription}`
 
       {/* Status bar */}
       <div className="absolute bottom-0 left-0 right-0 bg-terminal-green text-black p-1 flex justify-between text-sm z-50">
-        <span className="hidden md:block">DIGITAL CONSCIOUSNESS {changelog[0]?.version ? `v${changelog[0].version}` : 'v3.7.42'}</span>
+        <span className="hidden md:block">DIGITAL CONSCIOUSNESS {changelog[0]?.version ? `v${changelog[0].version}` : 'LOADING...'}</span>
         <span className="md:block flex-1 text-center md:text-left md:flex-initial">
           COHERENCEISM.INFO {hasConversationContext && <span className="ml-2">• MEMORY: ACTIVE</span>}
         </span>
