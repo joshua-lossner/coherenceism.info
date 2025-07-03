@@ -46,16 +46,25 @@ export async function GET(request: NextRequest) {
     }
 
     console.log('Fetching from GitHub API...')
+    
+    // Build headers with optional authentication
+    const headers: Record<string, string> = {
+      'Accept': 'application/vnd.github.v3+json',
+      'User-Agent': 'coherenceism-changelog',
+    }
+    
+    // Add GitHub token if available (increases rate limit from 60 to 5000 requests/hour)
+    if (process.env.GITHUB_TOKEN) {
+      headers['Authorization'] = `Bearer ${process.env.GITHUB_TOKEN}`
+      console.log('Using GitHub authentication')
+    } else {
+      console.log('No GitHub token found - using unauthenticated requests (60/hour limit)')
+    }
+    
     // Fetch merged PRs from GitHub
     const response = await fetch(
       'https://api.github.com/repos/joshua-lossner/coherenceism.info/pulls?state=closed&per_page=100',
-      {
-        headers: {
-          'Accept': 'application/vnd.github.v3+json',
-          'User-Agent': 'coherenceism-changelog',
-          // Note: GitHub API works without auth for public repos, but rate limits apply
-        },
-      }
+      { headers }
     )
 
     console.log('GitHub API response status:', response.status)
@@ -129,6 +138,19 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Changelog API error:', error)
+    
+    // Check if it's a rate limit error
+    if (error instanceof Error && error.message.includes('API rate limit exceeded')) {
+      return NextResponse.json(
+        { 
+          error: 'GitHub API rate limit exceeded', 
+          details: 'Please try again later or add a GITHUB_TOKEN environment variable for higher limits',
+          rateLimited: true
+        },
+        { status: 429 }
+      )
+    }
+    
     return NextResponse.json(
       { error: 'Failed to fetch changelog data', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }

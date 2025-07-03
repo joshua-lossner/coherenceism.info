@@ -1044,8 +1044,14 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
               console.log('Changelog loaded successfully:', changelogData.length, 'entries')
             } else {
               console.error('Changelog API error:', changelogData)
-              const errorMessage = (changelogData as any)?.error || 'Unknown error'
-              await typeResponse(`Failed to load changelog: ${errorMessage}`, false)
+              const errorData = changelogData as any
+              
+              if (errorData?.rateLimited) {
+                await typeResponse(`GitHub API rate limit exceeded. The changelog uses GitHub's API which has a limit of 60 requests per hour for unauthenticated users. Please try again in about an hour.`, false)
+              } else {
+                const errorMessage = errorData?.error || 'Unknown error'
+                await typeResponse(`Failed to load changelog: ${errorMessage}`, false)
+              }
               setIsProcessing(false)
               break
             }
