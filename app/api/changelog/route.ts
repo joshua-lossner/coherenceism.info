@@ -30,12 +30,14 @@ const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('Changelog API called')
     const { searchParams } = new URL(request.url)
     const prNumber = searchParams.get('pr')
     
     // Check cache first
     const now = Date.now()
     if (changelogCache && (now - cacheTimestamp) < CACHE_DURATION) {
+      console.log('Using cached data:', changelogCache.length, 'entries')
       if (prNumber) {
         const entry = changelogCache.find(e => e.prNumber === parseInt(prNumber))
         return NextResponse.json(entry || { error: 'Release not found' })
@@ -43,6 +45,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(changelogCache)
     }
 
+    console.log('Fetching from GitHub API...')
     // Fetch merged PRs from GitHub
     const response = await fetch(
       'https://api.github.com/repos/joshua-lossner/coherenceism.info/pulls?state=closed&sort=updated&direction=desc&per_page=50',
@@ -55,14 +58,29 @@ export async function GET(request: NextRequest) {
       }
     )
 
+    console.log('GitHub API response status:', response.status)
+    
     if (!response.ok) {
-      throw new Error(`GitHub API error: ${response.status}`)
+      const errorText = await response.text()
+      console.error('GitHub API error:', response.status, errorText)
+      throw new Error(`GitHub API error: ${response.status} - ${errorText}`)
     }
 
     const prs: GitHubPR[] = await response.json()
+    console.log('Total PRs fetched:', prs.length)
     
     // Filter merged PRs and convert to changelog entries
     const mergedPrs = prs.filter(pr => pr.merged_at !== null)
+    console.log('Merged PRs found:', mergedPrs.length)
+    
+    if (mergedPrs.length === 0) {
+      console.log('No merged PRs found. Sample PRs:', prs.slice(0, 3).map(pr => ({
+        number: pr.number,
+        title: pr.title,
+        merged_at: pr.merged_at,
+        state: (pr as any).state
+      })))
+    }
     
     const changelog: ChangelogEntry[] = mergedPrs.map(pr => {
       const mergeDate = new Date(pr.merged_at)
@@ -84,6 +102,8 @@ export async function GET(request: NextRequest) {
       }
     })
 
+    console.log('Generated changelog entries:', changelog.length)
+
     // Update cache
     changelogCache = changelog
     cacheTimestamp = now
@@ -100,7 +120,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Changelog API error:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch changelog data' },
+      { error: 'Failed to fetch changelog data', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }

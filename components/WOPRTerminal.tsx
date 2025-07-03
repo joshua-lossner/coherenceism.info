@@ -1020,20 +1020,31 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
         if (!changelogLoaded) {
           setIsProcessing(true)
           try {
+            console.log('Fetching changelog from API...')
             const response = await fetch('/api/changelog')
             const changelogData = await response.json()
+            
+            console.log('Changelog response:', { 
+              ok: response.ok, 
+              status: response.status,
+              isArray: Array.isArray(changelogData),
+              dataLength: Array.isArray(changelogData) ? changelogData.length : 'not array',
+              data: changelogData
+            })
             
             if (response.ok && Array.isArray(changelogData)) {
               setChangelog(changelogData)
               setChangelogLoaded(true)
+              console.log('Changelog loaded successfully:', changelogData.length, 'entries')
             } else {
-              await typeResponse(`Failed to load changelog. Please try again later.`, false)
+              console.error('Changelog API error:', changelogData)
+              await typeResponse(`Failed to load changelog: ${changelogData.error || 'Unknown error'}`, false)
               setIsProcessing(false)
               break
             }
           } catch (error) {
             console.error('Changelog fetch error:', error)
-            await typeResponse(`Connection error. Unable to fetch changelog data.`, false)
+            await typeResponse(`Connection error: ${error instanceof Error ? error.message : 'Unknown error'}`, false)
             setIsProcessing(false)
             break
           }
@@ -1046,18 +1057,27 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
         addLine("Recent releases and updates to the WOPR Coherence Archive:", 'normal')
         addLine("")
         
-        // Display up to 10 most recent releases
-        changelog.slice(0, 10).forEach((release, index) => {
-          addLine(`${index + 1}. v${release.version} - ${release.title}`, 'normal', false, `${index + 1}`)
-          addLine(`   ${release.description}`, 'ai-response')
+        if (changelog.length === 0) {
+          addLine("No releases found. This could be due to:", 'ai-response')
+          addLine("• No merged pull requests in the repository", 'ai-response')
+          addLine("• GitHub API rate limiting", 'ai-response')
+          addLine("• Connection issues", 'ai-response')
           addLine("")
-        })
+        } else {
+          // Display up to 10 most recent releases
+          changelog.slice(0, 10).forEach((release, index) => {
+            addLine(`${index + 1}. v${release.version} - ${release.title}`, 'normal', false, `${index + 1}`)
+            addLine(`   ${release.description}`, 'ai-response')
+            addLine("")
+          })
+          
+          addLine("Select a number to view detailed release notes.")
+          addLine("")
+        }
         
         addLine("x. back to help", 'separator', false, 'x')
         addLine("")
         addLine(createBorder(), 'normal')
-        addLine("")
-        addLine("Select a number to view detailed release notes.")
         addLine("")
         break
 
