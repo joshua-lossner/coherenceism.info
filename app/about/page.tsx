@@ -1,8 +1,43 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function AboutPage() {
+  const router = useRouter()
+
+  useEffect(() => {
+    // Focus trap to ensure this page has focus
+    const focusableElement = document.querySelector('body')
+    if (focusableElement) {
+      (focusableElement as HTMLElement).focus()
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      console.log('About page keydown:', event.key, 'target:', event.target)
+      
+      if (event.key === 'x' || event.key === 'X') {
+        console.log('X key pressed, navigating back')
+        event.preventDefault()
+        event.stopPropagation()
+        event.stopImmediatePropagation()
+        router.push('/')
+        return false
+      }
+    }
+
+    // Add multiple event listeners to ensure we catch the event
+    document.addEventListener('keydown', handleKeyDown, true)
+    window.addEventListener('keydown', handleKeyDown, true)
+    document.body.addEventListener('keydown', handleKeyDown, true)
+    
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown, true)
+      window.removeEventListener('keydown', handleKeyDown, true)
+      document.body.removeEventListener('keydown', handleKeyDown, true)
+    }
+  }, [router])
   return (
     <div className="h-screen bg-black text-terminal-green overflow-y-auto">
       <div className="max-w-2xl mx-auto p-4 pb-8">
