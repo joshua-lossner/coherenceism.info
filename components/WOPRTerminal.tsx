@@ -2267,7 +2267,7 @@ ${release.fullDescription}`
                   onClick={() => processCommand('x')}
                   className="px-4 py-1 border border-terminal-green bg-black text-terminal-green hover:bg-terminal-green hover:text-black transition-all duration-200 font-mono text-sm"
                 >
-                  [← BACK]
+                  [E<span className="underline">X</span>IT]
                 </button>
                 
                 {currentContent && currentNarrationUrls.length === 0 && (
@@ -2275,7 +2275,7 @@ ${release.fullDescription}`
                     onClick={() => processCommand('n')}
                     className="px-4 py-1 border border-terminal-green bg-black text-terminal-green hover:bg-terminal-green hover:text-black transition-all duration-200 font-mono text-sm"
                   >
-                    [♪ NARRATE]
+                    [<span className="underline">N</span>ARRATE]
                   </button>
                 )}
                 
@@ -2284,7 +2284,7 @@ ${release.fullDescription}`
                     onClick={() => processCommand('p')}
                     className="px-4 py-1 border border-terminal-green bg-black text-terminal-green hover:bg-terminal-green hover:text-black transition-all duration-200 font-mono text-sm"
                   >
-                    [{isNarrationPlaying ? '‖ PAUSE' : '▶ RESUME'}]
+                    [{isNarrationPlaying ? <><span className="underline">P</span>AUSE</> : <><span className="underline">P</span>LAY</>}]
                   </button>
                 )}
                 
@@ -2295,7 +2295,7 @@ ${release.fullDescription}`
                         onClick={() => processCommand('p')}
                         className="px-4 py-1 border border-terminal-green bg-black text-terminal-green hover:bg-terminal-green hover:text-black transition-all duration-200 font-mono text-sm"
                       >
-                        [← PREV]
+                        [<span className="underline">P</span>REV]
                       </button>
                     )}
                     {changelogPage < Math.ceil(changelog.length / 5) && (
@@ -2303,7 +2303,7 @@ ${release.fullDescription}`
                         onClick={() => processCommand('n')}
                         className="px-4 py-1 border border-terminal-green bg-black text-terminal-green hover:bg-terminal-green hover:text-black transition-all duration-200 font-mono text-sm"
                       >
-                        [NEXT →]
+                        [<span className="underline">N</span>EXT]
                       </button>
                     )}
                   </>
