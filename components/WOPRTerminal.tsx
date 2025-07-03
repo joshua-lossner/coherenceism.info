@@ -2259,6 +2259,64 @@ ${release.fullDescription}`
       {/* Sticky command prompt */}
       {(systemReady || isProcessing) && (
         <div className="absolute bottom-6 left-0 right-0 bg-black border-t border-terminal-green-dim z-40">
+          {/* Terminal-style navigation buttons */}
+          {(isViewingContent || currentMenu !== 'main') && (
+            <div className="border-b border-terminal-green-dim">
+              <div className="px-8 py-2 flex items-center gap-2">
+                <button
+                  onClick={() => processCommand('x')}
+                  className="px-4 py-1 border border-terminal-green bg-black text-terminal-green hover:bg-terminal-green hover:text-black transition-all duration-200 font-mono text-sm"
+                >
+                  [← BACK]
+                </button>
+                
+                {currentContent && currentNarrationUrls.length === 0 && (
+                  <button
+                    onClick={() => processCommand('n')}
+                    className="px-4 py-1 border border-terminal-green bg-black text-terminal-green hover:bg-terminal-green hover:text-black transition-all duration-200 font-mono text-sm"
+                  >
+                    [♪ NARRATE]
+                  </button>
+                )}
+                
+                {currentNarrationUrls.length > 0 && (
+                  <button
+                    onClick={() => processCommand('p')}
+                    className="px-4 py-1 border border-terminal-green bg-black text-terminal-green hover:bg-terminal-green hover:text-black transition-all duration-200 font-mono text-sm"
+                  >
+                    [{isNarrationPlaying ? '‖ PAUSE' : '▶ RESUME'}]
+                  </button>
+                )}
+                
+                {currentMenu === 'changelog' && !isViewingContent && (
+                  <>
+                    {changelogPage > 1 && (
+                      <button
+                        onClick={() => processCommand('p')}
+                        className="px-4 py-1 border border-terminal-green bg-black text-terminal-green hover:bg-terminal-green hover:text-black transition-all duration-200 font-mono text-sm"
+                      >
+                        [← PREV]
+                      </button>
+                    )}
+                    {changelogPage < Math.ceil(changelog.length / 5) && (
+                      <button
+                        onClick={() => processCommand('n')}
+                        className="px-4 py-1 border border-terminal-green bg-black text-terminal-green hover:bg-terminal-green hover:text-black transition-all duration-200 font-mono text-sm"
+                      >
+                        [NEXT →]
+                      </button>
+                    )}
+                  </>
+                )}
+                
+                <div className="flex-1"></div>
+                
+                <div className="text-terminal-green-dim text-xs font-mono">
+                  ↑↓ SCROLL • PgUp/PgDn JUMP
+                </div>
+              </div>
+            </div>
+          )}
           <div className="px-8 py-4">
             <div className="flex justify-between items-center">
               <div className="flex-1">
@@ -2276,36 +2334,6 @@ ${release.fullDescription}`
                   </div>
                 )}
               </div>
-              
-              {(isViewingContent || currentMenu === 'about' || currentMenu === 'help' || currentMenu === 'contact' || currentMenu === 'changelog') && (
-                <div className="text-terminal-green-dim text-sm ml-8 flex items-center gap-4">
-                  <span className="text-terminal-amber opacity-60 italic">x. back</span>
-                  {currentContent && currentNarrationUrls.length === 0 && (
-                    <>
-                      <span className="text-terminal-green-dim opacity-40">•</span>
-                      <span className="text-terminal-amber opacity-60 italic">n. narrate</span>
-                    </>
-                  )}
-                  {currentNarrationUrls.length > 0 && (
-                    <>
-                      <span className="text-terminal-green-dim opacity-40">•</span>
-                      <span className="text-terminal-amber opacity-60 italic">
-                        p. {isNarrationPlaying ? 'pause' : 'resume'}
-                      </span>
-                      {currentNarrationUrls.length > 1 && (
-                        <>
-                          <span className="text-terminal-green-dim opacity-40">•</span>
-                          <span className="text-terminal-green-dim opacity-60 text-xs">
-                            {currentChunkIndex + 1}/{currentNarrationUrls.length}
-                          </span>
-                        </>
-                      )}
-                    </>
-                  )}
-                  <span className="text-terminal-green-dim opacity-40">•</span>
-                  <span>↑↓ scroll • PgUp/PgDn jump</span>
-                </div>
-              )}
             </div>
           </div>
         </div>
