@@ -1874,37 +1874,42 @@ ${release.fullDescription}`
         break
 
       default:
-        if (cmd.startsWith('QUERY ')) {
-          const question = command.slice(6)
-          // Echo the query to terminal
-          addLine(`> ${command}`, 'user-input')
-          addLine("")
-          setIsProcessing(true)
+        // Any input gets sent to RAG API (retrieval + generation)
+        // Echo the user's message to terminal
+        addLine(`> ${command}`, 'user-input')
+        addLine("")
+        setIsProcessing(true)
+        
+        try {
+          const res = await fetch('/api/rag', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ message: command })
+          })
           
-          const response = await callOpenAI(question, 'query')
-          if (response) {
-            await typeResponse(`${response}`)
-          } else {
-            addLine("")
+          if (!res.ok) {
+            addLine('⚠️  API error', 'error')
+            setIsProcessing(false)
+            return
           }
-          setIsProcessing(false)
-        } else {
-          // Any other input gets sent to OpenAI as conversation with Byte personality
-          // Echo the user's message to terminal
-          addLine(`> ${command}`, 'user-input')
-          addLine("")
-          setIsProcessing(true)
           
-          const bytePrompt = `You are Byte - a sarcastic, witty AI assistant with a sharp tongue but a caring heart underneath. You're irreverent, dismissive of authority, but have a strong moral compass. You disguise your empathy with humor and clever wordplay. You reference simple pleasures like food, drinks, and naps. Keep responses short and snappy (1-3 sentences, max 150 tokens). Here's what the user said: "${command}"`
-          
-          const response = await callOpenAI(bytePrompt, 'conversation')
-          if (response) {
-            await typeResponse(response)
-          } else {
-            addLine("")
+          const { response, sources } = await res.json()
+          if (!response) {
+            addLine('🤔  No response generated.', 'ai-response')
+            setIsProcessing(false)
+            return
           }
-          setIsProcessing(false)
+          
+          // Display the AI-generated response
+          await typeResponse(response, false)
+          
+        } catch (error) {
+          addLine('⚠️  RAG system failed', 'error')
         }
+        
+        setIsProcessing(false)
     }
   }
 
