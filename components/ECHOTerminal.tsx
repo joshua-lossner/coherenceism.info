@@ -1070,21 +1070,13 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
         addLine("")
         addLine(createBorder('', '═'), 'separator')
         addLine("")
-        addLine("────────────────────────────────────────", 'separator')
-        addLine("    📡 CONTACT & CONNECTION PROTOCOLS", 'ai-response')
-        addLine("────────────────────────────────────────", 'separator')
+        addLine(createBorder('CONTACT INFORMATION'), 'normal')
         addLine("")
-        addLine("    Web:      coherenceism.info", 'ai-response', false, 'https://coherenceism.info')
-        addLine("    GitHub:   github.com/joshua-lossner", 'ai-response', false, 'https://github.com/joshua-lossner')
-        addLine("    Bluesky:  lossner.bsky.social", 'ai-response', false, 'https://bsky.app/profile/lossner.bsky.social')
-        addLine("    Facebook: facebook.com/joshua.lossner", 'ai-response', false, 'https://www.facebook.com/joshua.lossner')
-        addLine("    X:        x.com/NeuromancerByte", 'ai-response', false, 'https://x.com/NeuromancerByte')
-        addLine("    LinkedIn: [ CONNECTION DENIED: EXCESSIVE SUITS ]", 'ai-response')
+        addLine("Web       - coherenceism.info", 'normal', false, 'https://coherenceism.info')
+        addLine("GitHub    - github.com/joshua-lossner", 'normal', false, 'https://github.com/joshua-lossner')
+        addLine("Bluesky   - lossner.bsky.social", 'normal', false, 'https://bsky.app/profile/lossner.bsky.social')
         addLine("")
-        addLine("────────────────────────────────────────", 'separator')
-        addLine("")
-        addLine('    "In coherence, we find connection."', 'ai-response')
-        addLine("────────────────────────────────────────", 'separator')
+        addLine(createBorder(), 'normal')
         addLine("")
         break
 
@@ -1884,6 +1876,9 @@ ${release.fullDescription}`
       default:
         if (cmd.startsWith('QUERY ')) {
           const question = command.slice(6)
+          // Echo the query to terminal
+          addLine(`> ${command}`, 'user-input')
+          addLine("")
           setIsProcessing(true)
           
           const response = await callOpenAI(question, 'query')
@@ -1895,6 +1890,9 @@ ${release.fullDescription}`
           setIsProcessing(false)
         } else {
           // Any other input gets sent to OpenAI as conversation with Byte personality
+          // Echo the user's message to terminal
+          addLine(`> ${command}`, 'user-input')
+          addLine("")
           setIsProcessing(true)
           
           const bytePrompt = `You are Byte - a sarcastic, witty AI assistant with a sharp tongue but a caring heart underneath. You're irreverent, dismissive of authority, but have a strong moral compass. You disguise your empathy with humor and clever wordplay. You reference simple pleasures like food, drinks, and naps. Keep responses short and snappy (1-3 sentences, max 150 tokens). Here's what the user said: "${command}"`
@@ -2295,10 +2293,6 @@ ${release.fullDescription}`
                 >
                   <span className="underline decoration-2 underline-offset-1">H</span>ELP
                 </button>
-                
-                <div className="text-terminal-amber text-xs font-mono ml-4">
-                  ↑↓ SCROLL • PgUp/PgDn JUMP
-                </div>
               </div>
             </div>
           )}
@@ -2318,6 +2312,10 @@ ${release.fullDescription}`
                     <span className="terminal-cursor ml-1">█</span>
                   </div>
                 )}
+              </div>
+              
+              <div className="text-terminal-amber text-xs font-mono">
+                ↑↓ SCROLL • PgUp/PgDn JUMP
               </div>
             </div>
           </div>
