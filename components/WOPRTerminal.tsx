@@ -826,6 +826,7 @@ const WOPRTerminal = () => {
     // Process command without echoing it to terminal
 
     switch (cmd) {
+      case 'M':
       case 'MENU':
       case '/MENU':
         stopNarration() // Stop narration immediately
@@ -861,6 +862,7 @@ const WOPRTerminal = () => {
         addLine("")
         break
 
+      case 'H':
       case 'HELP':
       case '/HELP':
         setTerminalLines([])
