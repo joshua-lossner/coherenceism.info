@@ -1188,12 +1188,6 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
             addLine(`Page ${changelogPage} of ${totalPages} • ${changelogData.length} total releases`, 'ai-response')
             addLine("")
             
-            if (changelogPage < totalPages) {
-              addLine("n. next page", 'separator', false, 'n')
-            }
-            if (changelogPage > 1) {
-              addLine("p. previous page", 'separator', false, 'p')
-            }
             addLine("")
           }
           
@@ -1731,12 +1725,6 @@ ${release.fullDescription}`
               addLine(`Page ${nextPage} of ${totalPages} • ${changelog.length} total releases`, 'ai-response')
               addLine("")
               
-              if (nextPage < totalPages) {
-                addLine("n. next page", 'separator', false, 'n')
-              }
-              if (nextPage > 1) {
-                addLine("p. previous page", 'separator', false, 'p')
-              }
               addLine("")
             }
             
@@ -1810,12 +1798,6 @@ ${release.fullDescription}`
               addLine(`Page ${prevPage} of ${totalPages} • ${changelog.length} total releases`, 'ai-response')
               addLine("")
               
-              if (prevPage < totalPages) {
-                addLine("n. next page", 'separator', false, 'n')
-              }
-              if (prevPage > 1) {
-                addLine("p. previous page", 'separator', false, 'p')
-              }
               addLine("")
             }
             
@@ -2258,7 +2240,7 @@ ${release.fullDescription}`
                   onClick={() => processCommand('x')}
                   className="px-4 py-1 border border-terminal-green bg-black text-terminal-green hover:bg-terminal-green hover:text-black transition-all duration-200 font-mono text-sm"
                 >
-                  [E<span className="underline">X</span>IT]
+                  E<span className="underline decoration-2 underline-offset-1">X</span>IT
                 </button>
                 
                 {currentContent && currentNarrationUrls.length === 0 && (
@@ -2266,7 +2248,7 @@ ${release.fullDescription}`
                     onClick={() => processCommand('n')}
                     className="px-4 py-1 border border-terminal-green bg-black text-terminal-green hover:bg-terminal-green hover:text-black transition-all duration-200 font-mono text-sm"
                   >
-                    [<span className="underline">N</span>ARRATE]
+                    <span className="underline decoration-2 underline-offset-1">N</span>ARRATE
                   </button>
                 )}
                 
@@ -2275,7 +2257,7 @@ ${release.fullDescription}`
                     onClick={() => processCommand('p')}
                     className="px-4 py-1 border border-terminal-green bg-black text-terminal-green hover:bg-terminal-green hover:text-black transition-all duration-200 font-mono text-sm"
                   >
-                    [{isNarrationPlaying ? <><span className="underline">P</span>AUSE</> : <><span className="underline">P</span>LAY</>}]
+                    {isNarrationPlaying ? <><span className="underline decoration-2 underline-offset-1">P</span>AUSE</> : <><span className="underline decoration-2 underline-offset-1">P</span>LAY</>}
                   </button>
                 )}
                 
@@ -2286,7 +2268,7 @@ ${release.fullDescription}`
                         onClick={() => processCommand('p')}
                         className="px-4 py-1 border border-terminal-green bg-black text-terminal-green hover:bg-terminal-green hover:text-black transition-all duration-200 font-mono text-sm"
                       >
-                        [<span className="underline">P</span>REV]
+                        <span className="underline decoration-2 underline-offset-1">P</span>REV
                       </button>
                     )}
                     {changelogPage < Math.ceil(changelog.length / 5) && (
@@ -2294,7 +2276,7 @@ ${release.fullDescription}`
                         onClick={() => processCommand('n')}
                         className="px-4 py-1 border border-terminal-green bg-black text-terminal-green hover:bg-terminal-green hover:text-black transition-all duration-200 font-mono text-sm"
                       >
-                        [<span className="underline">N</span>EXT]
+                        <span className="underline decoration-2 underline-offset-1">N</span>EXT
                       </button>
                     )}
                   </>
@@ -2307,14 +2289,14 @@ ${release.fullDescription}`
                   onClick={() => processCommand('/menu')}
                   className="px-4 py-1 border border-terminal-green bg-black text-terminal-green hover:bg-terminal-green hover:text-black transition-all duration-200 font-mono text-sm"
                 >
-                  [<span className="underline">M</span>ENU]
+                  <span className="underline decoration-2 underline-offset-1">M</span>ENU
                 </button>
                 
                 <button
                   onClick={() => processCommand('/help')}
                   className="px-4 py-1 border border-terminal-green bg-black text-terminal-green hover:bg-terminal-green hover:text-black transition-all duration-200 font-mono text-sm ml-2"
                 >
-                  [<span className="underline">H</span>ELP]
+                  <span className="underline decoration-2 underline-offset-1">H</span>ELP
                 </button>
                 
                 <div className="text-terminal-amber text-xs font-mono ml-4">
