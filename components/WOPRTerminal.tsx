@@ -1876,6 +1876,9 @@ ${release.fullDescription}`
       default:
         if (cmd.startsWith('QUERY ')) {
           const question = command.slice(6)
+          // Echo the query to terminal
+          addLine(`> ${command}`, 'user-input')
+          addLine("")
           setIsProcessing(true)
           
           const response = await callOpenAI(question, 'query')
@@ -1887,6 +1890,9 @@ ${release.fullDescription}`
           setIsProcessing(false)
         } else {
           // Any other input gets sent to OpenAI as conversation with Byte personality
+          // Echo the user's message to terminal
+          addLine(`> ${command}`, 'user-input')
+          addLine("")
           setIsProcessing(true)
           
           const bytePrompt = `You are Byte - a sarcastic, witty AI assistant with a sharp tongue but a caring heart underneath. You're irreverent, dismissive of authority, but have a strong moral compass. You disguise your empathy with humor and clever wordplay. You reference simple pleasures like food, drinks, and naps. Keep responses short and snappy (1-3 sentences, max 150 tokens). Here's what the user said: "${command}"`
