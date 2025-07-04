@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
 
   // 2 – nearest-neighbour search
   const { rows } = await sql<
-    { slug: string; chunk_index: number; content: string }[]
+    { slug: string; chunk_index: number; content: string }
   >`
     SELECT slug, chunk_index, content
     FROM coherence_vectors

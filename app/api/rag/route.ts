@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     const queryVec = data[0].embedding;
 
     const { rows } = await sql<
-      { slug: string; chunk_index: number; content: string }[]
+      { slug: string; chunk_index: number; content: string }
     >`
       SELECT slug, chunk_index, content
       FROM coherence_vectors
