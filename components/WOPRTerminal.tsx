@@ -2293,10 +2293,6 @@ ${release.fullDescription}`
                 >
                   <span className="underline decoration-2 underline-offset-1">H</span>ELP
                 </button>
-                
-                <div className="text-terminal-amber text-xs font-mono ml-4">
-                  ↑↓ SCROLL • PgUp/PgDn JUMP
-                </div>
               </div>
             </div>
           )}
@@ -2316,6 +2312,10 @@ ${release.fullDescription}`
                     <span className="terminal-cursor ml-1">█</span>
                   </div>
                 )}
+              </div>
+              
+              <div className="text-terminal-amber text-xs font-mono">
+                ↑↓ SCROLL • PgUp/PgDn JUMP
               </div>
             </div>
           </div>
