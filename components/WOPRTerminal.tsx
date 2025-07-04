@@ -881,15 +881,21 @@ const WOPRTerminal = () => {
         addLine("")
         addLine(createBorder('', '═'), 'separator')
         addLine("")
-        await typeResponse(`Available commands:
-/menu     - Return to main menu.
-/help     - Display available commands and instructions.
-/contact  - Information for reaching out.
-/changelog- View release notes and version history.
-/random   - Receive a random Byte-generated thought or humorous quip.
-/voice    - Toggle audio output (Byte speaks responses aloud).
-/clear    - Clear terminal screen.
-/reset    - Reset Byte's memory and start fresh conversation.`, false)
+        addLine(createBorder('AVAILABLE COMMANDS'), 'normal')
+        addLine("")
+        addLine("/menu     - Return to main menu", 'normal')
+        addLine("/help     - Display available commands and instructions", 'normal')
+        addLine("/contact  - Information for reaching out", 'normal')
+        addLine("/changelog- View release notes and version history", 'normal')
+        addLine("/random   - Receive a random Byte-generated thought or humorous quip", 'normal')
+        addLine("/voice    - Toggle audio output (Byte speaks responses aloud)", 'normal')
+        addLine("/clear    - Clear terminal screen", 'normal')
+        addLine("/reset    - Reset Byte's memory and start fresh conversation", 'normal')
+        addLine("")
+        addLine(createBorder(), 'normal')
+        addLine("")
+        addLine("Type any command or ask Byte a question.")
+        addLine("")
         break
 
       case 'JOURNALS':
@@ -2341,7 +2347,7 @@ ${release.fullDescription}`
 
       {/* Status bar */}
       <div className="absolute bottom-0 left-0 right-0 bg-terminal-green text-black p-1 flex justify-between text-sm z-50">
-        <span className="hidden md:block">DIGITAL CONSCIOUSNESS {changelog[0]?.version ? `v${changelog[0].version}` : 'LOADING...'}</span>
+        <span className="hidden md:block">{changelog[0]?.version ? `v${changelog[0].version}` : 'LOADING...'}</span>
         <span className="md:block flex-1 text-center md:text-left md:flex-initial">
           COHERENCEISM.INFO {hasConversationContext && <span className="ml-2">• MEMORY: ACTIVE</span>}
         </span>
