@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import WOPRBanner from '@/components/WOPRBanner'
+import ECHOBanner from '@/components/ECHOBanner'
 
 interface Book {
   id: number
@@ -115,7 +115,7 @@ export default function BooksPage() {
     return (
       <div className="h-screen bg-black text-terminal-green overflow-y-auto">
         <div className="max-w-2xl mx-auto p-4 pb-8">
-          <WOPRBanner />
+          <ECHOBanner />
           <div className="mb-6">
             <button 
               onClick={() => setSelectedChapter(null)}
@@ -139,7 +139,7 @@ export default function BooksPage() {
     return (
       <div className="h-screen bg-black text-terminal-green overflow-y-auto">
         <div className="max-w-2xl mx-auto p-4 pb-8">
-          <WOPRBanner />
+          <ECHOBanner />
           <div className="mb-6">
             <button 
               onClick={() => setSelectedBook(null)}
@@ -183,7 +183,7 @@ export default function BooksPage() {
   return (
     <div className="h-screen bg-black text-terminal-green overflow-y-auto">
       <div className="max-w-2xl mx-auto p-4 pb-8">
-        <WOPRBanner />
+        <ECHOBanner />
         <div className="mb-6">
           <Link href="/" className="text-terminal-amber hover:brightness-125 mb-4 inline-block">
             ← Back to Home

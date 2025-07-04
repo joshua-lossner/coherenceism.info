@@ -1,5 +1,5 @@
-import WOPRTerminal from '../components/WOPRTerminal'
+import ECHOTerminal from '../components/ECHOTerminal'
 
 export default function Home() {
-  return <WOPRTerminal />
+  return <ECHOTerminal />
 } 
