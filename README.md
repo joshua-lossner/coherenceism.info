@@ -1,4 +1,4 @@
-# WOPR COHERENCE ARCHIVE
+# ECHO COHERENCE ARCHIVE
 
 A WarGames-inspired terminal interface for exploring Coherenceism philosophy, powered by OpenAI's GPT-4.
 
@@ -109,7 +109,7 @@ The audio narration feature allows Byte to read journal entries and book chapter
 
 ## 🎨 Theme
 
-Inspired by the WOPR computer from WarGames (1983), featuring:
+Inspired by the ECHO system, featuring:
 - Green monospace terminal text
 - CRT scanline effects
 - 1980s computer aesthetics
@@ -132,4 +132,4 @@ Ensure your deployment platform supports:
 
 ---
 
-*"Shall we play a game?"* - WOPR 
+*"Shall we play a game?"* - ECHO 

@@ -18,7 +18,7 @@ export class SecurityHeadersManager {
       'X-XSS-Protection': '1; mode=block',
       
       // Prevent information disclosure
-      'X-Powered-By': 'WOPR-3.7.42',
+      'X-Powered-By': 'ECHO-3.7.42',
       
       // Cache control for sensitive endpoints
       'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',

@@ -11,7 +11,7 @@ interface TerminalLine {
   clickableCommand?: string
 }
 
-const WOPRTerminal = () => {
+const ECHOTerminal = () => {
   const router = useRouter()
   const [currentInput, setCurrentInput] = useState('')
   const [terminalLines, setTerminalLines] = useState<TerminalLine[]>([])
@@ -1154,7 +1154,7 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
         addLine("")
         addLine(createBorder('RELEASE NOTES & VERSION HISTORY'), 'normal')
         addLine("")
-        addLine("Recent releases and updates to the WOPR Coherence Archive:", 'normal')
+        addLine("Recent releases and updates to the ECHO Coherence Archive:", 'normal')
         addLine("")
         
         if (!Array.isArray(changelogData) || changelogData.length === 0) {
@@ -1703,7 +1703,7 @@ ${release.fullDescription}`
             addLine("")
             addLine(createBorder('RELEASE NOTES & VERSION HISTORY'), 'normal')
             addLine("")
-            addLine("Recent releases and updates to the WOPR Coherence Archive:", 'normal')
+            addLine("Recent releases and updates to the ECHO Coherence Archive:", 'normal')
             addLine("")
             
             const startIndex = (nextPage - 1) * entriesPerPage
@@ -1776,7 +1776,7 @@ ${release.fullDescription}`
             addLine("")
             addLine(createBorder('RELEASE NOTES & VERSION HISTORY'), 'normal')
             addLine("")
-            addLine("Recent releases and updates to the WOPR Coherence Archive:", 'normal')
+            addLine("Recent releases and updates to the ECHO Coherence Archive:", 'normal')
             addLine("")
             
             const startIndex = (prevPage - 1) * entriesPerPage
@@ -2336,4 +2336,4 @@ ${release.fullDescription}`
   )
 }
 
-export default WOPRTerminal 
+export default ECHOTerminal 
