@@ -279,8 +279,6 @@ const WOPRTerminal = () => {
             addLine(`${index + 1}. ${chapter.title}`, 'normal', false, `${index + 1}`)
           })
           addLine("")
-          addLine("x. back to books", 'separator', false, 'x')
-          addLine("")
           addLine(createBorder(), 'normal')
           addLine("")
           addLine("Enter the number to read a chapter.")
@@ -596,12 +594,10 @@ const WOPRTerminal = () => {
     addLine(content, 'markdown', true)
     addLine("", 'normal')
     addLine(createBorder('', '─'), 'separator')
-    addLine("")
-    addLine("x. back", 'separator', false, 'x')
     if (contentType && contentId) {
       addLine("n. narrate - Have Byte narrate this content", 'separator', false, 'n')
+      addLine("")
     }
-    addLine("")
   }
 
   const generateSpeech = async (text: string) => {
@@ -932,8 +928,6 @@ const WOPRTerminal = () => {
             addLine(`${index + 1}. ${title}${date}`, 'normal', false, `${index + 1}`)
           })
           addLine("")
-          addLine("x. back to main menu", 'separator', false, 'x')
-          addLine("")
           addLine(createBorder(), 'normal')
           addLine("")
           addLine("Type a number above to read an entry.")
@@ -977,8 +971,6 @@ const WOPRTerminal = () => {
             addLine(`${index + 1}. ${book.title}`, 'normal', false, `${index + 1}`)
           })
           addLine("")
-          addLine("x. back to main menu", 'separator', false, 'x')
-          addLine("")
           addLine(createBorder(), 'normal')
           addLine("")
           addLine("Enter the number to explore chapters.")
@@ -1011,8 +1003,6 @@ const WOPRTerminal = () => {
         addLine("3. Refined Reflections", 'normal', false, '3')
         addLine("4. Resonant Dream", 'normal', false, '4')
         addLine("5. Rust and Revolt", 'normal', false, '5')
-        addLine("")
-        addLine("x. back to main menu", 'separator', false, 'x')
         addLine("")
         addLine(createBorder(), 'normal')
         addLine("")
@@ -1205,7 +1195,6 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
           addLine("")
         }
         
-        addLine("x. back to help", 'separator', false, 'x')
         addLine("")
         addLine(createBorder(), 'normal')
         addLine("")
@@ -1398,8 +1387,6 @@ ${release.fullDescription}`
                 chapters.forEach((chapter, index) => {
                   addLine(`${index + 1}. ${chapter.title}`, 'normal', false, `${index + 1}`)
                 })
-                addLine("")
-                addLine("x. back to books", 'separator', false, 'x')
                 addLine("")
                 addLine(createBorder(), 'normal')
                 addLine("")
@@ -1749,8 +1736,7 @@ ${release.fullDescription}`
             
             addLine("Select a number to view detailed release notes.")
             addLine("")
-            addLine("x. back to help", 'separator', false, 'x')
-            addLine("")
+                addLine("")
             addLine(createBorder(), 'normal')
             addLine("")
           } else {
@@ -1829,8 +1815,7 @@ ${release.fullDescription}`
             
             addLine("Select a number to view detailed release notes.")
             addLine("")
-            addLine("x. back to help", 'separator', false, 'x')
-            addLine("")
+                addLine("")
             addLine(createBorder(), 'normal')
             addLine("")
           } else {
@@ -2326,7 +2311,7 @@ ${release.fullDescription}`
                   [<span className="underline">H</span>ELP]
                 </button>
                 
-                <div className="text-terminal-green-dim text-xs font-mono ml-4">
+                <div className="text-terminal-amber text-xs font-mono ml-4">
                   ↑↓ SCROLL • PgUp/PgDn JUMP
                 </div>
               </div>
