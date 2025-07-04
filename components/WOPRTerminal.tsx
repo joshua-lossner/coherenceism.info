@@ -823,9 +823,7 @@ const WOPRTerminal = () => {
     // Reset markdown display mode when user types new command
     setIsDisplayingMarkdown(false)
     
-    // Add the user's command to terminal with special styling
-    addLine(`> ${command.toUpperCase()}`, 'user-input')
-    addLine("")
+    // Process command without echoing it to terminal
 
     switch (cmd) {
       case 'MENU':
