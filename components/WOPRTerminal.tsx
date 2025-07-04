@@ -594,10 +594,7 @@ const WOPRTerminal = () => {
     addLine(content, 'markdown', true)
     addLine("", 'normal')
     addLine(createBorder('', '─'), 'separator')
-    if (contentType && contentId) {
-      addLine("n. narrate - Have Byte narrate this content", 'separator', false, 'n')
-      addLine("")
-    }
+    addLine("")
   }
 
   const generateSpeech = async (text: string) => {
@@ -2174,7 +2171,7 @@ ${release.fullDescription}`
       <div className="h-screen flex justify-start">
         <div 
           ref={terminalRef}
-          className="w-full max-w-4xl p-8 pb-20 overflow-y-auto text-base terminal-text scrollbar-hide"
+          className="w-full max-w-4xl p-8 pb-32 overflow-y-auto text-base terminal-text scrollbar-hide"
         >
         {terminalLines.map((line, index) => (
           <div 
