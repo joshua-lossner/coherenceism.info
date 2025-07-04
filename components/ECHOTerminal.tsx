@@ -1874,34 +1874,39 @@ ${release.fullDescription}`
         break
 
       default:
-        // Any input gets sent to vector search API
+        // Any input gets sent to RAG API (retrieval + generation)
         // Echo the user's message to terminal
         addLine(`> ${command}`, 'user-input')
         addLine("")
         setIsProcessing(true)
         
         try {
-          const res = await fetch(`/api/search?q=${encodeURIComponent(command)}`)
+          const res = await fetch('/api/rag', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ message: command })
+          })
+          
           if (!res.ok) {
             addLine('⚠️  API error', 'error')
             setIsProcessing(false)
             return
           }
           
-          const { results } = await res.json()
-          if (results.length === 0) {
-            addLine('🤔  No match; try re-phrasing.', 'ai-response')
+          const { response, sources } = await res.json()
+          if (!response) {
+            addLine('🤔  No response generated.', 'ai-response')
             setIsProcessing(false)
             return
           }
           
-          // Display search results
-          for (const result of results) {
-            await typeResponse(result.content, false)
-            addLine("", 'separator')
-          }
+          // Display the AI-generated response
+          await typeResponse(response, false)
+          
         } catch (error) {
-          addLine('⚠️  Search failed', 'error')
+          addLine('⚠️  RAG system failed', 'error')
         }
         
         setIsProcessing(false)
