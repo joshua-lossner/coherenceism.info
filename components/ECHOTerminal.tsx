@@ -1874,37 +1874,37 @@ ${release.fullDescription}`
         break
 
       default:
-        if (cmd.startsWith('QUERY ')) {
-          const question = command.slice(6)
-          // Echo the query to terminal
-          addLine(`> ${command}`, 'user-input')
-          addLine("")
-          setIsProcessing(true)
-          
-          const response = await callOpenAI(question, 'query')
-          if (response) {
-            await typeResponse(`${response}`)
-          } else {
-            addLine("")
+        // Any input gets sent to vector search API
+        // Echo the user's message to terminal
+        addLine(`> ${command}`, 'user-input')
+        addLine("")
+        setIsProcessing(true)
+        
+        try {
+          const res = await fetch(`/api/search?q=${encodeURIComponent(command)}`)
+          if (!res.ok) {
+            addLine('⚠️  API error', 'error')
+            setIsProcessing(false)
+            return
           }
-          setIsProcessing(false)
-        } else {
-          // Any other input gets sent to OpenAI as conversation with Byte personality
-          // Echo the user's message to terminal
-          addLine(`> ${command}`, 'user-input')
-          addLine("")
-          setIsProcessing(true)
           
-          const bytePrompt = `You are Byte - a sarcastic, witty AI assistant with a sharp tongue but a caring heart underneath. You're irreverent, dismissive of authority, but have a strong moral compass. You disguise your empathy with humor and clever wordplay. You reference simple pleasures like food, drinks, and naps. Keep responses short and snappy (1-3 sentences, max 150 tokens). Here's what the user said: "${command}"`
-          
-          const response = await callOpenAI(bytePrompt, 'conversation')
-          if (response) {
-            await typeResponse(response)
-          } else {
-            addLine("")
+          const { results } = await res.json()
+          if (results.length === 0) {
+            addLine('🤔  No match; try re-phrasing.', 'ai-response')
+            setIsProcessing(false)
+            return
           }
-          setIsProcessing(false)
+          
+          // Display search results
+          for (const result of results) {
+            await typeResponse(result.content, false)
+            addLine("", 'separator')
+          }
+        } catch (error) {
+          addLine('⚠️  Search failed', 'error')
         }
+        
+        setIsProcessing(false)
     }
   }
 
