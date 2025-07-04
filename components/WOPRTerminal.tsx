@@ -262,13 +262,22 @@ const WOPRTerminal = () => {
           const currentBookData = books.find(book => book.slug === currentBook)
           const bookTitle = currentBookData ? currentBookData.title : 'Book'
           
+          // Add banner
+          addLine("")
+          addLine(createBorder('', '═'), 'separator')
+          addLine("")
+          addLine("C O H E R E N C E I S M . I N F O", 'ascii-art')
+          addLine("")
+          addLine("TAGLINE_PLACEHOLDER", 'tagline')
+          addLine("")
+          addLine(createBorder('', '═'), 'separator')
+          addLine("")
+          
           addLine(createBorder(`${bookTitle.toUpperCase()} - CHAPTERS`), 'normal')
           addLine("")
           validChapters.forEach((chapter, index) => {
             addLine(`${index + 1}. ${chapter.title}`, 'normal', false, `${index + 1}`)
           })
-          addLine("")
-          addLine("x. back to books", 'separator', false, 'x')
           addLine("")
           addLine(createBorder(), 'normal')
           addLine("")
@@ -570,26 +579,25 @@ const WOPRTerminal = () => {
       })
     }
     
-    // Add separator and date header
-    addLine(createBorder('', '─'), 'separator')
-    if (date) {
-      addLine(`Date: ${date}`, 'normal')
-      if (pageInfo && pageInfo.total > 1) {
-        addLine(`Page ${pageInfo.current} of ${pageInfo.total}`, 'normal')
-      }
-      addLine(createBorder(), 'separator')
-      addLine("", 'normal')
-    }
+    // Add banner first
+    addLine("")
+    addLine(createBorder('', '═'), 'separator')
+    addLine("")
+    addLine("C O H E R E N C E I S M . I N F O", 'ascii-art')
+    addLine("")
+    addLine("TAGLINE_PLACEHOLDER", 'tagline')
+    addLine("")
+    addLine(createBorder('', '═'), 'separator')
+    addLine("")
+    
     // Add markdown content
     addLine(content, 'markdown', true)
     addLine("", 'normal')
     addLine(createBorder('', '─'), 'separator')
-    addLine("")
-    addLine("x. back", 'separator', false, 'x')
     if (contentType && contentId) {
       addLine("n. narrate - Have Byte narrate this content", 'separator', false, 'n')
+      addLine("")
     }
-    addLine("")
   }
 
   const generateSpeech = async (text: string) => {
@@ -863,15 +871,31 @@ const WOPRTerminal = () => {
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('help')
-        await typeResponse(`Available commands:
-/menu     - Return to main menu.
-/help     - Display available commands and instructions.
-/contact  - Information for reaching out.
-/changelog- View release notes and version history.
-/random   - Receive a random Byte-generated thought or humorous quip.
-/voice    - Toggle audio output (Byte speaks responses aloud).
-/clear    - Clear terminal screen.
-/reset    - Reset Byte's memory and start fresh conversation.`, false)
+        // Add banner
+        addLine("")
+        addLine(createBorder('', '═'), 'separator')
+        addLine("")
+        addLine("C O H E R E N C E I S M . I N F O", 'ascii-art')
+        addLine("")
+        addLine("TAGLINE_PLACEHOLDER", 'tagline')
+        addLine("")
+        addLine(createBorder('', '═'), 'separator')
+        addLine("")
+        addLine(createBorder('AVAILABLE COMMANDS'), 'normal')
+        addLine("")
+        addLine("/menu     - Return to main menu", 'normal')
+        addLine("/help     - Display available commands and instructions", 'normal')
+        addLine("/contact  - Information for reaching out", 'normal')
+        addLine("/changelog- View release notes and version history", 'normal')
+        addLine("/random   - Receive a random Byte-generated thought or humorous quip", 'normal')
+        addLine("/voice    - Toggle audio output (Byte speaks responses aloud)", 'normal')
+        addLine("/clear    - Clear terminal screen", 'normal')
+        addLine("/reset    - Reset Byte's memory and start fresh conversation", 'normal')
+        addLine("")
+        addLine(createBorder(), 'normal')
+        addLine("")
+        addLine("Type any command or ask Byte a question.")
+        addLine("")
         break
 
       case 'JOURNALS':
@@ -892,15 +916,23 @@ const WOPRTerminal = () => {
           const noJournalsContent = `No journal entries found. Repository may be empty or inaccessible.`
           await typeResponse(noJournalsContent, false)
         } else {
-          addLine(createBorder('JOURNAL ENTRIES'), 'normal')
+          // Add banner
+        addLine("")
+        addLine(createBorder('', '═'), 'separator')
+        addLine("")
+        addLine("C O H E R E N C E I S M . I N F O", 'ascii-art')
+        addLine("")
+        addLine("TAGLINE_PLACEHOLDER", 'tagline')
+        addLine("")
+        addLine(createBorder('', '═'), 'separator')
+        addLine("")
+        addLine(createBorder('JOURNAL ENTRIES'), 'normal')
           addLine("")
           journals.slice(0, 10).forEach((journal, index) => {
             const title = journal.title
             const date = journal.date ? ` (${journal.date})` : ''
             addLine(`${index + 1}. ${title}${date}`, 'normal', false, `${index + 1}`)
           })
-          addLine("")
-          addLine("x. back to main menu", 'separator', false, 'x')
           addLine("")
           addLine(createBorder(), 'normal')
           addLine("")
@@ -929,13 +961,21 @@ const WOPRTerminal = () => {
           const noBooksContent = `No books found. Repository may be empty or inaccessible.`
           await typeResponse(noBooksContent, false)
         } else {
+          // Add banner
+          addLine("")
+          addLine(createBorder('', '═'), 'separator')
+          addLine("")
+          addLine("C O H E R E N C E I S M . I N F O", 'ascii-art')
+          addLine("")
+          addLine("TAGLINE_PLACEHOLDER", 'tagline')
+          addLine("")
+          addLine(createBorder('', '═'), 'separator')
+          addLine("")
           addLine(createBorder('COHERENCEISM TEXTS'), 'normal')
           addLine("")
           books.forEach((book, index) => {
             addLine(`${index + 1}. ${book.title}`, 'normal', false, `${index + 1}`)
           })
-          addLine("")
-          addLine("x. back to main menu", 'separator', false, 'x')
           addLine("")
           addLine(createBorder(), 'normal')
           addLine("")
@@ -952,6 +992,16 @@ const WOPRTerminal = () => {
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('music')
+        // Add banner
+        addLine("")
+        addLine(createBorder('', '═'), 'separator')
+        addLine("")
+        addLine("C O H E R E N C E I S M . I N F O", 'ascii-art')
+        addLine("")
+        addLine("TAGLINE_PLACEHOLDER", 'tagline')
+        addLine("")
+        addLine(createBorder('', '═'), 'separator')
+        addLine("")
         addLine(createBorder(`BYTE'S SONIC NEURAL NETWORKS ${isMusicPlaying ? '♪ [PLAYLIST OPEN]' : ''}`), 'normal')
         addLine("")
         addLine("1. Black Rain on Rusted Streets", 'normal', false, '1')
@@ -959,8 +1009,6 @@ const WOPRTerminal = () => {
         addLine("3. Refined Reflections", 'normal', false, '3')
         addLine("4. Resonant Dream", 'normal', false, '4')
         addLine("5. Rust and Revolt", 'normal', false, '5')
-        addLine("")
-        addLine("x. back to main menu", 'separator', false, 'x')
         addLine("")
         addLine(createBorder(), 'normal')
         addLine("")
@@ -1015,6 +1063,16 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('contact')
+        // Add banner
+        addLine("")
+        addLine(createBorder('', '═'), 'separator')
+        addLine("")
+        addLine("C O H E R E N C E I S M . I N F O", 'ascii-art')
+        addLine("")
+        addLine("TAGLINE_PLACEHOLDER", 'tagline')
+        addLine("")
+        addLine(createBorder('', '═'), 'separator')
+        addLine("")
         addLine("────────────────────────────────────────", 'separator')
         addLine("    📡 CONTACT & CONNECTION PROTOCOLS", 'ai-response')
         addLine("────────────────────────────────────────", 'separator')
@@ -1087,6 +1145,16 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
         }
         
         // Display changelog - use the fresh data, not the state variable
+        // Add banner
+        addLine("")
+        addLine(createBorder('', '═'), 'separator')
+        addLine("")
+        addLine("C O H E R E N C E I S M . I N F O", 'ascii-art')
+        addLine("")
+        addLine("TAGLINE_PLACEHOLDER", 'tagline')
+        addLine("")
+        addLine(createBorder('', '═'), 'separator')
+        addLine("")
         addLine(createBorder('RELEASE NOTES & VERSION HISTORY'), 'normal')
         addLine("")
         addLine("Recent releases and updates to the WOPR Coherence Archive:", 'normal')
@@ -1120,12 +1188,6 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
             addLine(`Page ${changelogPage} of ${totalPages} • ${changelogData.length} total releases`, 'ai-response')
             addLine("")
             
-            if (changelogPage < totalPages) {
-              addLine("n. next page", 'separator', false, 'n')
-            }
-            if (changelogPage > 1) {
-              addLine("p. previous page", 'separator', false, 'p')
-            }
             addLine("")
           }
           
@@ -1133,7 +1195,6 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
           addLine("")
         }
         
-        addLine("x. back to help", 'separator', false, 'x')
         addLine("")
         addLine(createBorder(), 'normal')
         addLine("")
@@ -1326,8 +1387,6 @@ ${release.fullDescription}`
                 chapters.forEach((chapter, index) => {
                   addLine(`${index + 1}. ${chapter.title}`, 'normal', false, `${index + 1}`)
                 })
-                addLine("")
-                addLine("x. back to books", 'separator', false, 'x')
                 addLine("")
                 addLine(createBorder(), 'normal')
                 addLine("")
@@ -1635,6 +1694,16 @@ ${release.fullDescription}`
             await new Promise(resolve => setTimeout(resolve, 100))
             
             // Redisplay changelog with new page
+            // Add banner
+            addLine("")
+            addLine(createBorder('', '═'), 'separator')
+            addLine("")
+            addLine("C O H E R E N C E I S M . I N F O", 'ascii-art')
+            addLine("")
+            addLine("TAGLINE_PLACEHOLDER", 'tagline')
+            addLine("")
+            addLine(createBorder('', '═'), 'separator')
+            addLine("")
             addLine(createBorder('RELEASE NOTES & VERSION HISTORY'), 'normal')
             addLine("")
             addLine("Recent releases and updates to the WOPR Coherence Archive:", 'normal')
@@ -1656,19 +1725,12 @@ ${release.fullDescription}`
               addLine(`Page ${nextPage} of ${totalPages} • ${changelog.length} total releases`, 'ai-response')
               addLine("")
               
-              if (nextPage < totalPages) {
-                addLine("n. next page", 'separator', false, 'n')
-              }
-              if (nextPage > 1) {
-                addLine("p. previous page", 'separator', false, 'p')
-              }
               addLine("")
             }
             
             addLine("Select a number to view detailed release notes.")
             addLine("")
-            addLine("x. back to help", 'separator', false, 'x')
-            addLine("")
+                addLine("")
             addLine(createBorder(), 'normal')
             addLine("")
           } else {
@@ -1705,6 +1767,16 @@ ${release.fullDescription}`
             await new Promise(resolve => setTimeout(resolve, 100))
             
             // Redisplay changelog with new page
+            // Add banner
+            addLine("")
+            addLine(createBorder('', '═'), 'separator')
+            addLine("")
+            addLine("C O H E R E N C E I S M . I N F O", 'ascii-art')
+            addLine("")
+            addLine("TAGLINE_PLACEHOLDER", 'tagline')
+            addLine("")
+            addLine(createBorder('', '═'), 'separator')
+            addLine("")
             addLine(createBorder('RELEASE NOTES & VERSION HISTORY'), 'normal')
             addLine("")
             addLine("Recent releases and updates to the WOPR Coherence Archive:", 'normal')
@@ -1726,19 +1798,12 @@ ${release.fullDescription}`
               addLine(`Page ${prevPage} of ${totalPages} • ${changelog.length} total releases`, 'ai-response')
               addLine("")
               
-              if (prevPage < totalPages) {
-                addLine("n. next page", 'separator', false, 'n')
-              }
-              if (prevPage > 1) {
-                addLine("p. previous page", 'separator', false, 'p')
-              }
               addLine("")
             }
             
             addLine("Select a number to view detailed release notes.")
             addLine("")
-            addLine("x. back to help", 'separator', false, 'x')
-            addLine("")
+                addLine("")
             addLine(createBorder(), 'normal')
             addLine("")
           } else {
@@ -2167,6 +2232,79 @@ ${release.fullDescription}`
       {/* Sticky command prompt */}
       {(systemReady || isProcessing) && (
         <div className="absolute bottom-6 left-0 right-0 bg-black border-t border-terminal-green-dim z-40">
+          {/* Terminal-style navigation buttons */}
+          {(isViewingContent || currentMenu !== 'main') && (
+            <div className="border-b border-terminal-green-dim">
+              <div className="px-8 py-2 flex items-center gap-2">
+                <button
+                  onClick={() => processCommand('x')}
+                  className="px-4 py-1 border border-terminal-green bg-black text-terminal-green hover:bg-terminal-green hover:text-black transition-all duration-200 font-mono text-sm"
+                >
+                  E<span className="underline decoration-2 underline-offset-1">X</span>IT
+                </button>
+                
+                {currentContent && currentNarrationUrls.length === 0 && (
+                  <button
+                    onClick={() => processCommand('n')}
+                    className="px-4 py-1 border border-terminal-green bg-black text-terminal-green hover:bg-terminal-green hover:text-black transition-all duration-200 font-mono text-sm"
+                  >
+                    <span className="underline decoration-2 underline-offset-1">N</span>ARRATE
+                  </button>
+                )}
+                
+                {currentNarrationUrls.length > 0 && (
+                  <button
+                    onClick={() => processCommand('p')}
+                    className="px-4 py-1 border border-terminal-green bg-black text-terminal-green hover:bg-terminal-green hover:text-black transition-all duration-200 font-mono text-sm"
+                  >
+                    {isNarrationPlaying ? <><span className="underline decoration-2 underline-offset-1">P</span>AUSE</> : <><span className="underline decoration-2 underline-offset-1">P</span>LAY</>}
+                  </button>
+                )}
+                
+                {currentMenu === 'changelog' && !isViewingContent && (
+                  <>
+                    {changelogPage > 1 && (
+                      <button
+                        onClick={() => processCommand('p')}
+                        className="px-4 py-1 border border-terminal-green bg-black text-terminal-green hover:bg-terminal-green hover:text-black transition-all duration-200 font-mono text-sm"
+                      >
+                        <span className="underline decoration-2 underline-offset-1">P</span>REV
+                      </button>
+                    )}
+                    {changelogPage < Math.ceil(changelog.length / 5) && (
+                      <button
+                        onClick={() => processCommand('n')}
+                        className="px-4 py-1 border border-terminal-green bg-black text-terminal-green hover:bg-terminal-green hover:text-black transition-all duration-200 font-mono text-sm"
+                      >
+                        <span className="underline decoration-2 underline-offset-1">N</span>EXT
+                      </button>
+                    )}
+                  </>
+                )}
+                
+                <div className="flex-1"></div>
+                
+                {/* Standard buttons always available */}
+                <button
+                  onClick={() => processCommand('/menu')}
+                  className="px-4 py-1 border border-terminal-green bg-black text-terminal-green hover:bg-terminal-green hover:text-black transition-all duration-200 font-mono text-sm"
+                >
+                  <span className="underline decoration-2 underline-offset-1">M</span>ENU
+                </button>
+                
+                <button
+                  onClick={() => processCommand('/help')}
+                  className="px-4 py-1 border border-terminal-green bg-black text-terminal-green hover:bg-terminal-green hover:text-black transition-all duration-200 font-mono text-sm ml-2"
+                >
+                  <span className="underline decoration-2 underline-offset-1">H</span>ELP
+                </button>
+                
+                <div className="text-terminal-amber text-xs font-mono ml-4">
+                  ↑↓ SCROLL • PgUp/PgDn JUMP
+                </div>
+              </div>
+            </div>
+          )}
           <div className="px-8 py-4">
             <div className="flex justify-between items-center">
               <div className="flex-1">
@@ -2184,36 +2322,6 @@ ${release.fullDescription}`
                   </div>
                 )}
               </div>
-              
-              {(isViewingContent || currentMenu === 'about' || currentMenu === 'help' || currentMenu === 'contact' || currentMenu === 'changelog') && (
-                <div className="text-terminal-green-dim text-sm ml-8 flex items-center gap-4">
-                  <span className="text-terminal-amber opacity-60 italic">x. back</span>
-                  {currentContent && currentNarrationUrls.length === 0 && (
-                    <>
-                      <span className="text-terminal-green-dim opacity-40">•</span>
-                      <span className="text-terminal-amber opacity-60 italic">n. narrate</span>
-                    </>
-                  )}
-                  {currentNarrationUrls.length > 0 && (
-                    <>
-                      <span className="text-terminal-green-dim opacity-40">•</span>
-                      <span className="text-terminal-amber opacity-60 italic">
-                        p. {isNarrationPlaying ? 'pause' : 'resume'}
-                      </span>
-                      {currentNarrationUrls.length > 1 && (
-                        <>
-                          <span className="text-terminal-green-dim opacity-40">•</span>
-                          <span className="text-terminal-green-dim opacity-60 text-xs">
-                            {currentChunkIndex + 1}/{currentNarrationUrls.length}
-                          </span>
-                        </>
-                      )}
-                    </>
-                  )}
-                  <span className="text-terminal-green-dim opacity-40">•</span>
-                  <span>↑↓ scroll • PgUp/PgDn jump</span>
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -2221,7 +2329,7 @@ ${release.fullDescription}`
 
       {/* Status bar */}
       <div className="absolute bottom-0 left-0 right-0 bg-terminal-green text-black p-1 flex justify-between text-sm z-50">
-        <span className="hidden md:block">DIGITAL CONSCIOUSNESS {changelog[0]?.version ? `v${changelog[0].version}` : 'LOADING...'}</span>
+        <span className="hidden md:block">{changelog[0]?.version ? `v${changelog[0].version}` : 'LOADING...'}</span>
         <span className="md:block flex-1 text-center md:text-left md:flex-initial">
           COHERENCEISM.INFO {hasConversationContext && <span className="ml-2">• MEMORY: ACTIVE</span>}
         </span>
