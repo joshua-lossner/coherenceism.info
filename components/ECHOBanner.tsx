@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 
-const WOPRBanner = () => {
+const ECHOBanner = () => {
   const [currentTaglineIndex, setCurrentTaglineIndex] = useState(0)
   const [isGlitching, setIsGlitching] = useState(false)
   
@@ -58,4 +58,4 @@ const WOPRBanner = () => {
   )
 }
 
-export default WOPRBanner
+export default ECHOBanner
