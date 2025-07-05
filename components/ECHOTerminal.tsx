@@ -394,7 +394,7 @@ const ECHOTerminal = () => {
       addLine("")
       addLine(createBorder(), 'normal')
       addLine("")
-      addLine("Type a number above or 'help' for more options.")
+      addPromptWithOrangeBorder("Type a number above or 'help' for more options.")
       addLine("")
     }
   }, [isClient, isMobile])
@@ -532,6 +532,12 @@ const ECHOTerminal = () => {
   }
 
   // Function to create dynamic borders that match content width
+  const addPromptWithOrangeBorder = (promptText: string) => {
+    addLine('────────────────────────────────────────', 'conversation-border')
+    addLine("")
+    addLine(promptText)
+  }
+
   const createBorder = (title?: string, char: string = '━'): string => {
     // Calculate available width based on terminal container
     // max-w-4xl = 56rem = 896px at default font size
@@ -858,7 +864,7 @@ const ECHOTerminal = () => {
         addLine("")
         addLine(createBorder(), 'normal')
         addLine("")
-        addLine("Type a number above or 'help' for more options.")
+        addPromptWithOrangeBorder("Type a number above or 'help' for more options.")
         addLine("")
         break
 
@@ -891,7 +897,7 @@ const ECHOTerminal = () => {
         addLine("")
         addLine(createBorder(), 'normal')
         addLine("")
-        addLine("Type any command or ask Byte a question.")
+        addPromptWithOrangeBorder("Type any command or ask Byte a question.")
         addLine("")
         break
 
@@ -933,7 +939,7 @@ const ECHOTerminal = () => {
           addLine("")
           addLine(createBorder(), 'normal')
           addLine("")
-          addLine("Type a number above to read an entry.")
+          addPromptWithOrangeBorder("Type a number above to read an entry.")
           addLine("")
         }
         break
@@ -976,7 +982,7 @@ const ECHOTerminal = () => {
           addLine("")
           addLine(createBorder(), 'normal')
           addLine("")
-          addLine("Enter the number to explore chapters.")
+          addPromptWithOrangeBorder("Enter the number to explore chapters.")
           addLine("")
         }
         break
@@ -1180,7 +1186,7 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
             addLine("")
           }
           
-          addLine("Select a number to view detailed release notes.")
+          addPromptWithOrangeBorder("Select a number to view detailed release notes.")
           addLine("")
         }
         
@@ -1379,7 +1385,7 @@ ${release.fullDescription}`
                 addLine("")
                 addLine(createBorder(), 'normal')
                 addLine("")
-                addLine("Enter the number to read a chapter.")
+                addPromptWithOrangeBorder("Enter the number to read a chapter.")
                 addLine("")
               }
             }
@@ -1717,7 +1723,7 @@ ${release.fullDescription}`
               addLine("")
             }
             
-            addLine("Select a number to view detailed release notes.")
+            addPromptWithOrangeBorder("Select a number to view detailed release notes.")
             addLine("")
                 addLine("")
             addLine(createBorder(), 'normal')
@@ -1790,7 +1796,7 @@ ${release.fullDescription}`
               addLine("")
             }
             
-            addLine("Select a number to view detailed release notes.")
+            addPromptWithOrangeBorder("Select a number to view detailed release notes.")
             addLine("")
                 addLine("")
             addLine(createBorder(), 'normal')
@@ -2207,9 +2213,7 @@ ${release.fullDescription}`
       
       {/* Sticky command prompt */}
       {(systemReady || isProcessing) && (
-        <div className="absolute bottom-6 left-0 right-0 bg-black z-40">
-          {/* Orange border at top of prompt box */}
-          <div className="border-t-2 border-orange-500 opacity-70"></div>
+        <div className="absolute bottom-6 left-0 right-0 bg-black border-t border-terminal-green-dim z-40">
           {/* Terminal-style navigation buttons */}
           {(isViewingContent || currentMenu !== 'main') && (
             <div className="border-b border-terminal-green-dim">
