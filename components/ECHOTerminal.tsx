@@ -1948,6 +1948,8 @@ ${release.fullDescription}`
           behavior: 'smooth'
         })
       }
+    } else if (e.key === ' ') {
+      setCurrentInput(prev => prev + ' ')
     } else if (e.key.length === 1) {
       setCurrentInput(prev => prev + e.key)
     }
