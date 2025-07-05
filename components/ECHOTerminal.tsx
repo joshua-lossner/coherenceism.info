@@ -1881,6 +1881,10 @@ ${release.fullDescription}`
 
       default:
         // Any input gets sent to conversational AI (with memory)
+        // Add spacing before conversation starts
+        addLine("")
+        addLine('────────────────────────────────────────', 'separator')
+        addLine("")
         // Echo the user's message to terminal
         addLine(`> ${command}`, 'user-input')
         addLine("")
