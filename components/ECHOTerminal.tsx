@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 
 interface TerminalLine {
   text: string
-  type?: 'normal' | 'error' | 'processing' | 'ai-response' | 'separator' | 'user-input' | 'markdown' | 'ascii-art' | 'tagline'
+  type?: 'normal' | 'error' | 'processing' | 'ai-response' | 'separator' | 'user-input' | 'markdown' | 'ascii-art' | 'tagline' | 'conversation-border'
   isMarkdown?: boolean
   clickableCommand?: string
 }
