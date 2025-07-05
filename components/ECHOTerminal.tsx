@@ -528,7 +528,7 @@ const ECHOTerminal = () => {
     return () => clearInterval(interval)
   }, [isProcessing])
 
-  const addLine = (text: string, type: 'normal' | 'error' | 'processing' | 'ai-response' | 'separator' | 'user-input' | 'markdown' | 'ascii-art' | 'tagline' = 'normal', isMarkdown: boolean = false, clickableCommand?: string) => {
+  const addLine = (text: string, type: 'normal' | 'error' | 'processing' | 'ai-response' | 'separator' | 'user-input' | 'markdown' | 'ascii-art' | 'tagline' | 'conversation-border' = 'normal', isMarkdown: boolean = false, clickableCommand?: string) => {
     setTerminalLines(prev => [...prev, { text, type, isMarkdown, clickableCommand }])
   }
 
