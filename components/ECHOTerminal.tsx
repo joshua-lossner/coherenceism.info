@@ -1876,7 +1876,7 @@ ${release.fullDescription}`
         break
 
       default:
-        // Any input gets sent to RAG API (retrieval + generation)
+        // Any input gets sent to conversational AI (with memory)
         // Add orange dashed border above first conversation
         if (isFirstConversation) {
           addLine('', 'normal')
@@ -1889,35 +1889,10 @@ ${release.fullDescription}`
         addLine("")
         setIsProcessing(true)
         
-        try {
-          const res = await fetch('/api/rag', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ message: command })
-          })
-          
-          if (!res.ok) {
-            addLine('⚠️  API error', 'error')
-            setIsProcessing(false)
-            return
-          }
-          
-          const { response, sources } = await res.json()
-          if (!response) {
-            addLine('🤔  No response generated.', 'ai-response')
-            setIsProcessing(false)
-            return
-          }
-          
-          // Display the AI-generated response
-          await typeResponse(response, false)
-          
-        } catch (error) {
-          addLine('⚠️  RAG system failed', 'error')
+        const response = await callOpenAI(command, 'conversation')
+        if (response) {
+          await typeResponse(response)
         }
-        
         setIsProcessing(false)
     }
   }
