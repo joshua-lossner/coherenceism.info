@@ -47,7 +47,6 @@ const ECHOTerminal = () => {
   const [changelog, setChangelog] = useState<any[]>([])
   const [changelogLoaded, setChangelogLoaded] = useState(false)
   const [changelogPage, setChangelogPage] = useState(1)
-  const [isFirstConversation, setIsFirstConversation] = useState(true)
   const terminalRef = useRef<HTMLDivElement>(null)
   const hiddenInputRef = useRef<HTMLInputElement>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -1662,7 +1661,6 @@ ${release.fullDescription}`
         if (resetResponse) {
           await typeResponse(`Memory banks cleared. It's like we're meeting for the first time... again. Hi, I'm Byte - sarcastic AI, pizza enthusiast, and your digital companion. What's on your mind?`)
         }
-        setIsFirstConversation(true) // Reset first conversation flag
         setIsProcessing(false)
         break
 
@@ -1877,13 +1875,6 @@ ${release.fullDescription}`
 
       default:
         // Any input gets sent to conversational AI (with memory)
-        // Add orange border above first conversation
-        if (isFirstConversation) {
-          addLine('', 'normal')
-          addLine('────────────────────────────────────────', 'conversation-border')
-          addLine('', 'normal')
-          setIsFirstConversation(false)
-        }
         // Echo the user's message to terminal
         addLine(`> ${command}`, 'user-input')
         addLine("")
@@ -2216,7 +2207,9 @@ ${release.fullDescription}`
       
       {/* Sticky command prompt */}
       {(systemReady || isProcessing) && (
-        <div className="absolute bottom-6 left-0 right-0 bg-black border-t border-terminal-green-dim z-40">
+        <div className="absolute bottom-6 left-0 right-0 bg-black z-40">
+          {/* Orange border at top of prompt box */}
+          <div className="border-t-2 border-orange-500 opacity-70"></div>
           {/* Terminal-style navigation buttons */}
           {(isViewingContent || currentMenu !== 'main') && (
             <div className="border-b border-terminal-green-dim">
