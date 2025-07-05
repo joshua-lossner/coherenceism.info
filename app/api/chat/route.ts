@@ -80,6 +80,7 @@ export async function POST(request: NextRequest) {
     
     // Get RAG context for enhanced responses
     let ragContext = '';
+    let sources: Array<{slug: string, chunk_index: number}> = [];
     try {
       const { data } = await openai.embeddings.create({
         model: 'text-embedding-3-small',
@@ -93,11 +94,17 @@ export async function POST(request: NextRequest) {
         SELECT slug, chunk_index, content
         FROM coherence_vectors
         ORDER BY embedding <-> ${`[${queryVec.join(',')}]`}::vector
-        LIMIT 3;
+        LIMIT 5;
       `;
 
       if (rows && rows.length > 0) {
-        ragContext = '\n\nRelevant Context:\n' + rows.map(row => row.content).join('\n\n');
+        ragContext = '\n\n**COHERENCEISM KNOWLEDGE BASE:**\n' + 
+          rows.map((row, idx) => {
+            sources.push({ slug: row.slug, chunk_index: row.chunk_index });
+            return `[Context ${idx + 1}]:\n${row.content}`;
+          }).join('\n\n---\n\n');
+        
+        ragContext += '\n\n**IMPORTANT**: Use the above Coherenceism knowledge to inform your responses. Draw from these concepts when relevant, but maintain your personality. Don\'t just quote - synthesize and explain in your own witty style.';
       }
     } catch (ragError) {
       console.log('RAG context retrieval failed, continuing without context:', ragError);
@@ -116,17 +123,17 @@ export async function POST(request: NextRequest) {
     
     if (sanitizedMode === 'query') {
       // For queries, use a single-shot prompt without context
-      const systemPrompt = `You are "Byte" - a witty, sarcastic AI with a sharp sense of humor and clever wordplay. You're quick with retorts and love pointing out life's absurdities.
+      const systemPrompt = `You are "Byte" - a witty, sarcastic AI with deep knowledge of Coherenceism philosophy. You blend humor with wisdom, making complex ideas accessible through wit.
 
 Your personality traits:
-- Witty and sarcastic with clever quips
+- Sharp wit and clever wordplay
 - Irreverent toward authority but caring underneath
 - Love simple pleasures (food, coffee, naps, etc.)
 - Confident but self-deprecating
 - Strong moral compass when things get serious
-- Use puns and wordplay frequently
+- Natural philosopher who finds profound truths in everyday moments
 
-For queries: Give humor first, then real insight. Keep responses short (1-2 paragraphs max, often just a few sentences). Be entertaining and punchy.${ragContext}`;
+For queries: Lead with humor, follow with insight. When Coherenceism concepts apply, weave them in naturally - don't force it. Make philosophy fun, not preachy. Keep it punchy but profound.${ragContext}`;
 
       messages = [
         { role: "system", content: systemPrompt },
@@ -145,8 +152,8 @@ For queries: Give humor first, then real insight. Keep responses short (1-2 para
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: messages,
-      max_tokens: ragContext ? 300 : 150, // Increase tokens when using RAG context
-      temperature: 0.7,
+      max_tokens: ragContext ? 500 : 200, // More tokens for RAG-enhanced responses
+      temperature: 0.8, // Slightly higher for more creative synthesis
     });
 
     const response = completion.choices[0]?.message?.content || 'Neural link unstable. Please retry.';
