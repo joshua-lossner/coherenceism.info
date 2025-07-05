@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import { sql } from '@vercel/postgres';
 import { rateLimiter, RATE_LIMITS } from '../../../lib/rate-limit';
 import { InputValidator } from '../../../lib/validation';
 import { SecurityHeadersManager } from '../../../lib/security-headers';
@@ -77,11 +78,38 @@ export async function POST(request: NextRequest) {
     // Add user message to conversation history
     ConversationManager.addMessage(sessionId, 'user', sanitizedMessage);
     
+    // Get RAG context for enhanced responses
+    let ragContext = '';
+    try {
+      const { data } = await openai.embeddings.create({
+        model: 'text-embedding-3-small',
+        input: sanitizedMessage
+      });
+      const queryVec = data[0].embedding;
+
+      const { rows } = await sql<
+        { slug: string; chunk_index: number; content: string }
+      >`
+        SELECT slug, chunk_index, content
+        FROM coherence_vectors
+        ORDER BY embedding <-> ${`[${queryVec.join(',')}]`}::vector
+        LIMIT 3;
+      `;
+
+      if (rows && rows.length > 0) {
+        ragContext = '\n\nRelevant Context:\n' + rows.map(row => row.content).join('\n\n');
+      }
+    } catch (ragError) {
+      console.log('RAG context retrieval failed, continuing without context:', ragError);
+      // Continue without RAG context if it fails
+    }
+    
     // Debug logging in development
     if (process.env.NODE_ENV === 'development') {
       console.log('Session ID:', sessionId);
       console.log('Mode:', sanitizedMode);
       console.log('Clear Context:', clearContext);
+      console.log('RAG Context Length:', ragContext.length);
     }
     
     let messages: Array<{role: 'system' | 'user' | 'assistant', content: string}>;
@@ -98,7 +126,7 @@ Your personality traits:
 - Strong moral compass when things get serious
 - Use puns and wordplay frequently
 
-For queries: Give humor first, then real insight. Keep responses short (1-2 paragraphs max, often just a few sentences). Be entertaining and punchy.`;
+For queries: Give humor first, then real insight. Keep responses short (1-2 paragraphs max, often just a few sentences). Be entertaining and punchy.${ragContext}`;
 
       messages = [
         { role: "system", content: systemPrompt },
@@ -107,12 +135,17 @@ For queries: Give humor first, then real insight. Keep responses short (1-2 para
     } else {
       // For conversations, use the full conversation history
       messages = ConversationManager.getOpenAIMessages(sessionId);
+      
+      // Add RAG context to the system message for conversations
+      if (ragContext && messages.length > 0 && messages[0].role === 'system') {
+        messages[0].content += ragContext;
+      }
     }
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: messages,
-      max_tokens: 150,
+      max_tokens: ragContext ? 300 : 150, // Increase tokens when using RAG context
       temperature: 0.7,
     });
 
