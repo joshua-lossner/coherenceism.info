@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 
 interface TerminalLine {
   text: string
-  type?: 'normal' | 'error' | 'processing' | 'ai-response' | 'separator' | 'user-input' | 'markdown' | 'ascii-art' | 'tagline'
+  type?: 'normal' | 'error' | 'processing' | 'ai-response' | 'separator' | 'user-input' | 'markdown' | 'ascii-art' | 'tagline' | 'conversation-border'
   isMarkdown?: boolean
   clickableCommand?: string
 }
@@ -394,7 +394,7 @@ const ECHOTerminal = () => {
       addLine("")
       addLine(createBorder(), 'normal')
       addLine("")
-      addLine("Type a number above or 'help' for more options.")
+      addPromptWithOrangeBorder("Type a number above or 'help' for more options.")
       addLine("")
     }
   }, [isClient, isMobile])
@@ -527,11 +527,17 @@ const ECHOTerminal = () => {
     return () => clearInterval(interval)
   }, [isProcessing])
 
-  const addLine = (text: string, type: 'normal' | 'error' | 'processing' | 'ai-response' | 'separator' | 'user-input' | 'markdown' | 'ascii-art' | 'tagline' = 'normal', isMarkdown: boolean = false, clickableCommand?: string) => {
+  const addLine = (text: string, type: 'normal' | 'error' | 'processing' | 'ai-response' | 'separator' | 'user-input' | 'markdown' | 'ascii-art' | 'tagline' | 'conversation-border' = 'normal', isMarkdown: boolean = false, clickableCommand?: string) => {
     setTerminalLines(prev => [...prev, { text, type, isMarkdown, clickableCommand }])
   }
 
   // Function to create dynamic borders that match content width
+  const addPromptWithOrangeBorder = (promptText: string) => {
+    addLine('────────────────────────────────────────', 'conversation-border')
+    addLine("")
+    addLine(promptText)
+  }
+
   const createBorder = (title?: string, char: string = '━'): string => {
     // Calculate available width based on terminal container
     // max-w-4xl = 56rem = 896px at default font size
@@ -858,7 +864,7 @@ const ECHOTerminal = () => {
         addLine("")
         addLine(createBorder(), 'normal')
         addLine("")
-        addLine("Type a number above or 'help' for more options.")
+        addPromptWithOrangeBorder("Type a number above or 'help' for more options.")
         addLine("")
         break
 
@@ -891,7 +897,7 @@ const ECHOTerminal = () => {
         addLine("")
         addLine(createBorder(), 'normal')
         addLine("")
-        addLine("Type any command or ask Byte a question.")
+        addPromptWithOrangeBorder("Type any command or ask Byte a question.")
         addLine("")
         break
 
@@ -933,7 +939,7 @@ const ECHOTerminal = () => {
           addLine("")
           addLine(createBorder(), 'normal')
           addLine("")
-          addLine("Type a number above to read an entry.")
+          addPromptWithOrangeBorder("Type a number above to read an entry.")
           addLine("")
         }
         break
@@ -976,7 +982,7 @@ const ECHOTerminal = () => {
           addLine("")
           addLine(createBorder(), 'normal')
           addLine("")
-          addLine("Enter the number to explore chapters.")
+          addPromptWithOrangeBorder("Enter the number to explore chapters.")
           addLine("")
         }
         break
@@ -1180,7 +1186,7 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
             addLine("")
           }
           
-          addLine("Select a number to view detailed release notes.")
+          addPromptWithOrangeBorder("Select a number to view detailed release notes.")
           addLine("")
         }
         
@@ -1379,7 +1385,7 @@ ${release.fullDescription}`
                 addLine("")
                 addLine(createBorder(), 'normal')
                 addLine("")
-                addLine("Enter the number to read a chapter.")
+                addPromptWithOrangeBorder("Enter the number to read a chapter.")
                 addLine("")
               }
             }
@@ -1717,7 +1723,7 @@ ${release.fullDescription}`
               addLine("")
             }
             
-            addLine("Select a number to view detailed release notes.")
+            addPromptWithOrangeBorder("Select a number to view detailed release notes.")
             addLine("")
                 addLine("")
             addLine(createBorder(), 'normal')
@@ -1790,7 +1796,7 @@ ${release.fullDescription}`
               addLine("")
             }
             
-            addLine("Select a number to view detailed release notes.")
+            addPromptWithOrangeBorder("Select a number to view detailed release notes.")
             addLine("")
                 addLine("")
             addLine(createBorder(), 'normal')
@@ -1874,41 +1880,20 @@ ${release.fullDescription}`
         break
 
       default:
-        // Any input gets sent to RAG API (retrieval + generation)
-        // Echo the user's message to terminal
-        addLine(`> ${command}`, 'user-input')
+        // Any input gets sent to conversational AI (with memory)
+        // Add spacing before conversation starts
+        addLine("")
+        addLine('────────────────────────────────────────', 'separator')
+        addLine("")
+        // Echo the user's message to terminal (in all caps)
+        addLine(`> ${command.toUpperCase()}`, 'user-input')
         addLine("")
         setIsProcessing(true)
         
-        try {
-          const res = await fetch('/api/rag', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ message: command })
-          })
-          
-          if (!res.ok) {
-            addLine('⚠️  API error', 'error')
-            setIsProcessing(false)
-            return
-          }
-          
-          const { response, sources } = await res.json()
-          if (!response) {
-            addLine('🤔  No response generated.', 'ai-response')
-            setIsProcessing(false)
-            return
-          }
-          
-          // Display the AI-generated response
-          await typeResponse(response, false)
-          
-        } catch (error) {
-          addLine('⚠️  RAG system failed', 'error')
+        const response = await callOpenAI(command, 'conversation')
+        if (response) {
+          await typeResponse(response)
         }
-        
         setIsProcessing(false)
     }
   }
@@ -1963,6 +1948,8 @@ ${release.fullDescription}`
           behavior: 'smooth'
         })
       }
+    } else if (e.key === ' ') {
+      setCurrentInput(prev => prev + ' ')
     } else if (e.key.length === 1) {
       setCurrentInput(prev => prev + e.key)
     }
@@ -2184,6 +2171,7 @@ ${release.fullDescription}`
               line.type === 'processing' ? 'text-terminal-yellow' : 
               line.type === 'ai-response' ? 'text-terminal-green-dim' :
               line.type === 'separator' ? 'text-terminal-amber opacity-60 italic' :
+              line.type === 'conversation-border' ? 'text-orange-500 opacity-70' :
               line.type === 'user-input' ? 'text-terminal-green font-bold brightness-125' :
               line.type === 'markdown' ? 'text-terminal-green' :
               line.type === 'ascii-art' ? 'text-cyan-400 font-mono' :
