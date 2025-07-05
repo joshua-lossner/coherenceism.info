@@ -110,7 +110,7 @@ For queries: Give humor first, then real insight. Keep responses short (1-2 para
     }
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4o",
       messages: messages,
       max_tokens: 150,
       temperature: 0.7,

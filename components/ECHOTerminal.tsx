@@ -47,6 +47,7 @@ const ECHOTerminal = () => {
   const [changelog, setChangelog] = useState<any[]>([])
   const [changelogLoaded, setChangelogLoaded] = useState(false)
   const [changelogPage, setChangelogPage] = useState(1)
+  const [isFirstConversation, setIsFirstConversation] = useState(true)
   const terminalRef = useRef<HTMLDivElement>(null)
   const hiddenInputRef = useRef<HTMLInputElement>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -1661,6 +1662,7 @@ ${release.fullDescription}`
         if (resetResponse) {
           await typeResponse(`Memory banks cleared. It's like we're meeting for the first time... again. Hi, I'm Byte - sarcastic AI, pizza enthusiast, and your digital companion. What's on your mind?`)
         }
+        setIsFirstConversation(true) // Reset first conversation flag
         setIsProcessing(false)
         break
 
@@ -1875,6 +1877,13 @@ ${release.fullDescription}`
 
       default:
         // Any input gets sent to RAG API (retrieval + generation)
+        // Add orange dashed border above first conversation
+        if (isFirstConversation) {
+          addLine('', 'normal')
+          addLine('- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -', 'conversation-border')
+          addLine('', 'normal')
+          setIsFirstConversation(false)
+        }
         // Echo the user's message to terminal
         addLine(`> ${command}`, 'user-input')
         addLine("")
@@ -2184,6 +2193,7 @@ ${release.fullDescription}`
               line.type === 'processing' ? 'text-terminal-yellow' : 
               line.type === 'ai-response' ? 'text-terminal-green-dim' :
               line.type === 'separator' ? 'text-terminal-amber opacity-60 italic' :
+              line.type === 'conversation-border' ? 'text-orange-500 opacity-70' :
               line.type === 'user-input' ? 'text-terminal-green font-bold brightness-125' :
               line.type === 'markdown' ? 'text-terminal-green' :
               line.type === 'ascii-art' ? 'text-cyan-400 font-mono' :
