@@ -1877,10 +1877,10 @@ ${release.fullDescription}`
 
       default:
         // Any input gets sent to conversational AI (with memory)
-        // Add orange dashed border above first conversation
+        // Add orange border above first conversation
         if (isFirstConversation) {
           addLine('', 'normal')
-          addLine('- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -', 'conversation-border')
+          addLine('────────────────────────────────────────', 'conversation-border')
           addLine('', 'normal')
           setIsFirstConversation(false)
         }
