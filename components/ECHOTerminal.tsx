@@ -1885,8 +1885,8 @@ ${release.fullDescription}`
         addLine("")
         addLine('────────────────────────────────────────', 'separator')
         addLine("")
-        // Echo the user's message to terminal
-        addLine(`> ${command}`, 'user-input')
+        // Echo the user's message to terminal (in all caps)
+        addLine(`> ${command.toUpperCase()}`, 'user-input')
         addLine("")
         setIsProcessing(true)
         
