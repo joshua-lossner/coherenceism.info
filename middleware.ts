@@ -47,7 +47,10 @@ function anonymizeIP(ip: string): string {
 
 export function middleware(request: NextRequest) {
   const userAgent = request.headers.get('user-agent')?.toLowerCase() || ''
-  const clientIP = request.ip || request.headers.get('x-forwarded-for')?.split(',')[0] || ''
+  // Get IP from headers (Next.js 15 removed request.ip)
+  const forwarded = request.headers.get('x-forwarded-for')
+  const realIp = request.headers.get('x-real-ip')
+  const clientIP = forwarded?.split(',')[0] || realIp || 'unknown'
   
   // Block known bots by user agent
   const isBlockedBot = BLOCKED_USER_AGENTS.some(bot => userAgent.includes(bot))
