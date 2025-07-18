@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@vercel/postgres';
 import OpenAI from 'openai';
+import { rateLimiter, RATE_LIMITS } from '../../../lib/rate-limit';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -8,6 +9,16 @@ export const runtime = 'edge';
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limiting
+    const rateLimitResult = rateLimiter.check(req, RATE_LIMITS.RAG.limit, RATE_LIMITS.RAG.windowMs);
+    if (!rateLimitResult.allowed) {
+      const resetInSeconds = Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000);
+      return NextResponse.json(
+        { error: `Rate limit exceeded. Try again in ${resetInSeconds} seconds.` },
+        { status: 429 }
+      );
+    }
+
     const { message } = await req.json();
     
     if (!message?.trim()) {

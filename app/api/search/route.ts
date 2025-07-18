@@ -1,12 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@vercel/postgres';
 import OpenAI from 'openai';
+import { rateLimiter, RATE_LIMITS } from '../../../lib/rate-limit';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export const runtime = 'edge';
 
 export async function GET(req: NextRequest) {
+  // Rate limiting
+  const rateLimitResult = rateLimiter.check(req, RATE_LIMITS.SEARCH.limit, RATE_LIMITS.SEARCH.windowMs);
+  if (!rateLimitResult.allowed) {
+    const resetInSeconds = Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000);
+    return NextResponse.json(
+      { error: `Rate limit exceeded. Try again in ${resetInSeconds} seconds.` },
+      { status: 429 }
+    );
+  }
+
   const q = req.nextUrl.searchParams.get('q') ?? '';
   if (!q.trim()) {
     return NextResponse.json({ error: 'Missing ?q=' }, { status: 400 });

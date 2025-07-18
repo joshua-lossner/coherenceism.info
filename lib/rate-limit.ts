@@ -90,4 +90,6 @@ export const rateLimiter = new RateLimiter();
 export const RATE_LIMITS = {
   CHAT: { limit: 20, windowMs: 60000 }, // 20 requests per minute for chat
   SPEECH: { limit: 10, windowMs: 60000 }, // 10 requests per minute for speech (more expensive)
+  RAG: { limit: 15, windowMs: 60000 }, // 15 requests per minute for RAG (uses embeddings + GPT)
+  SEARCH: { limit: 30, windowMs: 60000 }, // 30 requests per minute for search (embeddings only)
 } as const;
