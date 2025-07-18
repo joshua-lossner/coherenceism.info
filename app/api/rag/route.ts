@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@vercel/postgres';
 import OpenAI from 'openai';
 import { rateLimiter, RATE_LIMITS } from '../../../lib/rate-limit';
+import SecureLogger from '../../../lib/secure-logger';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -83,7 +84,7 @@ ${context}`
     });
 
   } catch (error) {
-    console.error('RAG API error:', error);
+    SecureLogger.apiError('RAG API error', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

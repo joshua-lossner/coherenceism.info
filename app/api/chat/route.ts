@@ -5,6 +5,7 @@ import { rateLimiter, RATE_LIMITS } from '../../../lib/rate-limit';
 import { InputValidator } from '../../../lib/validation';
 import { SecurityHeadersManager } from '../../../lib/security-headers';
 import { ConversationManager } from '../../../lib/conversation-context';
+import SecureLogger from '../../../lib/secure-logger';
 
 export async function POST(request: NextRequest) {
   try {
@@ -115,17 +116,17 @@ export async function POST(request: NextRequest) {
         ragContext += '\n\n**IMPORTANT**: Use the above Coherenceism knowledge to inform your responses. Draw from these concepts when relevant, but maintain your personality. Don\'t just quote - synthesize and explain in your own witty style.';
       }
     } catch (ragError) {
-      console.log('RAG context retrieval failed, continuing without context:', ragError);
+      SecureLogger.warn('RAG context retrieval failed, continuing without context', { error: ragError });
       // Continue without RAG context if it fails
     }
     
-    // Debug logging in development
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Session ID:', sessionId);
-      console.log('Mode:', sanitizedMode);
-      console.log('Clear Context:', clearContext);
-      console.log('RAG Context Length:', ragContext.length);
-    }
+    // Debug logging using secure logger
+    SecureLogger.debug('Chat request processed', {
+      mode: sanitizedMode,
+      clearContext: clearContext,
+      ragContextLength: ragContext.length,
+      hasSession: !!sessionId
+    });
     
     let messages: Array<{role: 'system' | 'user' | 'assistant', content: string}>;
     
@@ -191,7 +192,7 @@ For queries: Lead with humor, follow with insight. When Coherenceism concepts ap
     
     return responseData;
   } catch (error: any) {
-    console.error('OpenAI API error:', error);
+    SecureLogger.apiError('OpenAI API error', error);
     
     // Handle specific OpenAI errors
     if (error?.status === 401) {

@@ -65,9 +65,8 @@ export function middleware(request: NextRequest) {
                                /^\w+\/[\d\.]+$/.test(userAgent) // Simple bot patterns like "Bot/1.0"
   
   if (isBlockedBot || isBlockedIP || hasNoUserAgent || hasSuspiciousPatterns) {
-    // Log the blocked attempt with anonymized IP for privacy
-    const anonymizedIP = anonymizeIP(clientIP)
-    console.log(`Blocked request: IP=${anonymizedIP}, UA=${userAgent.substring(0, 50)}...`)
+    // Security event logging removed to protect user privacy
+    // For production monitoring, consider using structured logging with anonymized data
     
     // Return 403 Forbidden with a clear message
     return new NextResponse('Access denied. This site does not allow automated crawling or indexing.', {
