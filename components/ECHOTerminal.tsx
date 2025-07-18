@@ -969,14 +969,6 @@ const ECHOTerminal = () => {
             addLine(createBorder('', '─'), 'separator')
             addLine(`Page ${journalPage} of ${totalPages} • ${journals.length} total entries`, 'ai-response')
             addLine("")
-            
-            if (journalPage > 1) {
-              addLine("Type 'p' or 'prev' for previous page", 'normal')
-            }
-            if (journalPage < totalPages) {
-              addLine("Type 'n' or 'next' for next page", 'normal')
-            }
-            addLine("")
           }
           
           addLine(createBorder(), 'normal')
@@ -1779,14 +1771,6 @@ ${release.fullDescription}`
               addLine(createBorder('', '─'), 'separator')
               addLine(`Page ${nextPage} of ${totalPages} • ${journals.length} total entries`, 'ai-response')
               addLine("")
-              
-              if (nextPage > 1) {
-                addLine("Type 'p' or 'prev' for previous page", 'normal')
-              }
-              if (nextPage < totalPages) {
-                addLine("Type 'n' or 'next' for next page", 'normal')
-              }
-              addLine("")
             }
             
             addLine(createBorder(), 'normal')
@@ -1909,14 +1893,6 @@ ${release.fullDescription}`
             if (totalPages > 1) {
               addLine(createBorder('', '─'), 'separator')
               addLine(`Page ${prevPage} of ${totalPages} • ${journals.length} total entries`, 'ai-response')
-              addLine("")
-              
-              if (prevPage > 1) {
-                addLine("Type 'p' or 'prev' for previous page", 'normal')
-              }
-              if (prevPage < totalPages) {
-                addLine("Type 'n' or 'next' for next page", 'normal')
-              }
               addLine("")
             }
             
