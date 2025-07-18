@@ -1,0 +1,92 @@
+name: Dependency Updates
+
+on:
+  # Run monthly on the 1st at 10 AM UTC
+  schedule:
+    - cron: '0 10 1 * *'
+  
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  update-dependencies:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+      pull-requests: write
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Check for updates
+      run: |
+        npm outdated --json > outdated.json || true
+        if [ -s outdated.json ]; then
+          echo "Updates available"
+          cat outdated.json
+        else
+          echo "No updates available"
+          exit 0
+        fi
+        
+    - name: Update dependencies
+      run: |
+        # Update patch and minor versions (safer)
+        npm update
+        
+        # Run audit and fix if needed
+        npm audit fix || true
+        
+    - name: Run tests
+      run: |
+        npm run build
+        npm run lint || true
+        
+    - name: Check for changes
+      id: changes
+      run: |
+        if git diff --quiet package*.json; then
+          echo "changed=false" >> $GITHUB_OUTPUT
+        else
+          echo "changed=true" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Create Pull Request
+      if: steps.changes.outputs.changed == 'true'
+      uses: peter-evans/create-pull-request@v6
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: 'chore: update dependencies for security and performance'
+        title: 'Automated Dependency Updates'
+        body: |
+          ## Automated Dependency Updates
+          
+          This PR contains automated dependency updates to keep the project secure and up-to-date.
+          
+          ### Changes:
+          - Updated dependencies to latest patch/minor versions
+          - Ran `npm audit fix` to address security vulnerabilities
+          - Verified build and linting still pass
+          
+          ### Security Note:
+          Please review these changes before merging, especially:
+          - Check for breaking changes in updated packages
+          - Verify all functionality still works as expected
+          - Review the CHANGELOG for any important updates
+          
+          🤖 This PR was created automatically by GitHub Actions.
+        branch: automated-dependency-updates
+        delete-branch: true

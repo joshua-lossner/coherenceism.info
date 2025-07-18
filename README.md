@@ -254,7 +254,39 @@ Inspired by the ECHO system, featuring:
 Ensure your deployment platform supports:
 - Node.js runtime
 - Environment variables
-- Next.js 14 features
+- Next.js 15+ features
+
+## 🔒 Security
+
+### Dependency Management
+```bash
+# Check for vulnerabilities
+npm audit
+
+# Update dependencies
+npm update
+
+# Fix security issues
+npm audit fix
+```
+
+### Automated Security
+- **GitHub Actions**: Automated vulnerability scanning on pushes and PRs
+- **Weekly Audits**: Scheduled security checks every Monday
+- **Dependency Updates**: Monthly automated dependency update PRs
+- **Secret Scanning**: Prevents client-side exposure of API keys
+
+### Best Practices
+- ✅ API keys stored in `.env.local` (server-side only)
+- ✅ No `NEXT_PUBLIC_` variables with sensitive data
+- ✅ Input validation on all endpoints
+- ✅ Rate limiting on API routes
+- ✅ Secure headers and CSP
+- ✅ Anonymized logging
+
+**Security Workflow Files**:
+- `.github/workflows/security-audit.yml` - Vulnerability scanning
+- `.github/workflows/dependency-update.yml` - Automated updates
 
 ---
 

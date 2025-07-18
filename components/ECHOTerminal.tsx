@@ -703,7 +703,13 @@ const ECHOTerminal = () => {
       narrationRef.current.play().then(() => {
         setIsNarrationPlaying(true)
         console.log(`Started playing chunk ${startIndex + 1} of ${audioUrls.length}`)
-      }).catch(console.error)
+      }).catch((error) => {
+        console.error('Audio play failed:', error)
+        console.error('Audio src:', narrationRef.current?.src)
+        console.error('Audio readyState:', narrationRef.current?.readyState)
+        console.error('Audio networkState:', narrationRef.current?.networkState)
+        setIsNarrationPlaying(false)
+      })
     }
   }
 
@@ -748,9 +754,19 @@ const ECHOTerminal = () => {
 
   const resumeNarration = () => {
     if (narrationRef.current && currentNarrationUrls.length > 0) {
+      console.log('Resuming narration:', {
+        src: narrationRef.current.src,
+        currentTime: narrationRef.current.currentTime,
+        duration: narrationRef.current.duration,
+        readyState: narrationRef.current.readyState
+      })
       narrationRef.current.play().then(() => {
         setIsNarrationPlaying(true)
-      }).catch(console.error)
+        console.log('Resume successful')
+      }).catch((error) => {
+        console.error('Resume failed:', error)
+        setIsNarrationPlaying(false)
+      })
     }
   }
 
@@ -2136,7 +2152,7 @@ ${release.fullDescription}`
         ref={audioRef}
         onEnded={() => setIsPlaying(false)}
         onError={() => setIsPlaying(false)}
-        style={{ display: 'none' }}
+        className="hidden"
       />
       
       {/* Hidden audio element for narration */}
@@ -2152,11 +2168,11 @@ ${release.fullDescription}`
         }}
         onPlay={() => setIsNarrationPlaying(true)}
         onPause={() => setIsNarrationPlaying(false)}
-        style={{ display: 'none' }}
+        className="hidden"
       />
       
       {/* Hidden container for background music */}
-      <div ref={musicRef} style={{ display: 'none' }} />
+      <div ref={musicRef} className="hidden" />
       
       <div className="h-screen flex justify-start">
         <div 
