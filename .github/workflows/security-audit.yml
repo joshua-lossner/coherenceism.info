@@ -1,0 +1,104 @@
+name: Security Audit
+
+on:
+  # Run on pushes to main and test branches
+  push:
+    branches: [ main, test ]
+  
+  # Run on pull requests
+  pull_request:
+    branches: [ main, test ]
+  
+  # Run weekly on Mondays at 9 AM UTC
+  schedule:
+    - cron: '0 9 * * 1'
+  
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  security-audit:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run npm audit
+      run: npm audit --audit-level=moderate
+      
+    - name: Run npm audit for production dependencies only
+      run: npm audit --production --audit-level=high
+      
+    - name: Check for outdated packages
+      run: npm outdated || true
+      
+    - name: Run dependency check with yarn audit (alternative)
+      run: |
+        if command -v yarn &> /dev/null; then
+          yarn audit --level moderate || true
+        else
+          echo "Yarn not available, skipping yarn audit"
+        fi
+
+  secrets-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Scan for secrets in client components
+      run: |
+        echo "Scanning for potential secrets in client-side code..."
+        
+        # Check for process.env usage in client components
+        if grep -r "process\.env\." --include="*.tsx" --include="*.jsx" .; then
+          echo "WARNING: Found process.env usage in client components"
+          exit 1
+        fi
+        
+        # Check for NEXT_PUBLIC_ variables that might contain secrets
+        if grep -r "NEXT_PUBLIC_.*[Kk][Ee][Yy]" --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" .; then
+          echo "WARNING: Found NEXT_PUBLIC variable that might contain a secret"
+          exit 1
+        fi
+        
+        # Check for hardcoded API keys or tokens
+        if grep -ri "api[_-]\?key\|secret\|token.*=" --include="*.tsx" --include="*.jsx" . | grep -v ".git" | grep -v "node_modules"; then
+          echo "WARNING: Found potential hardcoded secrets"
+          exit 1
+        fi
+        
+        echo "✅ No secrets found in client-side code"
+
+  lint-security:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run ESLint security rules
+      run: npx eslint . --ext .ts,.tsx,.js,.jsx --max-warnings 0 || true
+      
+    - name: Type check
+      run: npx tsc --noEmit

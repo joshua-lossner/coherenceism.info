@@ -25,8 +25,8 @@ export class SecurityHeadersManager {
       'Pragma': 'no-cache',
       'Expires': '0',
       
-      // Content Security Policy - relaxed for Next.js functionality
-      'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'",
+      // Content Security Policy - strict for API endpoints
+      'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'; form-action 'none'; base-uri 'none'",
       
       // Referrer policy
       'Referrer-Policy': 'no-referrer',
