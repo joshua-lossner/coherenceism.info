@@ -97,8 +97,8 @@ export function middleware(request: NextRequest) {
     style-src 'self' 'unsafe-inline';
     img-src 'self' data: blob: https:;
     font-src 'self' data:;
-    connect-src 'self' https://api.github.com https://raw.githubusercontent.com;
-    media-src 'self' blob:;
+    connect-src 'self' https://api.github.com https://raw.githubusercontent.com https://*.vercel.app https://*.blob.vercel-storage.com;
+    media-src 'self' blob: data: https://*.vercel.app https://*.blob.vercel-storage.com;
     frame-ancestors 'none';
     base-uri 'self';
     form-action 'self';

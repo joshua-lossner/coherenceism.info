@@ -703,7 +703,13 @@ const ECHOTerminal = () => {
       narrationRef.current.play().then(() => {
         setIsNarrationPlaying(true)
         console.log(`Started playing chunk ${startIndex + 1} of ${audioUrls.length}`)
-      }).catch(console.error)
+      }).catch((error) => {
+        console.error('Audio play failed:', error)
+        console.error('Audio src:', narrationRef.current?.src)
+        console.error('Audio readyState:', narrationRef.current?.readyState)
+        console.error('Audio networkState:', narrationRef.current?.networkState)
+        setIsNarrationPlaying(false)
+      })
     }
   }
 
@@ -748,9 +754,19 @@ const ECHOTerminal = () => {
 
   const resumeNarration = () => {
     if (narrationRef.current && currentNarrationUrls.length > 0) {
+      console.log('Resuming narration:', {
+        src: narrationRef.current.src,
+        currentTime: narrationRef.current.currentTime,
+        duration: narrationRef.current.duration,
+        readyState: narrationRef.current.readyState
+      })
       narrationRef.current.play().then(() => {
         setIsNarrationPlaying(true)
-      }).catch(console.error)
+        console.log('Resume successful')
+      }).catch((error) => {
+        console.error('Resume failed:', error)
+        setIsNarrationPlaying(false)
+      })
     }
   }
 
