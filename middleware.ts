@@ -67,11 +67,39 @@ export function middleware(request: NextRequest) {
     })
   }
   
+  // Generate nonce for CSP
+  const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
+  
+  // Clone the request headers and add nonce
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-nonce', nonce);
+  
   // Add anti-crawling headers to all allowed requests
-  const response = NextResponse.next()
+  const response = NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
+  
   response.headers.set('X-Robots-Tag', 'noindex, nofollow, nosnippet, noarchive, noimageindex, nocache')
   response.headers.set('X-AI-Training', 'no')
   response.headers.set('X-No-Archive', '1')
+  
+  // Set CSP header with nonce for pages (not API routes)
+  const cspHeader = `
+    default-src 'self';
+    script-src 'self' 'nonce-${nonce}' 'strict-dynamic';
+    style-src 'self' 'nonce-${nonce}';
+    img-src 'self' data: blob: https:;
+    font-src 'self' data:;
+    connect-src 'self';
+    media-src 'self' blob:;
+    frame-ancestors 'none';
+    base-uri 'self';
+    form-action 'self';
+  `.replace(/\s{2,}/g, ' ').trim();
+  
+  response.headers.set('Content-Security-Policy', cspHeader);
   
   return response
 }

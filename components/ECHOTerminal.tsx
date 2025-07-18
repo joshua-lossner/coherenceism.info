@@ -2136,7 +2136,7 @@ ${release.fullDescription}`
         ref={audioRef}
         onEnded={() => setIsPlaying(false)}
         onError={() => setIsPlaying(false)}
-        style={{ display: 'none' }}
+        className="hidden"
       />
       
       {/* Hidden audio element for narration */}
@@ -2152,11 +2152,11 @@ ${release.fullDescription}`
         }}
         onPlay={() => setIsNarrationPlaying(true)}
         onPause={() => setIsNarrationPlaying(false)}
-        style={{ display: 'none' }}
+        className="hidden"
       />
       
       {/* Hidden container for background music */}
-      <div ref={musicRef} style={{ display: 'none' }} />
+      <div ref={musicRef} className="hidden" />
       
       <div className="h-screen flex justify-start">
         <div 
