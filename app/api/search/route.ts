@@ -19,13 +19,21 @@ export async function GET(req: NextRequest) {
   });
   const queryVec = data[0].embedding;
 
+  // Validate that embedding only contains numbers
+  if (!Array.isArray(queryVec) || !queryVec.every(v => typeof v === 'number' && isFinite(v))) {
+    return NextResponse.json({ error: 'Invalid embedding format' }, { status: 500 });
+  }
+
+  // Format the vector array as a PostgreSQL array string
+  const vectorString = `[${queryVec.join(',')}]`;
+
   // 2 – nearest-neighbour search
   const { rows } = await sql<
     { slug: string; chunk_index: number; content: string }
   >`
     SELECT slug, chunk_index, content
     FROM coherence_vectors
-    ORDER BY embedding <-> ${`[${queryVec.join(',')}]`}::vector
+    ORDER BY embedding <-> ${vectorString}::vector
     LIMIT 8;
   `;
 
