@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@vercel/postgres';
 import OpenAI from 'openai';
 import { rateLimiter, RATE_LIMITS } from '../../../lib/rate-limit';
+import { InputValidator } from '../../../lib/validation';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -19,14 +20,19 @@ export async function GET(req: NextRequest) {
   }
 
   const q = req.nextUrl.searchParams.get('q') ?? '';
-  if (!q.trim()) {
-    return NextResponse.json({ error: 'Missing ?q=' }, { status: 400 });
+  
+  // Validate search query input
+  const queryValidation = InputValidator.validateSearchQuery(q);
+  if (!queryValidation.isValid) {
+    return NextResponse.json({ error: queryValidation.error }, { status: 400 });
   }
+  
+  const sanitizedQuery = queryValidation.sanitized!;
 
   // 1 – embed query
   const { data } = await openai.embeddings.create({
     model: 'text-embedding-3-small',
-    input: q
+    input: sanitizedQuery
   });
   const queryVec = data[0].embedding;
 

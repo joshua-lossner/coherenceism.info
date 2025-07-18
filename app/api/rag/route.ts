@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@vercel/postgres';
 import OpenAI from 'openai';
 import { rateLimiter, RATE_LIMITS } from '../../../lib/rate-limit';
+import { InputValidator } from '../../../lib/validation';
 import SecureLogger from '../../../lib/secure-logger';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -22,14 +23,18 @@ export async function POST(req: NextRequest) {
 
     const { message } = await req.json();
     
-    if (!message?.trim()) {
-      return NextResponse.json({ error: 'Missing message' }, { status: 400 });
+    // Validate message input
+    const messageValidation = InputValidator.validateRAGQuery(message);
+    if (!messageValidation.isValid) {
+      return NextResponse.json({ error: messageValidation.error }, { status: 400 });
     }
+    
+    const sanitizedMessage = messageValidation.sanitized!;
 
     // Step 1: Get relevant context from vector search
     const { data } = await openai.embeddings.create({
       model: 'text-embedding-3-small',
-      input: message
+      input: sanitizedMessage
     });
     const queryVec = data[0].embedding;
 
@@ -66,7 +71,7 @@ ${context}`
         },
         {
           role: 'user',
-          content: message
+          content: sanitizedMessage
         }
       ],
       max_tokens: 500,

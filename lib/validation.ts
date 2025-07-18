@@ -192,4 +192,97 @@ export class InputValidator {
       sanitized,
     };
   }
+
+  // Validate RAG query input
+  static validateRAGQuery(message: unknown): ValidationResult {
+    // Check if message exists and is a string
+    if (!message || typeof message !== 'string') {
+      return {
+        isValid: false,
+        error: 'Query must be a non-empty string',
+      };
+    }
+
+    // Check length limits
+    if (message.length === 0) {
+      return {
+        isValid: false,
+        error: 'Query cannot be empty',
+      };
+    }
+
+    // RAG queries should be shorter than chat messages for optimal performance
+    if (message.length > 1000) {
+      return {
+        isValid: false,
+        error: 'Query too long (max 1000 characters)',
+      };
+    }
+
+    // Sanitize: trim whitespace and remove potentially dangerous characters
+    const sanitized = message
+      .trim()
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') // Remove control characters
+      .substring(0, 1000); // Ensure length limit
+
+    // Check if sanitized message is still valid
+    if (sanitized.length === 0) {
+      return {
+        isValid: false,
+        error: 'Query contains only invalid characters',
+      };
+    }
+
+    return {
+      isValid: true,
+      sanitized,
+    };
+  }
+
+  // Validate search query input
+  static validateSearchQuery(query: unknown): ValidationResult {
+    // Check if query exists and is a string
+    if (!query || typeof query !== 'string') {
+      return {
+        isValid: false,
+        error: 'Search query must be a non-empty string',
+      };
+    }
+
+    // Check length limits
+    if (query.length === 0) {
+      return {
+        isValid: false,
+        error: 'Search query cannot be empty',
+      };
+    }
+
+    // Search queries should be concise for optimal performance
+    if (query.length > 500) {
+      return {
+        isValid: false,
+        error: 'Search query too long (max 500 characters)',
+      };
+    }
+
+    // Sanitize: trim whitespace and remove potentially dangerous characters
+    const sanitized = query
+      .trim()
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') // Remove control characters
+      .replace(/\s+/g, ' ') // Normalize whitespace
+      .substring(0, 500); // Ensure length limit
+
+    // Check if sanitized query is still valid
+    if (sanitized.length === 0) {
+      return {
+        isValid: false,
+        error: 'Search query contains only invalid characters',
+      };
+    }
+
+    return {
+      isValid: true,
+      sanitized,
+    };
+  }
 }
