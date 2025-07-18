@@ -20,22 +20,34 @@ const BLOCKED_USER_AGENTS = [
   'ia_archiver', 'archive.org_bot', 'wayback', 'memento',
   
   // Commercial/Spam Crawlers
-  'megaindex', 'seznambot', 'mail.ru_bot', 'spider', 'crawler', 'scraper',
-  'bot', 'wget', 'curl', 'python-requests', 'scrapy', 'selenium'
+  'megaindex', 'seznambot', 'mail.ru_bot', 
+  // More specific patterns to avoid false positives
+  'scraperbot', 'webspider', 'webcrawler'
 ]
 
-// List of suspicious IP ranges (data centers, VPS providers commonly used by bots)
-const BLOCKED_IP_PATTERNS = [
-  /^35\./, // Google Cloud
-  /^34\./, // Google Cloud
-  /^104\./, // AWS/DigitalOcean
-  /^159\./, // DigitalOcean
-  /^178\./, // Various data centers
-]
+// Removed broad IP blocking to avoid blocking legitimate users
+// Many users access sites from cloud providers, VPNs, and corporate proxies
+// Focus on user-agent based blocking instead
+const BLOCKED_IP_PATTERNS: RegExp[] = []
+
+// Anonymize IP address for privacy (keep only first two octets)
+function anonymizeIP(ip: string): string {
+  if (!ip) return 'unknown'
+  const parts = ip.split('.')
+  if (parts.length >= 4) {
+    // IPv4: keep first two octets (e.g., 192.168.x.x)
+    return `${parts[0]}.${parts[1]}.x.x`
+  } else if (ip.includes(':')) {
+    // IPv6: keep only first segment
+    const firstSegment = ip.split(':')[0]
+    return `${firstSegment}:x:x:x:x:x:x:x`
+  }
+  return 'invalid'
+}
 
 export function middleware(request: NextRequest) {
   const userAgent = request.headers.get('user-agent')?.toLowerCase() || ''
-  const clientIP = request.ip || request.headers.get('x-forwarded-for') || ''
+  const clientIP = request.ip || request.headers.get('x-forwarded-for')?.split(',')[0] || ''
   
   // Block known bots by user agent
   const isBlockedBot = BLOCKED_USER_AGENTS.some(bot => userAgent.includes(bot))
@@ -53,8 +65,9 @@ export function middleware(request: NextRequest) {
                                /^\w+\/[\d\.]+$/.test(userAgent) // Simple bot patterns like "Bot/1.0"
   
   if (isBlockedBot || isBlockedIP || hasNoUserAgent || hasSuspiciousPatterns) {
-    // Log the blocked attempt (optional - remove in production if desired)
-    console.log(`Blocked request: IP=${clientIP}, UA=${userAgent}`)
+    // Log the blocked attempt with anonymized IP for privacy
+    const anonymizedIP = anonymizeIP(clientIP)
+    console.log(`Blocked request: IP=${anonymizedIP}, UA=${userAgent.substring(0, 50)}...`)
     
     // Return 403 Forbidden with a clear message
     return new NextResponse('Access denied. This site does not allow automated crawling or indexing.', {
