@@ -67,29 +67,19 @@ export function middleware(request: NextRequest) {
     })
   }
   
-  // Generate nonce for CSP
-  const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
-  
-  // Clone the request headers and add nonce
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set('x-nonce', nonce);
-  
   // Add anti-crawling headers to all allowed requests
-  const response = NextResponse.next({
-    request: {
-      headers: requestHeaders,
-    },
-  });
-  
+  const response = NextResponse.next()
   response.headers.set('X-Robots-Tag', 'noindex, nofollow, nosnippet, noarchive, noimageindex, nocache')
   response.headers.set('X-AI-Training', 'no')
   response.headers.set('X-No-Archive', '1')
   
-  // Set CSP header with nonce for pages (not API routes)
+  // Set CSP header - balanced between security and Next.js requirements
+  // Note: Next.js requires 'unsafe-inline' for styles and 'unsafe-eval' for development
+  // In production, consider using next/script with strategy="beforeInteractive" for critical scripts
   const cspHeader = `
     default-src 'self';
-    script-src 'self' 'nonce-${nonce}' 'strict-dynamic';
-    style-src 'self' 'nonce-${nonce}';
+    script-src 'self' 'unsafe-inline' 'unsafe-eval';
+    style-src 'self' 'unsafe-inline';
     img-src 'self' data: blob: https:;
     font-src 'self' data:;
     connect-src 'self';
