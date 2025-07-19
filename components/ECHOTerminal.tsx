@@ -47,6 +47,7 @@ const ECHOTerminal = () => {
   const [changelog, setChangelog] = useState<any[]>([])
   const [changelogLoaded, setChangelogLoaded] = useState(false)
   const [changelogPage, setChangelogPage] = useState(1)
+  const [journalPage, setJournalPage] = useState(1)
   const terminalRef = useRef<HTMLDivElement>(null)
   const hiddenInputRef = useRef<HTMLInputElement>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -947,12 +948,29 @@ const ECHOTerminal = () => {
         addLine("")
         addLine(createBorder('JOURNAL ENTRIES'), 'normal')
           addLine("")
-          journals.slice(0, 10).forEach((journal, index) => {
+          
+          // Pagination logic (same as changelog)
+          const entriesPerPage = 5
+          const totalPages = Math.ceil(journals.length / entriesPerPage)
+          const startIndex = (journalPage - 1) * entriesPerPage
+          const endIndex = startIndex + entriesPerPage
+          const pageEntries = journals.slice(startIndex, endIndex)
+          
+          // Display current page of journal entries
+          pageEntries.forEach((journal, index) => {
             const title = journal.title
             const date = journal.date ? ` (${journal.date})` : ''
             addLine(`${index + 1}. ${title}${date}`, 'normal', false, `${index + 1}`)
           })
           addLine("")
+          
+          // Pagination info and controls
+          if (totalPages > 1) {
+            addLine(createBorder('', '─'), 'separator')
+            addLine(`Page ${journalPage} of ${totalPages} • ${journals.length} total entries`, 'ai-response')
+            addLine("")
+          }
+          
           addLine(createBorder(), 'normal')
           addLine("")
           addPromptWithOrangeBorder("Type a number above to read an entry.")
@@ -1228,12 +1246,16 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
           // Navigate to journal from main menu
           processCommand('/journal')
         } else if (currentMenu === 'journals') {
-          // First journal entry
+          // First journal entry on current page
+          const entriesPerPage = 5
+          const pageOffset = (journalPage - 1) * entriesPerPage
+          const actualIndex = pageOffset + 0
+          
           setTerminalLines([])
           await new Promise(resolve => setTimeout(resolve, 100))
-          if (journals.length > 0) {
-            const journal = journals[0]
-            addMarkdownContent(journal.content, journal.date || 'Unknown', undefined, 'journal', journal.filename || 'journal-1')
+          if (journals.length > actualIndex) {
+            const journal = journals[actualIndex]
+            addMarkdownContent(journal.content, journal.date || 'Unknown', undefined, 'journal', journal.filename || `journal-${actualIndex + 1}`)
           } else {
             await typeResponse(`Journal entry not available.`, false)
           }
@@ -1298,12 +1320,16 @@ ${release.fullDescription}`
           // Navigate to books from main menu
           processCommand('/books')
         } else if (currentMenu === 'journals') {
-          // Second journal entry (index 1)
+          // Second journal entry on current page
+          const entriesPerPage = 5
+          const pageOffset = (journalPage - 1) * entriesPerPage
+          const actualIndex = pageOffset + 1
+          
           setTerminalLines([])
           await new Promise(resolve => setTimeout(resolve, 100))
-          if (journals.length > 1) {
-            const journal = journals[1]
-            addMarkdownContent(journal.content, journal.date || 'Unknown', undefined, 'journal', journal.filename || 'journal-2')
+          if (journals.length > actualIndex) {
+            const journal = journals[actualIndex]
+            addMarkdownContent(journal.content, journal.date || 'Unknown', undefined, 'journal', journal.filename || `journal-${actualIndex + 1}`)
           } else {
             await typeResponse(`Journal entry not available.`, false)
           }
@@ -1371,11 +1397,15 @@ ${release.fullDescription}`
         } else {
           const entryIndex = parseInt(cmd.replace('.', '')) - 1  // No longer shifted
           if (currentMenu === 'journals') {
+            const entriesPerPage = 5
+            const pageOffset = (journalPage - 1) * entriesPerPage
+            const actualIndex = pageOffset + entryIndex
+            
             setTerminalLines([])
             await new Promise(resolve => setTimeout(resolve, 100))
-            if (journals.length > entryIndex && entryIndex >= 0) {
-              const journal = journals[entryIndex]
-              addMarkdownContent(journal.content, journal.date || 'Unknown', undefined, 'journal', journal.filename || `journal-${entryIndex + 1}`)
+            if (journals.length > actualIndex && actualIndex >= pageOffset && entryIndex < entriesPerPage) {
+              const journal = journals[actualIndex]
+              addMarkdownContent(journal.content, journal.date || 'Unknown', undefined, 'journal', journal.filename || `journal-${actualIndex + 1}`)
             } else {
               await typeResponse(`Journal entry not available.`, false)
             }
@@ -1457,11 +1487,15 @@ ${release.fullDescription}`
           // Handle other menus with number 4
           const entryIndex = parseInt(cmd.replace('.', '')) - 1  // No longer shifted
           if (currentMenu === 'journals') {
+            const entriesPerPage = 5
+            const pageOffset = (journalPage - 1) * entriesPerPage
+            const actualIndex = pageOffset + entryIndex
+            
             setTerminalLines([])
             await new Promise(resolve => setTimeout(resolve, 100))
-            if (journals.length > entryIndex) {
-              const journal = journals[entryIndex]
-              addMarkdownContent(journal.content, journal.date || 'Unknown', undefined, 'journal', journal.filename || `journal-${entryIndex + 1}`)
+            if (journals.length > actualIndex && actualIndex >= pageOffset && entryIndex < entriesPerPage) {
+              const journal = journals[actualIndex]
+              addMarkdownContent(journal.content, journal.date || 'Unknown', undefined, 'journal', journal.filename || `journal-${actualIndex + 1}`)
             } else {
               await typeResponse(`Journal entry not available.`, false)
             }
@@ -1533,11 +1567,15 @@ ${release.fullDescription}`
       case '10.':
         const entryIndex = parseInt(cmd.replace('.', '')) - 1  // No longer shifted
         if (currentMenu === 'journals') {
+          const entriesPerPage = 5
+          const pageOffset = (journalPage - 1) * entriesPerPage
+          const actualIndex = pageOffset + entryIndex
+          
           setTerminalLines([])
           await new Promise(resolve => setTimeout(resolve, 100))
-          if (journals.length > entryIndex) {
-            const journal = journals[entryIndex]
-            addMarkdownContent(journal.content, journal.date || 'Unknown', undefined, 'journal', journal.filename || `journal-${entryIndex + 1}`)
+          if (journals.length > actualIndex && actualIndex >= pageOffset && entryIndex < entriesPerPage) {
+            const journal = journals[actualIndex]
+            addMarkdownContent(journal.content, journal.date || 'Unknown', undefined, 'journal', journal.filename || `journal-${actualIndex + 1}`)
           } else {
             await typeResponse(`Journal entry not available.`, false)
           }
@@ -1692,7 +1730,57 @@ ${release.fullDescription}`
       case '/NARRATE':
       case 'SPEAK':
       case '/SPEAK':
-        if (currentMenu === 'changelog' && !isViewingContent) {
+        if (currentMenu === 'journals' && !isViewingContent) {
+          // Handle next page in journals
+          const entriesPerPage = 5
+          const totalPages = Math.ceil(journals.length / entriesPerPage)
+          if (journalPage < totalPages) {
+            const nextPage = journalPage + 1
+            setJournalPage(nextPage)
+            
+            // Manually refresh the display without re-fetching
+            setTerminalLines([])
+            await new Promise(resolve => setTimeout(resolve, 100))
+            
+            // Redisplay journals with new page
+            addLine("")
+            addLine(createBorder('', '═'), 'separator')
+            addLine("")
+            addLine("C O H E R E N C E I S M . I N F O", 'ascii-art')
+            addLine("")
+            addLine("TAGLINE_PLACEHOLDER", 'tagline')
+            addLine("")
+            addLine(createBorder('', '═'), 'separator')
+            addLine("")
+            addLine(createBorder('JOURNAL ENTRIES'), 'normal')
+            addLine("")
+            
+            const startIndex = (nextPage - 1) * entriesPerPage
+            const endIndex = startIndex + entriesPerPage
+            const pageEntries = journals.slice(startIndex, endIndex)
+            
+            pageEntries.forEach((journal, index) => {
+              const title = journal.title
+              const date = journal.date ? ` (${journal.date})` : ''
+              addLine(`${index + 1}. ${title}${date}`, 'normal', false, `${index + 1}`)
+            })
+            addLine("")
+            
+            // Pagination info and controls
+            if (totalPages > 1) {
+              addLine(createBorder('', '─'), 'separator')
+              addLine(`Page ${nextPage} of ${totalPages} • ${journals.length} total entries`, 'ai-response')
+              addLine("")
+            }
+            
+            addLine(createBorder(), 'normal')
+            addLine("")
+            addPromptWithOrangeBorder("Type a number above to read an entry.")
+            addLine("")
+          } else {
+            await typeResponse(`Already on the last page.`, false)
+          }
+        } else if (currentMenu === 'changelog' && !isViewingContent) {
           // Handle next page in changelog
           const entriesPerPage = 5
           const totalPages = Math.ceil(changelog.length / entriesPerPage)
@@ -1765,7 +1853,57 @@ ${release.fullDescription}`
       case 'P.':
       case 'PAUSE':
       case '/PAUSE':
-        if (currentMenu === 'changelog' && !isViewingContent) {
+        if (currentMenu === 'journals' && !isViewingContent) {
+          // Handle previous page in journals
+          const entriesPerPage = 5
+          const totalPages = Math.ceil(journals.length / entriesPerPage)
+          if (journalPage > 1) {
+            const prevPage = journalPage - 1
+            setJournalPage(prevPage)
+            
+            // Manually refresh the display without re-fetching
+            setTerminalLines([])
+            await new Promise(resolve => setTimeout(resolve, 100))
+            
+            // Redisplay journals with new page
+            addLine("")
+            addLine(createBorder('', '═'), 'separator')
+            addLine("")
+            addLine("C O H E R E N C E I S M . I N F O", 'ascii-art')
+            addLine("")
+            addLine("TAGLINE_PLACEHOLDER", 'tagline')
+            addLine("")
+            addLine(createBorder('', '═'), 'separator')
+            addLine("")
+            addLine(createBorder('JOURNAL ENTRIES'), 'normal')
+            addLine("")
+            
+            const startIndex = (prevPage - 1) * entriesPerPage
+            const endIndex = startIndex + entriesPerPage
+            const pageEntries = journals.slice(startIndex, endIndex)
+            
+            pageEntries.forEach((journal, index) => {
+              const title = journal.title
+              const date = journal.date ? ` (${journal.date})` : ''
+              addLine(`${index + 1}. ${title}${date}`, 'normal', false, `${index + 1}`)
+            })
+            addLine("")
+            
+            // Pagination info and controls
+            if (totalPages > 1) {
+              addLine(createBorder('', '─'), 'separator')
+              addLine(`Page ${prevPage} of ${totalPages} • ${journals.length} total entries`, 'ai-response')
+              addLine("")
+            }
+            
+            addLine(createBorder(), 'normal')
+            addLine("")
+            addPromptWithOrangeBorder("Type a number above to read an entry.")
+            addLine("")
+          } else {
+            await typeResponse(`Already on the first page.`, false)
+          }
+        } else if (currentMenu === 'changelog' && !isViewingContent) {
           // Handle previous page in changelog
           const entriesPerPage = 5
           const totalPages = Math.ceil(changelog.length / entriesPerPage)
@@ -2263,6 +2401,27 @@ ${release.fullDescription}`
                   >
                     {isNarrationPlaying ? <><span className="underline decoration-2 underline-offset-1">P</span>AUSE</> : <><span className="underline decoration-2 underline-offset-1">P</span>LAY</>}
                   </button>
+                )}
+                
+                {currentMenu === 'journals' && !isViewingContent && (
+                  <>
+                    {journalPage > 1 && (
+                      <button
+                        onClick={() => processCommand('p')}
+                        className="px-4 py-1 border border-terminal-green bg-black text-terminal-green hover:bg-terminal-green hover:text-black transition-all duration-200 font-mono text-sm"
+                      >
+                        <span className="underline decoration-2 underline-offset-1">P</span>REV
+                      </button>
+                    )}
+                    {journalPage < Math.ceil(journals.length / 5) && (
+                      <button
+                        onClick={() => processCommand('n')}
+                        className="px-4 py-1 border border-terminal-green bg-black text-terminal-green hover:bg-terminal-green hover:text-black transition-all duration-200 font-mono text-sm"
+                      >
+                        <span className="underline decoration-2 underline-offset-1">N</span>EXT
+                      </button>
+                    )}
+                  </>
                 )}
                 
                 {currentMenu === 'changelog' && !isViewingContent && (
