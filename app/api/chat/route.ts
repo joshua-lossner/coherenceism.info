@@ -76,6 +76,51 @@ export async function POST(request: NextRequest) {
       ...(projectId ? { project: projectId } : {})
     });
 
+    // Check for special /refreshrag command
+    if (sanitizedMessage.toLowerCase() === '/refreshrag') {
+      try {
+        // Trigger RAG refresh via internal API call
+        const refreshUrl = new URL('/api/rag/refresh', request.url);
+        const refreshRequest = new NextRequest(refreshUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Internal-Request': 'true' // Internal security header
+          }
+        });
+        
+        // Import the refresh handler dynamically to avoid circular dependencies
+        const { POST: refreshHandler } = await import('../rag/refresh/route');
+        const refreshResponse = await refreshHandler(refreshRequest);
+        const refreshData = await refreshResponse.json();
+        
+        if (refreshResponse.ok) {
+          const response = `🔄 RAG system refresh completed successfully!\n\n📊 Results:\n- Documents processed: ${refreshData.documentsProcessed || 0}\n- Chunks created: ${refreshData.chunksCreated || 0}\n- Time taken: ${refreshData.timeTaken || 'N/A'}\n\nThe knowledge base has been updated with the latest content from the repository.`;
+          
+          const responseData = NextResponse.json({ 
+            response,
+            sessionId 
+          });
+          
+          SecurityHeadersManager.applyToResponse(responseData);
+          return responseData;
+        } else {
+          throw new Error(refreshData.error || 'Refresh failed');
+        }
+      } catch (error: any) {
+        SecureLogger.error('RAG refresh failed', { error });
+        const response = `❌ RAG refresh failed: ${error.message || 'Unknown error'}\n\nPlease check the logs for more details.`;
+        
+        const responseData = NextResponse.json({ 
+          response,
+          sessionId 
+        });
+        
+        SecurityHeadersManager.applyToResponse(responseData);
+        return responseData;
+      }
+    }
+    
     // Add user message to conversation history
     ConversationManager.addMessage(sessionId, 'user', sanitizedMessage);
     
