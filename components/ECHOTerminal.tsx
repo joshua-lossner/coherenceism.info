@@ -2499,7 +2499,7 @@ ${release.fullDescription}`
         {/* Left Column - Terminal Interface */}
         <div className={`${isSplitView && isWideScreen ? 'w-1/2' : 'w-full'} flex flex-col h-full max-w-4xl mx-auto`}>
           {/* Row 1: Header */}
-          <div className="px-8 py-4 border-b border-terminal-green-dim">
+          <div className="px-8 py-4">
             {renderHeader() || (
               <>
                 <div className="text-terminal-amber opacity-60 italic">
