@@ -2548,31 +2548,7 @@ ${release.fullDescription}`
 
           {/* Row 3: Prompt Return Window - This is the old terminal display */}
           <div className="flex-1 overflow-y-auto px-8 py-4 terminal-text scrollbar-hide" ref={terminalRef}>
-            {terminalLines.filter((line, index) => {
-              if (currentMenu === 'main') {
-                // On main menu, always filter out the startup header/menu that's now in dedicated rows
-                const isStartupContent = (line.type === 'ascii-art' && line.text.includes('C O H E R E N C E I S M')) ||
-                                        (line.type === 'tagline') ||
-                                        (line.type === 'separator' && index < 10) ||
-                                        (line.text.includes('MAIN MENU')) ||
-                                        (line.clickableCommand && ['1', '2', '3', '4'].includes(line.clickableCommand)) ||
-                                        (line.text.includes('Journal - Read')) ||
-                                        (line.text.includes('Books - Browse')) ||
-                                        (line.text.includes('Music - Curated')) ||
-                                        (line.text.includes('About - Introduction')) ||
-                                        (line.text.includes('Type a number above')) ||
-                                        (line.text.includes('━') && index < 25) ||
-                                        (line.text.includes('────────────────────────────────────────') && index < 25) ||
-                                        (line.text === '' && index < 25)
-                return !isStartupContent
-              } else {
-                // For submenus, only filter out the header (not the menu content)
-                const isHeaderOnly = (line.type === 'ascii-art' && line.text.includes('C O H E R E N C E I S M')) ||
-                                   (line.type === 'tagline') ||
-                                   (line.type === 'separator' && index < 5)
-                return !isHeaderOnly
-              }
-            }).map((line, index) => (
+            {terminalLines.map((line, index) => (
           <div 
             key={index} 
             className={`mb-1 ${
