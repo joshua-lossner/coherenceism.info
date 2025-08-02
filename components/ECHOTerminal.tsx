@@ -548,10 +548,10 @@ const ECHOTerminal = () => {
 
   const createBorder = (title?: string, char: string = '━'): string => {
     // Calculate available width based on terminal container
-    // max-w-4xl = 56rem = 896px at default font size
-    // With padding px-8 on each side (2rem = 32px each = 64px total)
+    // Adjusted for 42em container width to fit properly
+    // With padding px-8 on each side
     // Approximate character width for terminal font
-    const totalChars = 70 // This will look good on most screens
+    const totalChars = 50 // Reduced to fit within 42em constraint
     
     if (!title) {
       return char.repeat(totalChars)
@@ -2498,7 +2498,7 @@ ${release.fullDescription}`
       <div className="h-screen flex">
         {/* Left Column - Terminal Interface */}
         <div className={`${isSplitView && isWideScreen ? 'w-1/2' : 'w-full'} flex flex-col h-full`}>
-          <div className="mx-auto w-full flex flex-col h-full" style={{maxWidth: '42em'}}>
+          <div className="mx-auto w-full flex flex-col h-full" style={{maxWidth: '36em'}}>
           {/* Row 1: Header */}
           <div className="px-8 py-4">
             {renderHeader() || (
