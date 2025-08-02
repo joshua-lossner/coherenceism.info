@@ -2553,14 +2553,17 @@ ${release.fullDescription}`
                 // On main menu, filter out the startup header/menu that's now in dedicated rows
                 const isStartupContent = (line.type === 'ascii-art' && line.text.includes('C O H E R E N C E I S M')) ||
                                         (line.type === 'tagline') ||
-                                        (line.type === 'separator' && index < 10) ||
+                                        (line.type === 'separator' && index < 15) ||
+                                        (line.type === 'conversation-border' && index < 20) ||
                                         (line.text.includes('MAIN MENU')) ||
                                         (line.clickableCommand && ['1', '2', '3', '4'].includes(line.clickableCommand)) ||
                                         (line.text.includes('Journal - Read')) ||
                                         (line.text.includes('Books - Browse')) ||
                                         (line.text.includes('Music - Curated')) ||
                                         (line.text.includes('About - Introduction')) ||
-                                        (line.text.includes('Type a number above'))
+                                        (line.text.includes('Type a number above')) ||
+                                        (line.text.includes('━') && index < 20) ||
+                                        (line.text === '' && index < 20)
                 return !isStartupContent
               } else {
                 // For submenus, only filter out the header (not the menu content)
