@@ -2502,18 +2502,18 @@ ${release.fullDescription}`
           <div className="px-8 py-4 border-b border-terminal-green-dim">
             {renderHeader() || (
               <>
-                <div className="text-terminal-amber opacity-60 italic text-center">
+                <div className="text-terminal-amber opacity-60 italic">
                   {createBorder('', '═')}
                 </div>
-                <div className="text-cyan-400 font-mono text-center text-lg my-2">
+                <div className="text-cyan-400 font-mono text-lg my-2">
                   C O H E R E N C E I S M . I N F O
                 </div>
-                <div className={`text-center transition-all duration-300 ${isGlitching ? 'animate-pulse opacity-50 blur-sm' : 'opacity-100'}`}>
+                <div className={`transition-all duration-300 ${isGlitching ? 'animate-pulse opacity-50 blur-sm' : 'opacity-100'}`}>
                   <span className="text-terminal-green-dim italic">
                     {taglines[currentTaglineIndex]}
                   </span>
                 </div>
-                <div className="text-terminal-amber opacity-60 italic text-center">
+                <div className="text-terminal-amber opacity-60 italic">
                   {createBorder('', '═')}
                 </div>
               </>
@@ -2546,7 +2546,23 @@ ${release.fullDescription}`
 
           {/* Row 3: Prompt Return Window - This is the old terminal display */}
           <div className="flex-1 overflow-y-auto px-8 py-4 terminal-text scrollbar-hide" ref={terminalRef}>
-            {terminalLines.map((line, index) => (
+            {terminalLines.filter((line, index) => {
+              // Filter out header and menu lines to avoid duplicates in new layout
+              const isHeaderOrMenuLine = line.type === 'ascii-art' || 
+                                        line.type === 'tagline' || 
+                                        (line.type === 'separator' && index < 20) ||
+                                        line.text.includes('MAIN MENU') ||
+                                        line.text.includes('AVAILABLE COMMANDS') ||
+                                        line.text.includes('C O H E R E N C E I S M') ||
+                                        (line.clickableCommand && ['1', '2', '3', '4'].includes(line.clickableCommand)) ||
+                                        line.text.includes('Journal - Read') ||
+                                        line.text.includes('Books - Browse') ||
+                                        line.text.includes('Music - Curated') ||
+                                        line.text.includes('About - Introduction') ||
+                                        line.text.includes('Type a number above') ||
+                                        (line.text.includes('━') && index < 20)
+              return !isHeaderOrMenuLine
+            }).map((line, index) => (
           <div 
             key={index} 
             className={`mb-1 ${
