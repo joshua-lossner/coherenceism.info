@@ -215,7 +215,7 @@
 /* Scan line erasing effect - sweeps down to erase content */
 @keyframes scan-erase {
   0% {
-    transform: translateY(-100%);
+    transform: translateY(-100vh);
     opacity: 0.8;
     box-shadow: 0 0 20px rgba(0, 255, 0, 0.8);
   }
@@ -228,7 +228,7 @@
     box-shadow: 0 0 25px rgba(0, 255, 0, 0.8);
   }
   100% {
-    transform: translateY(100%);
+    transform: translateY(100vh);
     opacity: 0.8;
     box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
   }
@@ -237,7 +237,7 @@
 /* Scan line revealing effect - sweeps up to reveal content */
 @keyframes scan-reveal {
   0% {
-    transform: translateY(100%);
+    transform: translateY(100vh);
     opacity: 0.8;
     box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
   }
@@ -250,7 +250,7 @@
     box-shadow: 0 0 25px rgba(0, 255, 255, 0.8);
   }
   100% {
-    transform: translateY(-100%);
+    transform: translateY(-100vh);
     opacity: 0.8;
     box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
   }
@@ -261,17 +261,20 @@
   0% {
     opacity: 1;
     filter: brightness(1);
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
+    background-color: transparent;
   }
   50% {
-    opacity: 0.5;
-    filter: brightness(0.7);
-    transform: translateY(-2px);
+    opacity: 0.3;
+    filter: brightness(0.5) hue-rotate(45deg);
+    transform: translateY(-10px) scale(1.1);
+    background-color: rgba(255, 0, 0, 0.2);
   }
   100% {
     opacity: 0;
-    filter: brightness(0.1);
-    transform: translateY(-5px);
+    filter: brightness(0.1) blur(2px);
+    transform: translateY(-20px) scale(0.8);
+    background-color: rgba(0, 0, 0, 0.8);
   }
 }
 
@@ -279,18 +282,21 @@
 @keyframes content-reveal {
   0% {
     opacity: 0;
-    filter: brightness(0.1);
-    transform: translateY(10px);
+    filter: brightness(0.1) blur(3px);
+    transform: translateY(20px) scale(0.8);
+    background-color: rgba(0, 0, 0, 0.8);
   }
   50% {
     opacity: 0.7;
-    filter: brightness(1.2);
-    transform: translateY(2px);
+    filter: brightness(1.5) hue-rotate(-45deg);
+    transform: translateY(5px) scale(1.1);
+    background-color: rgba(0, 255, 255, 0.1);
   }
   100% {
     opacity: 1;
     filter: brightness(1);
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
+    background-color: transparent;
   }
 }
 

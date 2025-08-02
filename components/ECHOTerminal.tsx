@@ -872,7 +872,8 @@ const ECHOTerminal = () => {
         const line = terminalLines[i] as HTMLElement
         const delay = (i / terminalLines.length) * 800 // Spread over 0.8s
         setTimeout(() => {
-          line.style.animation = 'content-erase 0.2s ease-out forwards'
+          console.log('Applying erase animation to line', i, line.textContent?.substring(0, 50))
+          line.style.animation = 'content-erase 0.5s ease-out forwards'
         }, delay)
       }
       
@@ -888,7 +889,8 @@ const ECHOTerminal = () => {
           for (let i = 0; i < newTerminalLines.length; i++) {
             const line = newTerminalLines[i] as HTMLElement
             const delay = ((newTerminalLines.length - i) / newTerminalLines.length) * 800 // Reverse order, spread over 0.8s
-            line.style.animation = 'content-reveal 0.2s ease-out forwards'
+            console.log('Applying reveal animation to line', i, line.textContent?.substring(0, 50))
+            line.style.animation = 'content-reveal 0.5s ease-out forwards'
             line.style.animationDelay = `${delay}ms`
           }
           
