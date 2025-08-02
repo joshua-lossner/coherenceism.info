@@ -2502,6 +2502,9 @@ ${release.fullDescription}`
           <div className="px-8 py-4 border-b border-terminal-green-dim">
             {renderHeader() || (
               <>
+                <div className="text-terminal-amber opacity-60 italic">
+                  {createBorder('', '═')}
+                </div>
                 <div className="text-cyan-400 font-mono text-lg my-2">
                   C O H E R E N C E I S M . I N F O
                 </div>
@@ -2509,6 +2512,9 @@ ${release.fullDescription}`
                   <span className="text-terminal-green-dim italic">
                     {taglines[currentTaglineIndex]}
                   </span>
+                </div>
+                <div className="text-terminal-amber opacity-60 italic">
+                  {createBorder('', '═')}
                 </div>
               </>
             )}
@@ -2531,7 +2537,9 @@ ${release.fullDescription}`
                 <div className="text-terminal-green cursor-pointer hover:brightness-125" onClick={() => handleLineClick('4')}>
                   4. About - Introduction to Coherenceism
                 </div>
+                <div className="text-terminal-green">{createBorder()}</div>
                 <div className="mt-4">
+                  <div className="text-orange-500 opacity-70">────────────────────────────────────────</div>
                   <div className="text-terminal-green">Type a number above or &apos;help&apos; for more options.</div>
                 </div>
               </div>
