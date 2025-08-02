@@ -2566,10 +2566,11 @@ ${release.fullDescription}`
                                         (line.text === '' && index < 20)
                 return !isStartupContent
               } else {
-                // For submenus, only filter out the header (not the menu content)
+                // For submenus, filter out header and the amber divider right above menu content
                 const isHeaderOnly = (line.type === 'ascii-art' && line.text.includes('C O H E R E N C E I S M')) ||
                                    (line.type === 'tagline') ||
-                                   (line.type === 'separator' && index < 5)
+                                   (line.type === 'separator' && index < 10) ||
+                                   (line.text.includes('═') && index < 10)
                 return !isHeaderOnly
               }
             }).map((line, index) => (
