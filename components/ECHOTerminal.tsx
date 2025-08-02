@@ -2714,15 +2714,6 @@ ${release.fullDescription}`
                   <span className="underline decoration-2 underline-offset-1">H</span>ELP
                 </button>
                 
-                {/* Split View toggle - only show on wide screens */}
-                {isWideScreen && (
-                  <button
-                    onClick={toggleSplitView}
-                    className="px-4 py-1 border border-terminal-green bg-black text-terminal-green hover:bg-terminal-green hover:text-black transition-all duration-200 font-mono text-sm"
-                  >
-                    <span className="underline decoration-2 underline-offset-1">S</span>PLIT VIEW {isSplitView ? 'OFF' : 'ON'}
-                  </button>
-                )}
               </div>
             </div>
           )}
