@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { useRouter } from 'next/navigation'
 
@@ -48,10 +48,6 @@ const ECHOTerminal = () => {
   const [changelogLoaded, setChangelogLoaded] = useState(false)
   const [changelogPage, setChangelogPage] = useState(1)
   const [journalPage, setJournalPage] = useState(1)
-  const [isSplitView, setIsSplitView] = useState(false)
-  const [isWideScreen, setIsWideScreen] = useState(false)
-  const [contentForRightPanel, setContentForRightPanel] = useState<{text: string, title?: string} | null>(null)
-  const [isTransitioning, setIsTransitioning] = useState(false)
   const terminalRef = useRef<HTMLDivElement>(null)
   const hiddenInputRef = useRef<HTMLInputElement>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -358,36 +354,21 @@ const ECHOTerminal = () => {
     // Mark as client-side and check mobile
     setIsClient(true)
     
-    const checkScreenSize = () => {
+    const checkMobile = () => {
       const isMobileSize = window.innerWidth < 768 // md breakpoint
-      const isWideSize = window.innerWidth >= 1400 // wide screen threshold
       setIsMobile(isMobileSize)
-      setIsWideScreen(isWideSize)
     }
     
     // Check immediately
-    checkScreenSize()
+    checkMobile()
     
     // Also check on resize
-    window.addEventListener('resize', checkScreenSize)
+    window.addEventListener('resize', checkMobile)
     
-    return () => window.removeEventListener('resize', checkScreenSize)
+    return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-
-  // Function definitions (must be before useEffect that uses them)
-  const addLine = useCallback((text: string, type: 'normal' | 'error' | 'processing' | 'ai-response' | 'separator' | 'user-input' | 'markdown' | 'ascii-art' | 'tagline' | 'conversation-border' = 'normal', isMarkdown: boolean = false, clickableCommand?: string) => {
-    setTerminalLines(prev => [...prev, { text, type, isMarkdown, clickableCommand }])
-  }, [])
-
-  // Function to create dynamic borders that match content width
-  const addPromptWithOrangeBorder = useCallback((promptText: string) => {
-    addLine('────────────────────────────────────────', 'conversation-border')
-    addLine("")
-    addLine(promptText)
-  }, [addLine])
-
-  // Now the useEffect with proper dependencies
+  // Initialize terminal only on desktop after client hydration
   useEffect(() => {
     // Only initialize terminal if client-side, not mobile, and not already initialized
     if (isClient && !isMobile && !isInitializedRef.current) {
@@ -417,7 +398,7 @@ const ECHOTerminal = () => {
       addPromptWithOrangeBorder("Type a number above or 'help' for more options.")
       addLine("")
     }
-  }, [isClient, isMobile, addLine, addPromptWithOrangeBorder])
+  }, [isClient, isMobile])
 
   // Tagline cycling effect
   useEffect(() => {
@@ -547,12 +528,23 @@ const ECHOTerminal = () => {
     return () => clearInterval(interval)
   }, [isProcessing])
 
+  const addLine = (text: string, type: 'normal' | 'error' | 'processing' | 'ai-response' | 'separator' | 'user-input' | 'markdown' | 'ascii-art' | 'tagline' | 'conversation-border' = 'normal', isMarkdown: boolean = false, clickableCommand?: string) => {
+    setTerminalLines(prev => [...prev, { text, type, isMarkdown, clickableCommand }])
+  }
+
+  // Function to create dynamic borders that match content width
+  const addPromptWithOrangeBorder = (promptText: string) => {
+    addLine('────────────────────────────────────────', 'conversation-border')
+    addLine("")
+    addLine(promptText)
+  }
+
   const createBorder = (title?: string, char: string = '━'): string => {
     // Calculate available width based on terminal container
-    // Adjusted for 42em container width to fit properly
-    // With padding px-8 on each side
+    // max-w-4xl = 56rem = 896px at default font size
+    // With padding px-8 on each side (2rem = 32px each = 64px total)
     // Approximate character width for terminal font
-    const totalChars = 70 // Increased for better readability with smaller text size
+    const totalChars = 70 // This will look good on most screens
     
     if (!title) {
       return char.repeat(totalChars)
@@ -592,15 +584,6 @@ const ECHOTerminal = () => {
         type: contentType,
         id: contentId
       })
-    }
-    
-    // If split view is active and wide screen, put content in right panel
-    if (isSplitView && isWideScreen) {
-      setContentForRightPanel({
-        text: content,
-        title: date || ''
-      })
-      return
     }
     
     // Add banner first
@@ -857,39 +840,11 @@ const ECHOTerminal = () => {
     }
   }
 
-  // Simple smooth transition effect
-  const triggerTransition = async () => {
-    setIsTransitioning(true)
-    
-    const terminal = terminalRef.current
-    if (terminal) {
-      // Simple fade out
-      terminal.style.transition = 'opacity 0.3s ease-out'
-      terminal.style.opacity = '0.3'
-      
-      // Short pause then fade back in after content loads
-      setTimeout(() => {
-        terminal.style.opacity = '1'
-        setTimeout(() => {
-          terminal.style.transition = ''
-          setIsTransitioning(false)
-        }, 300)
-      }, 200)
-    } else {
-      setIsTransitioning(false)
-    }
-  }
-
   const processCommand = async (command: string) => {
     const cmd = command.toUpperCase().trim()
     
     // Reset markdown display mode when user types new command
     setIsDisplayingMarkdown(false)
-    
-    // Trigger transition effect for navigation commands
-    if (['1', '2', '3', '4', 'X', 'MENU', '/MENU', 'JOURNALS', 'BOOKS', 'MUSIC', 'ABOUT'].includes(cmd)) {
-      await triggerTransition()
-    }
     
     // Process command without echoing it to terminal
 
@@ -898,8 +853,6 @@ const ECHOTerminal = () => {
       case 'MENU':
       case '/MENU':
         stopNarration() // Stop narration immediately
-        // Wait for smooth transition (0.5s total)
-        await new Promise(resolve => setTimeout(resolve, 500))
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         setIsViewingContent(false)
@@ -935,8 +888,6 @@ const ECHOTerminal = () => {
       case 'H':
       case 'HELP':
       case '/HELP':
-        // Wait for smooth transition (0.5s total)
-        await new Promise(resolve => setTimeout(resolve, 500))
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('help')
@@ -972,8 +923,6 @@ const ECHOTerminal = () => {
         stopNarration() // Stop narration when navigating to journals
         setCurrentNarrationUrls([]) // Clear narration state
         setCurrentChunkIndex(0)
-        // Wait for smooth transition (0.5s total)
-        await new Promise(resolve => setTimeout(resolve, 500))
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('journals')
@@ -1034,8 +983,6 @@ const ECHOTerminal = () => {
         stopNarration() // Stop narration when navigating to books
         setCurrentNarrationUrls([]) // Clear narration state
         setCurrentChunkIndex(0)
-        // Wait for smooth transition (0.5s total)
-        await new Promise(resolve => setTimeout(resolve, 500))
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('books')
@@ -1079,8 +1026,6 @@ const ECHOTerminal = () => {
         stopNarration() // Stop narration when navigating to music
         setCurrentNarrationUrls([]) // Clear narration state
         setCurrentChunkIndex(0)
-        // Wait for smooth transition (0.5s total)
-        await new Promise(resolve => setTimeout(resolve, 500))
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('music')
@@ -1113,8 +1058,6 @@ const ECHOTerminal = () => {
         stopNarration() // Stop narration when navigating to about
         setCurrentNarrationUrls([]) // Clear narration state
         setCurrentChunkIndex(0)
-        // Wait for smooth transition (0.5s total)
-        await new Promise(resolve => setTimeout(resolve, 500))
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('about')
@@ -2213,172 +2156,6 @@ ${release.fullDescription}`
     router.push(`/${path}`)
   }
 
-  // Toggle split view
-  const toggleSplitView = () => {
-    setIsSplitView(!isSplitView)
-    // Clear right panel content when closing split view
-    if (isSplitView) {
-      setContentForRightPanel(null)
-    }
-  }
-
-  // Render functions for each section
-  const renderHeader = () => {
-    const headerLines = terminalLines.filter(line => 
-      line.type === 'ascii-art' || 
-      line.type === 'tagline' || 
-      (line.type === 'separator' && terminalLines.indexOf(line) < 10)
-    )
-    
-    if (headerLines.length === 0) {
-      return (
-        <>
-          <div className="text-terminal-amber opacity-60 italic text-center">
-            {createBorder('', '═')}
-          </div>
-          <div className="text-cyan-400 font-mono text-center text-lg my-2">
-            C O H E R E N C E I S M . I N F O
-          </div>
-          <div className={`text-center transition-all duration-300 ${isGlitching ? 'animate-pulse opacity-50 blur-sm' : 'opacity-100'}`}>
-            <span className="text-terminal-green-dim italic">
-              {taglines[currentTaglineIndex]}
-            </span>
-          </div>
-          <div className="text-terminal-amber opacity-60 italic text-center mb-2">
-            {createBorder('', '═')}
-          </div>
-        </>
-      )
-    }
-    
-    return null
-  }
-
-  const renderMenu = () => {
-    const menuLines = terminalLines.filter((line, index) => {
-      const isMenuHeader = line.text.includes('MAIN MENU') || line.text.includes('AVAILABLE COMMANDS')
-      const isMenuItem = line.clickableCommand || (index > 0 && terminalLines[index - 1].text.includes('MENU'))
-      return isMenuHeader || isMenuItem
-    })
-    
-    if (menuLines.length === 0 && currentMenu === 'main') {
-      return (
-        <div className="space-y-1">
-          <div className="text-terminal-green">{createBorder('MAIN MENU')}</div>
-          <div className="text-terminal-green cursor-pointer hover:brightness-125" onClick={() => handleLineClick('1')}>
-            1. Journal - Read latest journal entries
-          </div>
-          <div className="text-terminal-green cursor-pointer hover:brightness-125" onClick={() => handleLineClick('2')}>
-            2. Books - Browse Coherenceism texts
-          </div>
-          <div className="text-terminal-green cursor-pointer hover:brightness-125" onClick={() => handleLineClick('3')}>
-            3. Music - Curated playlists and soundscapes
-          </div>
-          <div className="text-terminal-green cursor-pointer hover:brightness-125" onClick={() => handleLineClick('4')}>
-            4. About - Introduction to Coherenceism
-          </div>
-          <div className="text-terminal-green">{createBorder()}</div>
-        </div>
-      )
-    }
-    
-    return null
-  }
-
-  const renderPromptReturn = () => {
-    return (
-      <div className="flex-1 overflow-y-auto p-4 terminal-text scrollbar-hide" ref={terminalRef}>
-        {terminalLines.map((line, index) => (
-          <div 
-            key={index} 
-            className={`mb-1 ${
-              line.type === 'error' ? 'text-red-400' : 
-              line.type === 'processing' ? 'text-terminal-yellow' : 
-              line.type === 'ai-response' ? 'text-terminal-green-dim' :
-              line.type === 'separator' ? 'text-terminal-amber opacity-60 italic' :
-              line.type === 'conversation-border' ? 'text-orange-500 opacity-70' :
-              line.type === 'user-input' ? 'text-terminal-green font-bold brightness-125' :
-              line.type === 'markdown' ? 'text-terminal-green' :
-              line.type === 'ascii-art' ? 'text-cyan-400 font-mono' :
-              'text-terminal-green'
-            } ${line.isMarkdown ? '' : 'whitespace-pre-wrap'} ${
-              line.clickableCommand ? 'cursor-pointer hover:brightness-125 transition-all duration-200' : ''
-            }`}
-            onClick={line.clickableCommand ? () => handleLineClick(line.clickableCommand!) : undefined}
-          >
-            {line.type === 'tagline' ? (
-              <div className={`transition-all duration-300 ${isGlitching ? 'animate-pulse opacity-50 blur-sm' : 'opacity-100'}`}>
-                <span className="text-terminal-green-dim italic">
-                  {taglines[currentTaglineIndex]}
-                </span>
-              </div>
-            ) : line.isMarkdown && !isSplitView ? (
-              <div className="prose prose-invert prose-green max-w-none">
-                <ReactMarkdown 
-                  components={{
-                    h1: ({children}) => <h1 className="text-terminal-green text-xl font-bold mb-4">{children}</h1>,
-                    h2: ({children}) => <h2 className="text-terminal-green text-lg font-bold mb-3">{children}</h2>,
-                    h3: ({children}) => <h3 className="text-terminal-green text-base font-bold mb-2">{children}</h3>,
-                    p: ({children}) => <p className="text-terminal-green mb-3 leading-relaxed">{children}</p>,
-                    ul: ({children}) => <ul className="text-terminal-green mb-3 ml-4 list-disc">{children}</ul>,
-                    ol: ({children}) => <ol className="text-terminal-green mb-3 ml-4 list-decimal">{children}</ol>,
-                    li: ({children}) => <li className="text-terminal-green mb-1">{children}</li>,
-                    strong: ({children}) => <strong className="text-terminal-green font-bold brightness-125">{children}</strong>,
-                    em: ({children}) => <em className="text-terminal-green italic">{children}</em>,
-                    blockquote: ({children}) => <blockquote className="text-terminal-green-dim border-l-2 border-terminal-green pl-4 italic mb-3">{children}</blockquote>,
-                    code: ({children}) => <code className="text-terminal-amber bg-black px-1 rounded">{children}</code>,
-                    pre: ({children}) => <pre className="text-terminal-amber bg-black p-3 rounded mb-3 overflow-x-auto">{children}</pre>,
-                  }}
-                >
-                  {line.text}
-                </ReactMarkdown>
-              </div>
-            ) : (
-              line.text
-            )}
-          </div>
-        ))}
-      </div>
-    )
-  }
-
-  const renderRightColumn = () => {
-    if (!contentForRightPanel) return null
-    
-    return (
-      <div className="flex-1 p-8 overflow-y-auto border-l border-terminal-green-dim">
-        {contentForRightPanel.title && (
-          <div className="mb-4">
-            <h2 className="text-terminal-green text-xl font-bold">{contentForRightPanel.title}</h2>
-            <div className="text-terminal-amber opacity-60 italic mt-2">
-              {createBorder('', '─')}
-            </div>
-          </div>
-        )}
-        <div className="prose prose-invert prose-green max-w-none">
-          <ReactMarkdown 
-            components={{
-              h1: ({children}) => <h1 className="text-terminal-green text-xl font-bold mb-4">{children}</h1>,
-              h2: ({children}) => <h2 className="text-terminal-green text-lg font-bold mb-3">{children}</h2>,
-              h3: ({children}) => <h3 className="text-terminal-green text-base font-bold mb-2">{children}</h3>,
-              p: ({children}) => <p className="text-terminal-green mb-3 leading-relaxed">{children}</p>,
-              ul: ({children}) => <ul className="text-terminal-green mb-3 ml-4 list-disc">{children}</ul>,
-              ol: ({children}) => <ol className="text-terminal-green mb-3 ml-4 list-decimal">{children}</ol>,
-              li: ({children}) => <li className="text-terminal-green mb-1">{children}</li>,
-              strong: ({children}) => <strong className="text-terminal-green font-bold brightness-125">{children}</strong>,
-              em: ({children}) => <em className="text-terminal-green italic">{children}</em>,
-              blockquote: ({children}) => <blockquote className="text-terminal-green-dim border-l-2 border-terminal-green pl-4 italic mb-3">{children}</blockquote>,
-              code: ({children}) => <code className="text-terminal-amber bg-black px-1 rounded">{children}</code>,
-              pre: ({children}) => <pre className="text-terminal-amber bg-black p-3 rounded mb-3 overflow-x-auto">{children}</pre>,
-            }}
-          >
-            {contentForRightPanel.text}
-          </ReactMarkdown>
-        </div>
-      </div>
-    )
-  }
-
   // Mobile view component
   const MobileView = () => (
     <div className="min-h-screen bg-black text-terminal-green flex flex-col items-center justify-center p-6">
@@ -2495,6 +2272,9 @@ ${release.fullDescription}`
       className="min-h-screen bg-black text-terminal-green cursor-text relative overflow-hidden"
       onClick={handleClick}
     >
+      {/* Scanlines effect */}
+      <div className="absolute inset-0 pointer-events-none scanlines" />
+      
       {/* Hidden input for capturing keystrokes */}
       <input
         ref={hiddenInputRef}
@@ -2532,124 +2312,12 @@ ${release.fullDescription}`
       {/* Hidden container for background music */}
       <div ref={musicRef} className="hidden" />
       
-      {/* Cyberpunk side panels */}
-      <div className="absolute inset-0 flex pointer-events-none">
-        {/* Left side panel */}
-        <div className="flex-1 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-black via-gray-900 to-transparent"></div>
-          <div className="absolute inset-0 bg-circuit-pattern opacity-50"></div>
-          <div className="absolute inset-0 bg-cyber-grid opacity-30"></div>
-          
-          {/* Vertical accent line */}
-          <div className="absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-terminal-green via-cyan-400 to-transparent opacity-80"></div>
-          
-          {/* Subtle scanning effect */}
-          <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-terminal-green to-transparent opacity-5 animate-pulse"></div>
-          
-        </div>
-        
-        {/* Center spacer - where content goes */}
-        <div className="w-full max-w-3xl mx-auto"></div>
-        
-        {/* Right side panel */}
-        <div className="flex-1 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-l from-black via-gray-900 to-transparent"></div>
-          <div className="absolute inset-0 bg-circuit-pattern opacity-50"></div>
-          <div className="absolute inset-0 bg-cyber-grid opacity-30"></div>
-          
-          {/* Vertical accent line */}
-          <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-terminal-green via-cyan-400 to-transparent opacity-80"></div>
-          
-          {/* Subtle scanning effect */}
-          <div className="absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-terminal-green to-transparent opacity-5 animate-pulse"></div>
-          
-        </div>
-      </div>
-
-      {/* Scanlines effect - on top of side panels */}
-      <div className="absolute inset-0 pointer-events-none scanlines z-20" />
-      
-      {/* Main content area with two-column layout */}
-      <div className="h-screen flex relative z-10">
-        {/* Left Column - Terminal Interface */}
-        <div className={`${isSplitView && isWideScreen ? 'w-1/2' : 'w-full'} flex flex-col h-full relative`}>
-          <div className="mx-auto w-full flex flex-col h-full" style={{maxWidth: '45em'}}>
-          {/* Row 1: Header */}
-          <div className="px-8 py-4 text-sm">
-            {renderHeader() || (
-              <>
-                <div className="text-terminal-amber opacity-60 italic">
-                  {createBorder('', '═')}
-                </div>
-                <div className="text-cyan-400 font-mono text-base my-2">
-                  C O H E R E N C E I S M . I N F O
-                </div>
-                <div className={`transition-all duration-300 ${isGlitching ? 'animate-pulse opacity-50 blur-sm' : 'opacity-100'}`}>
-                  <span className="text-terminal-green-dim italic">
-                    {taglines[currentTaglineIndex]}
-                  </span>
-                </div>
-                <div className="text-terminal-amber opacity-60 italic">
-                  {createBorder('', '═')}
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Row 2: Menu - Only show on main menu */}
-          {currentMenu === 'main' && (
-            <div className="px-8 py-4 text-sm">
-              <div className="space-y-1">
-                <div className="text-terminal-green">{createBorder('MAIN MENU')}</div>
-                <div className="text-terminal-green cursor-pointer hover:brightness-125" onClick={() => handleLineClick('1')}>
-                  1. Journal - Read latest journal entries
-                </div>
-                <div className="text-terminal-green cursor-pointer hover:brightness-125" onClick={() => handleLineClick('2')}>
-                  2. Books - Browse Coherenceism texts
-                </div>
-                <div className="text-terminal-green cursor-pointer hover:brightness-125" onClick={() => handleLineClick('3')}>
-                  3. Music - Curated playlists and soundscapes
-                </div>
-                <div className="text-terminal-green cursor-pointer hover:brightness-125" onClick={() => handleLineClick('4')}>
-                  4. About - Introduction to Coherenceism
-                </div>
-                <div className="text-terminal-green">{createBorder()}</div>
-                <div className="mt-4">
-                  <div className="text-orange-500 opacity-70">────────────────────────────────────────</div>
-                  <div className="text-terminal-green">Type a number above or &apos;help&apos; for more options.</div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Row 3: Prompt Return Window - This is the old terminal display */}
-          <div className="flex-1 overflow-y-auto px-8 py-4 terminal-text scrollbar-hide max-w-4xl text-sm" ref={terminalRef}>
-            {terminalLines.filter((line, index) => {
-              if (currentMenu === 'main') {
-                // On main menu, filter out the startup header/menu that's now in dedicated rows
-                const isStartupContent = (line.type === 'ascii-art' && line.text.includes('C O H E R E N C E I S M')) ||
-                                        (line.type === 'tagline') ||
-                                        (line.type === 'separator' && index < 15) ||
-                                        (line.type === 'conversation-border' && index < 20) ||
-                                        (line.text.includes('MAIN MENU')) ||
-                                        (line.clickableCommand && ['1', '2', '3', '4'].includes(line.clickableCommand)) ||
-                                        (line.text.includes('Journal - Read')) ||
-                                        (line.text.includes('Books - Browse')) ||
-                                        (line.text.includes('Music - Curated')) ||
-                                        (line.text.includes('About - Introduction')) ||
-                                        (line.text.includes('Type a number above')) ||
-                                        (line.text.includes('━') && index < 20) ||
-                                        (line.text === '' && index < 20)
-                return !isStartupContent
-              } else {
-                // For submenus, filter out header and the amber divider right above menu content
-                const isHeaderOnly = (line.type === 'ascii-art' && line.text.includes('C O H E R E N C E I S M')) ||
-                                   (line.type === 'tagline') ||
-                                   (line.type === 'separator' && index < 10) ||
-                                   (line.text.includes('═') && index < 10)
-                return !isHeaderOnly
-              }
-            }).map((line, index) => (
+      <div className="h-screen flex justify-start">
+        <div 
+          ref={terminalRef}
+          className="w-full max-w-4xl p-8 pb-32 overflow-y-auto text-base terminal-text scrollbar-hide"
+        >
+        {terminalLines.map((line, index) => (
           <div 
             key={index} 
             className={`mb-1 ${
@@ -2673,7 +2341,7 @@ ${release.fullDescription}`
                   {taglines[currentTaglineIndex]}
                 </span>
               </div>
-            ) : line.isMarkdown && !isSplitView ? (
+            ) : line.isMarkdown ? (
               <div className="prose prose-invert prose-green max-w-none">
                 <ReactMarkdown 
                   components={{
@@ -2699,12 +2367,17 @@ ${release.fullDescription}`
             )}
           </div>
         ))}
-          </div>
-
-          {/* Row 4: Action Bar */}
-          {(systemReady || isProcessing) && (
-            <div className="px-8 py-2 border-t border-terminal-green-dim text-sm">
-              <div className="flex items-center gap-2">
+        
+        </div>
+      </div>
+      
+      {/* Sticky command prompt */}
+      {(systemReady || isProcessing) && (
+        <div className="absolute bottom-6 left-0 right-0 bg-black border-t border-terminal-green-dim z-40">
+          {/* Terminal-style navigation buttons */}
+          {(isViewingContent || currentMenu !== 'main') && (
+            <div className="border-b border-terminal-green-dim">
+              <div className="px-8 py-2 flex items-center gap-2">
                 <button
                   onClick={() => processCommand('x')}
                   className="px-4 py-1 border border-terminal-green bg-black text-terminal-green hover:bg-terminal-green hover:text-black transition-all duration-200 font-mono text-sm"
@@ -2784,55 +2457,46 @@ ${release.fullDescription}`
                 
                 <button
                   onClick={() => processCommand('/help')}
-                  className="px-4 py-1 border border-terminal-green bg-black text-terminal-green hover:bg-terminal-green hover:text-black transition-all duration-200 font-mono text-sm"
+                  className="px-4 py-1 border border-terminal-green bg-black text-terminal-green hover:bg-terminal-green hover:text-black transition-all duration-200 font-mono text-sm ml-2"
                 >
                   <span className="underline decoration-2 underline-offset-1">H</span>ELP
                 </button>
-                
               </div>
             </div>
           )}
-
-          {/* Row 5: Prompt Box */}
-          {(systemReady || isProcessing) && (
-            <div className="px-8 py-4 border-t border-terminal-green-dim text-sm">
-              <div className="flex justify-between items-center">
-                <div className="flex-1">
-                  {systemReady && !isProcessing && (
-                    <div className="flex text-terminal-green font-bold brightness-125">
-                      <span>&gt; {currentInput}</span>
-                      <span className="terminal-cursor ml-1">█</span>
-                    </div>
-                  )}
-                  
-                  {isProcessing && (
-                    <div className="text-terminal-green font-bold brightness-125 flex">
-                      <span>&gt; {processingDots}</span>
-                      <span className="terminal-cursor ml-1">█</span>
-                    </div>
-                  )}
-                </div>
+          <div className="px-8 py-4">
+            <div className="flex justify-between items-center">
+              <div className="flex-1">
+                {systemReady && !isProcessing && (
+                  <div className="flex text-terminal-green font-bold brightness-125">
+                    <span>&gt; {currentInput}</span>
+                    <span className="terminal-cursor ml-1">█</span>
+                  </div>
+                )}
                 
-                <div className="text-terminal-amber text-xs font-mono">
-                  ↑↓ SCROLL • PgUp/PgDn JUMP
-                </div>
+                {isProcessing && (
+                  <div className="text-terminal-green font-bold brightness-125 flex">
+                    <span>&gt; {processingDots}</span>
+                    <span className="terminal-cursor ml-1">█</span>
+                  </div>
+                )}
+              </div>
+              
+              <div className="text-terminal-amber text-xs font-mono">
+                ↑↓ SCROLL • PgUp/PgDn JUMP
               </div>
             </div>
-          )}
-
-          {/* Row 6: Footer */}
-          <div className="bg-terminal-green text-black px-8 py-1 flex justify-between text-xs border-t border-terminal-green">
-            <span className="hidden md:block">{changelog[0]?.version ? `v${changelog[0].version}` : 'LOADING...'}</span>
-            <span className="md:block flex-1 text-center md:text-left md:flex-initial">
-              COHERENCEISM.INFO {hasConversationContext && <span className="ml-2">• MEMORY: ACTIVE</span>}
-            </span>
-            <span className="hidden md:block">STATUS: {isProcessing ? 'PROCESSING...' : 'COHERENT & READY'}</span>
-          </div>
           </div>
         </div>
+      )}
 
-        {/* Right Column - Content Display (only when split view is active) */}
-        {isSplitView && isWideScreen && renderRightColumn()}
+      {/* Status bar */}
+      <div className="absolute bottom-0 left-0 right-0 bg-terminal-green text-black p-1 flex justify-between text-sm z-50">
+        <span className="hidden md:block">{changelog[0]?.version ? `v${changelog[0].version}` : 'LOADING...'}</span>
+        <span className="md:block flex-1 text-center md:text-left md:flex-initial">
+          COHERENCEISM.INFO {hasConversationContext && <span className="ml-2">• MEMORY: ACTIVE</span>}
+        </span>
+        <span className="hidden md:block">STATUS: {isProcessing ? 'PROCESSING...' : 'COHERENT & READY'}</span>
       </div>
     </div>
   )
