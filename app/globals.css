@@ -212,25 +212,73 @@
   }
 }
 
-/* Scan line effect */
-@keyframes scan-line {
+/* Scan line erasing effect - sweeps down to erase content */
+@keyframes scan-erase {
   0% {
     transform: translateY(-100%);
-    opacity: 0;
-    box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+    opacity: 0.8;
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.8);
   }
-  25% {
+  10% {
     opacity: 1;
-    box-shadow: 0 0 30px rgba(0, 255, 255, 1);
+    box-shadow: 0 0 30px rgba(0, 255, 0, 1);
   }
-  75% {
+  90% {
     opacity: 1;
     box-shadow: 0 0 25px rgba(0, 255, 0, 0.8);
   }
   100% {
     transform: translateY(100%);
-    opacity: 0;
+    opacity: 0.8;
     box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+  }
+}
+
+/* Scan line revealing effect - sweeps up to reveal content */
+@keyframes scan-reveal {
+  0% {
+    transform: translateY(100%);
+    opacity: 0.8;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+  }
+  10% {
+    opacity: 1;
+    box-shadow: 0 0 30px rgba(0, 255, 255, 1);
+  }
+  90% {
+    opacity: 1;
+    box-shadow: 0 0 25px rgba(0, 255, 255, 0.8);
+  }
+  100% {
+    transform: translateY(-100%);
+    opacity: 0.8;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+  }
+}
+
+/* Content erasing effect - progressively hides content as scan line passes */
+@keyframes content-erase {
+  0% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+  100% {
+    opacity: 0;
+    filter: brightness(0.3);
+  }
+}
+
+/* Content revealing effect - progressively shows content as scan line passes */
+@keyframes content-reveal {
+  0% {
+    opacity: 0;
+    filter: brightness(0.3);
+    transform: translateY(5px);
+  }
+  100% {
+    opacity: 1;
+    filter: brightness(1);
+    transform: translateY(0);
   }
 }
 

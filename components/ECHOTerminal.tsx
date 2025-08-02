@@ -857,30 +857,45 @@ const ECHOTerminal = () => {
     }
   }
 
-  // Cyberpunk transition effect
+  // Clean scanning transition effect
   const triggerTransition = async () => {
     setIsTransitioning(true)
     
-    // Create a glitch/scan effect on terminal
     const terminal = terminalRef.current
     if (terminal) {
-      terminal.style.animation = 'glitch-transition 0.5s ease-out'
-      
-      // Add cascading effect to new lines
-      const newLines = terminal.querySelectorAll('div')
-      newLines.forEach((line, index) => {
-        if (index < 20) { // Only animate first 20 lines
-          line.style.animation = `matrix-cascade 0.3s ease-out ${index * 0.02}s`
-        }
+      // Phase 1: Erase scan line sweeps down (0.8s)
+      // Content gradually disappears as scan line passes
+      const terminalLines = terminal.querySelectorAll('div')
+      terminalLines.forEach((line, index) => {
+        const delay = (index / terminalLines.length) * 800 // Spread over 0.8s
+        setTimeout(() => {
+          line.style.animation = 'content-erase 0.1s ease-out forwards'
+        }, delay)
       })
       
+      // Phase 2: Wait 2 seconds in darkness
       setTimeout(() => {
-        terminal.style.animation = ''
-        newLines.forEach(line => {
-          line.style.animation = ''
-        })
-        setIsTransitioning(false)
-      }, 600)
+        // Phase 3: Content is cleared and new content added
+        // Then reveal scan line sweeps up (0.8s)
+        // This happens after the content has been updated
+        setTimeout(() => {
+          const newTerminalLines = terminal.querySelectorAll('div')
+          newTerminalLines.forEach((line, index) => {
+            const delay = ((newTerminalLines.length - index) / newTerminalLines.length) * 800 // Reverse order, spread over 0.8s
+            line.style.animation = 'content-reveal 0.1s ease-out forwards'
+            line.style.animationDelay = `${delay}ms`
+          })
+          
+          // Clean up after reveal animation
+          setTimeout(() => {
+            newTerminalLines.forEach(line => {
+              line.style.animation = ''
+              line.style.animationDelay = ''
+            })
+            setIsTransitioning(false)
+          }, 1000)
+        }, 100) // Small delay to ensure content is loaded
+      }, 2000) // 2-second pause
     }
   }
 
@@ -902,8 +917,8 @@ const ECHOTerminal = () => {
       case 'MENU':
       case '/MENU':
         stopNarration() // Stop narration immediately
-        // Wait for transition to complete before clearing
-        await new Promise(resolve => setTimeout(resolve, 700))
+        // Wait for erase animation + pause before clearing (0.8s + 2s = 2.8s)
+        await new Promise(resolve => setTimeout(resolve, 2800))
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         setIsViewingContent(false)
@@ -939,8 +954,8 @@ const ECHOTerminal = () => {
       case 'H':
       case 'HELP':
       case '/HELP':
-        // Wait for transition to complete before clearing
-        await new Promise(resolve => setTimeout(resolve, 700))
+        // Wait for erase animation + pause before clearing (0.8s + 2s = 2.8s)
+        await new Promise(resolve => setTimeout(resolve, 2800))
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('help')
@@ -976,8 +991,8 @@ const ECHOTerminal = () => {
         stopNarration() // Stop narration when navigating to journals
         setCurrentNarrationUrls([]) // Clear narration state
         setCurrentChunkIndex(0)
-        // Wait for transition to complete before clearing
-        await new Promise(resolve => setTimeout(resolve, 700))
+        // Wait for erase animation + pause before clearing (0.8s + 2s = 2.8s)
+        await new Promise(resolve => setTimeout(resolve, 2800))
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('journals')
@@ -1038,8 +1053,8 @@ const ECHOTerminal = () => {
         stopNarration() // Stop narration when navigating to books
         setCurrentNarrationUrls([]) // Clear narration state
         setCurrentChunkIndex(0)
-        // Wait for transition to complete before clearing
-        await new Promise(resolve => setTimeout(resolve, 700))
+        // Wait for erase animation + pause before clearing (0.8s + 2s = 2.8s)
+        await new Promise(resolve => setTimeout(resolve, 2800))
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('books')
@@ -1083,8 +1098,8 @@ const ECHOTerminal = () => {
         stopNarration() // Stop narration when navigating to music
         setCurrentNarrationUrls([]) // Clear narration state
         setCurrentChunkIndex(0)
-        // Wait for transition to complete before clearing
-        await new Promise(resolve => setTimeout(resolve, 700))
+        // Wait for erase animation + pause before clearing (0.8s + 2s = 2.8s)
+        await new Promise(resolve => setTimeout(resolve, 2800))
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('music')
@@ -1117,8 +1132,8 @@ const ECHOTerminal = () => {
         stopNarration() // Stop narration when navigating to about
         setCurrentNarrationUrls([]) // Clear narration state
         setCurrentChunkIndex(0)
-        // Wait for transition to complete before clearing
-        await new Promise(resolve => setTimeout(resolve, 700))
+        // Wait for erase animation + pause before clearing (0.8s + 2s = 2.8s)
+        await new Promise(resolve => setTimeout(resolve, 2800))
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('about')
@@ -2550,9 +2565,12 @@ ${release.fullDescription}`
           {/* Subtle scanning effect */}
           <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-terminal-green to-transparent opacity-5 animate-pulse"></div>
           
-          {/* Transition scan line */}
+          {/* Transition erase scan line */}
           {isTransitioning && (
-            <div className="absolute inset-x-0 h-2 bg-gradient-to-b from-transparent via-terminal-green to-transparent" style={{animation: 'scan-line 0.5s ease-out'}}></div>
+            <>
+              <div className="absolute inset-x-0 h-3 bg-gradient-to-b from-transparent via-terminal-green to-transparent" style={{animation: 'scan-erase 0.8s ease-out'}}></div>
+              <div className="absolute inset-x-0 h-3 bg-gradient-to-b from-transparent via-cyan-400 to-transparent" style={{animation: 'scan-reveal 0.8s ease-out', animationDelay: '2.8s'}}></div>
+            </>
           )}
         </div>
         
@@ -2571,9 +2589,12 @@ ${release.fullDescription}`
           {/* Subtle scanning effect */}
           <div className="absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-terminal-green to-transparent opacity-5 animate-pulse"></div>
           
-          {/* Transition scan line */}
+          {/* Transition reveal scan line */}
           {isTransitioning && (
-            <div className="absolute inset-x-0 h-2 bg-gradient-to-r from-transparent via-cyan-400 to-transparent" style={{animation: 'scan-line 0.5s ease-out'}}></div>
+            <>
+              <div className="absolute inset-x-0 h-3 bg-gradient-to-r from-transparent via-terminal-green to-transparent" style={{animation: 'scan-erase 0.8s ease-out'}}></div>
+              <div className="absolute inset-x-0 h-3 bg-gradient-to-r from-transparent via-cyan-400 to-transparent" style={{animation: 'scan-reveal 0.8s ease-out', animationDelay: '2.8s'}}></div>
+            </>
           )}
         </div>
       </div>
