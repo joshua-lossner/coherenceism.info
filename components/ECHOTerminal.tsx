@@ -51,6 +51,7 @@ const ECHOTerminal = () => {
   const [isSplitView, setIsSplitView] = useState(false)
   const [isWideScreen, setIsWideScreen] = useState(false)
   const [contentForRightPanel, setContentForRightPanel] = useState<{text: string, title?: string} | null>(null)
+  const [isTransitioning, setIsTransitioning] = useState(false)
   const terminalRef = useRef<HTMLDivElement>(null)
   const hiddenInputRef = useRef<HTMLInputElement>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -856,11 +857,39 @@ const ECHOTerminal = () => {
     }
   }
 
+  // Simple smooth transition effect
+  const triggerTransition = async () => {
+    setIsTransitioning(true)
+    
+    const terminal = terminalRef.current
+    if (terminal) {
+      // Simple fade out
+      terminal.style.transition = 'opacity 0.3s ease-out'
+      terminal.style.opacity = '0.3'
+      
+      // Short pause then fade back in after content loads
+      setTimeout(() => {
+        terminal.style.opacity = '1'
+        setTimeout(() => {
+          terminal.style.transition = ''
+          setIsTransitioning(false)
+        }, 300)
+      }, 200)
+    } else {
+      setIsTransitioning(false)
+    }
+  }
+
   const processCommand = async (command: string) => {
     const cmd = command.toUpperCase().trim()
     
     // Reset markdown display mode when user types new command
     setIsDisplayingMarkdown(false)
+    
+    // Trigger transition effect for navigation commands
+    if (['1', '2', '3', '4', 'X', 'MENU', '/MENU', 'JOURNALS', 'BOOKS', 'MUSIC', 'ABOUT'].includes(cmd)) {
+      await triggerTransition()
+    }
     
     // Process command without echoing it to terminal
 
@@ -869,6 +898,8 @@ const ECHOTerminal = () => {
       case 'MENU':
       case '/MENU':
         stopNarration() // Stop narration immediately
+        // Wait for smooth transition (0.5s total)
+        await new Promise(resolve => setTimeout(resolve, 500))
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         setIsViewingContent(false)
@@ -904,6 +935,8 @@ const ECHOTerminal = () => {
       case 'H':
       case 'HELP':
       case '/HELP':
+        // Wait for smooth transition (0.5s total)
+        await new Promise(resolve => setTimeout(resolve, 500))
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('help')
@@ -939,6 +972,8 @@ const ECHOTerminal = () => {
         stopNarration() // Stop narration when navigating to journals
         setCurrentNarrationUrls([]) // Clear narration state
         setCurrentChunkIndex(0)
+        // Wait for smooth transition (0.5s total)
+        await new Promise(resolve => setTimeout(resolve, 500))
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('journals')
@@ -999,6 +1034,8 @@ const ECHOTerminal = () => {
         stopNarration() // Stop narration when navigating to books
         setCurrentNarrationUrls([]) // Clear narration state
         setCurrentChunkIndex(0)
+        // Wait for smooth transition (0.5s total)
+        await new Promise(resolve => setTimeout(resolve, 500))
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('books')
@@ -1042,6 +1079,8 @@ const ECHOTerminal = () => {
         stopNarration() // Stop narration when navigating to music
         setCurrentNarrationUrls([]) // Clear narration state
         setCurrentChunkIndex(0)
+        // Wait for smooth transition (0.5s total)
+        await new Promise(resolve => setTimeout(resolve, 500))
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('music')
@@ -1074,6 +1113,8 @@ const ECHOTerminal = () => {
         stopNarration() // Stop narration when navigating to about
         setCurrentNarrationUrls([]) // Clear narration state
         setCurrentChunkIndex(0)
+        // Wait for smooth transition (0.5s total)
+        await new Promise(resolve => setTimeout(resolve, 500))
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('about')
@@ -2454,9 +2495,6 @@ ${release.fullDescription}`
       className="min-h-screen bg-black text-terminal-green cursor-text relative overflow-hidden"
       onClick={handleClick}
     >
-      {/* Scanlines effect */}
-      <div className="absolute inset-0 pointer-events-none scanlines" />
-      
       {/* Hidden input for capturing keystrokes */}
       <input
         ref={hiddenInputRef}
@@ -2494,10 +2532,47 @@ ${release.fullDescription}`
       {/* Hidden container for background music */}
       <div ref={musicRef} className="hidden" />
       
+      {/* Cyberpunk side panels */}
+      <div className="absolute inset-0 flex pointer-events-none">
+        {/* Left side panel */}
+        <div className="flex-1 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-gray-900 to-transparent"></div>
+          <div className="absolute inset-0 bg-circuit-pattern opacity-50"></div>
+          <div className="absolute inset-0 bg-cyber-grid opacity-30"></div>
+          
+          {/* Vertical accent line */}
+          <div className="absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-terminal-green via-cyan-400 to-transparent opacity-80"></div>
+          
+          {/* Subtle scanning effect */}
+          <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-terminal-green to-transparent opacity-5 animate-pulse"></div>
+          
+        </div>
+        
+        {/* Center spacer - where content goes */}
+        <div className="w-full max-w-3xl mx-auto"></div>
+        
+        {/* Right side panel */}
+        <div className="flex-1 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-l from-black via-gray-900 to-transparent"></div>
+          <div className="absolute inset-0 bg-circuit-pattern opacity-50"></div>
+          <div className="absolute inset-0 bg-cyber-grid opacity-30"></div>
+          
+          {/* Vertical accent line */}
+          <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-terminal-green via-cyan-400 to-transparent opacity-80"></div>
+          
+          {/* Subtle scanning effect */}
+          <div className="absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-terminal-green to-transparent opacity-5 animate-pulse"></div>
+          
+        </div>
+      </div>
+
+      {/* Scanlines effect - on top of side panels */}
+      <div className="absolute inset-0 pointer-events-none scanlines z-20" />
+      
       {/* Main content area with two-column layout */}
-      <div className="h-screen flex">
+      <div className="h-screen flex relative z-10">
         {/* Left Column - Terminal Interface */}
-        <div className={`${isSplitView && isWideScreen ? 'w-1/2' : 'w-full'} flex flex-col h-full`}>
+        <div className={`${isSplitView && isWideScreen ? 'w-1/2' : 'w-full'} flex flex-col h-full relative`}>
           <div className="mx-auto w-full flex flex-col h-full" style={{maxWidth: '45em'}}>
           {/* Row 1: Header */}
           <div className="px-8 py-4 text-sm">
