@@ -865,13 +865,16 @@ const ECHOTerminal = () => {
     if (terminal) {
       // Phase 1: Erase scan line sweeps down (0.8s)
       // Content gradually disappears as scan line passes
-      const terminalLines = terminal.querySelectorAll('div')
-      terminalLines.forEach((line, index) => {
-        const delay = (index / terminalLines.length) * 800 // Spread over 0.8s
+      const terminalLines = terminal.children // Direct children are the actual terminal line divs
+      console.log('Erase phase: found', terminalLines.length, 'terminal lines')
+      
+      for (let i = 0; i < terminalLines.length; i++) {
+        const line = terminalLines[i] as HTMLElement
+        const delay = (i / terminalLines.length) * 800 // Spread over 0.8s
         setTimeout(() => {
-          line.style.animation = 'content-erase 0.1s ease-out forwards'
+          line.style.animation = 'content-erase 0.2s ease-out forwards'
         }, delay)
-      })
+      }
       
       // Phase 2: Wait 2 seconds in darkness
       setTimeout(() => {
@@ -879,23 +882,30 @@ const ECHOTerminal = () => {
         // Then reveal scan line sweeps up (0.8s)
         // This happens after the content has been updated
         setTimeout(() => {
-          const newTerminalLines = terminal.querySelectorAll('div')
-          newTerminalLines.forEach((line, index) => {
-            const delay = ((newTerminalLines.length - index) / newTerminalLines.length) * 800 // Reverse order, spread over 0.8s
-            line.style.animation = 'content-reveal 0.1s ease-out forwards'
+          const newTerminalLines = terminal.children
+          console.log('Reveal phase: found', newTerminalLines.length, 'terminal lines')
+          
+          for (let i = 0; i < newTerminalLines.length; i++) {
+            const line = newTerminalLines[i] as HTMLElement
+            const delay = ((newTerminalLines.length - i) / newTerminalLines.length) * 800 // Reverse order, spread over 0.8s
+            line.style.animation = 'content-reveal 0.2s ease-out forwards'
             line.style.animationDelay = `${delay}ms`
-          })
+          }
           
           // Clean up after reveal animation
           setTimeout(() => {
-            newTerminalLines.forEach(line => {
+            for (let i = 0; i < newTerminalLines.length; i++) {
+              const line = newTerminalLines[i] as HTMLElement
               line.style.animation = ''
               line.style.animationDelay = ''
-            })
+            }
             setIsTransitioning(false)
           }, 1000)
         }, 100) // Small delay to ensure content is loaded
       }, 2000) // 2-second pause
+    } else {
+      console.log('No terminal ref found')
+      setIsTransitioning(false)
     }
   }
 
@@ -2565,13 +2575,6 @@ ${release.fullDescription}`
           {/* Subtle scanning effect */}
           <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-terminal-green to-transparent opacity-5 animate-pulse"></div>
           
-          {/* Transition erase scan line */}
-          {isTransitioning && (
-            <>
-              <div className="absolute inset-x-0 h-3 bg-gradient-to-b from-transparent via-terminal-green to-transparent" style={{animation: 'scan-erase 0.8s ease-out'}}></div>
-              <div className="absolute inset-x-0 h-3 bg-gradient-to-b from-transparent via-cyan-400 to-transparent" style={{animation: 'scan-reveal 0.8s ease-out', animationDelay: '2.8s'}}></div>
-            </>
-          )}
         </div>
         
         {/* Center spacer - where content goes */}
@@ -2589,13 +2592,6 @@ ${release.fullDescription}`
           {/* Subtle scanning effect */}
           <div className="absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-terminal-green to-transparent opacity-5 animate-pulse"></div>
           
-          {/* Transition reveal scan line */}
-          {isTransitioning && (
-            <>
-              <div className="absolute inset-x-0 h-3 bg-gradient-to-r from-transparent via-terminal-green to-transparent" style={{animation: 'scan-erase 0.8s ease-out'}}></div>
-              <div className="absolute inset-x-0 h-3 bg-gradient-to-r from-transparent via-cyan-400 to-transparent" style={{animation: 'scan-reveal 0.8s ease-out', animationDelay: '2.8s'}}></div>
-            </>
-          )}
         </div>
       </div>
 
@@ -2605,7 +2601,16 @@ ${release.fullDescription}`
       {/* Main content area with two-column layout */}
       <div className="h-screen flex relative z-10">
         {/* Left Column - Terminal Interface */}
-        <div className={`${isSplitView && isWideScreen ? 'w-1/2' : 'w-full'} flex flex-col h-full`}>
+        <div className={`${isSplitView && isWideScreen ? 'w-1/2' : 'w-full'} flex flex-col h-full relative`}>
+          {/* Main terminal scan lines */}
+          {isTransitioning && (
+            <>
+              {/* Erase scan line - sweeps down */}
+              <div className="absolute inset-x-0 h-4 bg-gradient-to-r from-transparent via-terminal-green to-transparent opacity-90 z-50" style={{animation: 'scan-erase 0.8s ease-out', boxShadow: '0 0 20px rgba(0, 255, 0, 0.8)'}}></div>
+              {/* Reveal scan line - sweeps up */}
+              <div className="absolute inset-x-0 h-4 bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-90 z-50" style={{animation: 'scan-reveal 0.8s ease-out', animationDelay: '2.8s', boxShadow: '0 0 20px rgba(0, 255, 255, 0.8)'}}></div>
+            </>
+          )}
           <div className="mx-auto w-full flex flex-col h-full" style={{maxWidth: '45em'}}>
           {/* Row 1: Header */}
           <div className="px-8 py-4 text-sm">

@@ -261,10 +261,17 @@
   0% {
     opacity: 1;
     filter: brightness(1);
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 0.5;
+    filter: brightness(0.7);
+    transform: translateY(-2px);
   }
   100% {
     opacity: 0;
-    filter: brightness(0.3);
+    filter: brightness(0.1);
+    transform: translateY(-5px);
   }
 }
 
@@ -272,8 +279,13 @@
 @keyframes content-reveal {
   0% {
     opacity: 0;
-    filter: brightness(0.3);
-    transform: translateY(5px);
+    filter: brightness(0.1);
+    transform: translateY(10px);
+  }
+  50% {
+    opacity: 0.7;
+    filter: brightness(1.2);
+    transform: translateY(2px);
   }
   100% {
     opacity: 1;
