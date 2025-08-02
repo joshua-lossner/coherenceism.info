@@ -2540,7 +2540,7 @@ ${release.fullDescription}`
                 <div className="text-terminal-green">{createBorder()}</div>
                 <div className="mt-4">
                   <div className="text-orange-500 opacity-70">────────────────────────────────────────</div>
-                  <div className="text-terminal-green">Type a number above or 'help' for more options.</div>
+                  <div className="text-terminal-green">Type a number above or &apos;help&apos; for more options.</div>
                 </div>
               </div>
             </div>
