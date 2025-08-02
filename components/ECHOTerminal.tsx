@@ -2549,9 +2549,8 @@ ${release.fullDescription}`
           {/* Row 3: Prompt Return Window - This is the old terminal display */}
           <div className="flex-1 overflow-y-auto px-8 py-4 terminal-text scrollbar-hide" ref={terminalRef}>
             {terminalLines.filter((line, index) => {
-              // Only filter if we have very few lines (initial startup) and we're on main menu
-              if (currentMenu === 'main' && terminalLines.length <= 20) {
-                // Only filter the initial startup content when terminal is mostly empty
+              if (currentMenu === 'main') {
+                // On main menu, always filter out the startup header/menu that's now in dedicated rows
                 const isStartupContent = (line.type === 'ascii-art' && line.text.includes('C O H E R E N C E I S M')) ||
                                         (line.type === 'tagline') ||
                                         (line.type === 'separator' && index < 10) ||
@@ -2563,9 +2562,13 @@ ${release.fullDescription}`
                                         (line.text.includes('About - Introduction')) ||
                                         (line.text.includes('Type a number above'))
                 return !isStartupContent
+              } else {
+                // For submenus, only filter out the header (not the menu content)
+                const isHeaderOnly = (line.type === 'ascii-art' && line.text.includes('C O H E R E N C E I S M')) ||
+                                   (line.type === 'tagline') ||
+                                   (line.type === 'separator' && index < 5)
+                return !isHeaderOnly
               }
-              // For all other cases (submenus, or main menu with content), show everything
-              return true
             }).map((line, index) => (
           <div 
             key={index} 
