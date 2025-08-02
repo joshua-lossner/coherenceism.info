@@ -857,53 +857,36 @@ const ECHOTerminal = () => {
     }
   }
 
-  // Clean scanning transition effect
+  // Clean scanning transition effect with content masking
   const triggerTransition = async () => {
     setIsTransitioning(true)
     
     const terminal = terminalRef.current
     if (terminal) {
-      // Phase 1: Erase scan line sweeps down (0.8s)
-      // Content gradually disappears as scan line passes
-      const terminalLines = terminal.children // Direct children are the actual terminal line divs
-      console.log('Erase phase: found', terminalLines.length, 'terminal lines')
+      console.log('Starting scan transition')
       
-      for (let i = 0; i < terminalLines.length; i++) {
-        const line = terminalLines[i] as HTMLElement
-        const delay = (i / terminalLines.length) * 800 // Spread over 0.8s
-        setTimeout(() => {
-          console.log('Applying erase animation to line', i, line.textContent?.substring(0, 50))
-          line.style.animation = 'content-erase 0.5s ease-out forwards'
-        }, delay)
-      }
+      // Phase 1: Erase mask sweeps down (0.8s) - content disappears as scan line passes
+      terminal.style.animation = 'content-erase-mask 0.8s ease-out forwards'
       
-      // Phase 2: Wait 2 seconds in darkness
+      // Phase 2: Wait 2 seconds with content completely hidden
       setTimeout(() => {
-        // Phase 3: Content is cleared and new content added
-        // Then reveal scan line sweeps up (0.8s)
-        // This happens after the content has been updated
+        console.log('Content clearing phase')
+        // Keep content hidden with clip-path
+        terminal.style.clipPath = 'polygon(0 0, 100% 0, 100% 0, 0 0)'
+        
+        // Phase 3: After content is updated, reveal mask sweeps up (0.8s)
         setTimeout(() => {
-          const newTerminalLines = terminal.children
-          console.log('Reveal phase: found', newTerminalLines.length, 'terminal lines')
+          console.log('Starting reveal phase')
+          terminal.style.animation = 'content-reveal-mask 0.8s ease-out forwards'
           
-          for (let i = 0; i < newTerminalLines.length; i++) {
-            const line = newTerminalLines[i] as HTMLElement
-            const delay = ((newTerminalLines.length - i) / newTerminalLines.length) * 800 // Reverse order, spread over 0.8s
-            console.log('Applying reveal animation to line', i, line.textContent?.substring(0, 50))
-            line.style.animation = 'content-reveal 0.5s ease-out forwards'
-            line.style.animationDelay = `${delay}ms`
-          }
-          
-          // Clean up after reveal animation
+          // Clean up after reveal animation completes
           setTimeout(() => {
-            for (let i = 0; i < newTerminalLines.length; i++) {
-              const line = newTerminalLines[i] as HTMLElement
-              line.style.animation = ''
-              line.style.animationDelay = ''
-            }
+            terminal.style.animation = ''
+            terminal.style.clipPath = ''
             setIsTransitioning(false)
-          }, 1000)
-        }, 100) // Small delay to ensure content is loaded
+            console.log('Scan transition complete')
+          }, 800)
+        }, 100) // Small delay to ensure new content is loaded
       }, 2000) // 2-second pause
     } else {
       console.log('No terminal ref found')

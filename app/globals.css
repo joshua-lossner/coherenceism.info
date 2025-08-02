@@ -234,6 +234,16 @@
   }
 }
 
+/* Content erase mask - clips content below the scan line */
+@keyframes content-erase-mask {
+  0% {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+  100% {
+    clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
+  }
+}
+
 /* Scan line revealing effect - sweeps up to reveal content */
 @keyframes scan-reveal {
   0% {
@@ -256,49 +266,16 @@
   }
 }
 
-/* Content erasing effect - progressively hides content as scan line passes */
-@keyframes content-erase {
+/* Content reveal mask - clips content above the scan line */
+@keyframes content-reveal-mask {
   0% {
-    opacity: 1;
-    filter: brightness(1);
-    transform: translateY(0) scale(1);
-    background-color: transparent;
-  }
-  50% {
-    opacity: 0.3;
-    filter: brightness(0.5) hue-rotate(45deg);
-    transform: translateY(-10px) scale(1.1);
-    background-color: rgba(255, 0, 0, 0.2);
+    clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0 100%);
   }
   100% {
-    opacity: 0;
-    filter: brightness(0.1) blur(2px);
-    transform: translateY(-20px) scale(0.8);
-    background-color: rgba(0, 0, 0, 0.8);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
   }
 }
 
-/* Content revealing effect - progressively shows content as scan line passes */
-@keyframes content-reveal {
-  0% {
-    opacity: 0;
-    filter: brightness(0.1) blur(3px);
-    transform: translateY(20px) scale(0.8);
-    background-color: rgba(0, 0, 0, 0.8);
-  }
-  50% {
-    opacity: 0.7;
-    filter: brightness(1.5) hue-rotate(-45deg);
-    transform: translateY(5px) scale(1.1);
-    background-color: rgba(0, 255, 255, 0.1);
-  }
-  100% {
-    opacity: 1;
-    filter: brightness(1);
-    transform: translateY(0) scale(1);
-    background-color: transparent;
-  }
-}
 
 /* Terminal boot sequence */
 @keyframes terminal-boot {
