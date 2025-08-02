@@ -2494,8 +2494,40 @@ ${release.fullDescription}`
       {/* Hidden container for background music */}
       <div ref={musicRef} className="hidden" />
       
+      {/* Cyberpunk side panels */}
+      <div className="absolute inset-0 flex">
+        {/* Left side panel */}
+        <div className="flex-1 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-gray-900 to-transparent opacity-90"></div>
+          <div className="absolute inset-0 bg-circuit-pattern opacity-30"></div>
+          <div className="absolute inset-0 bg-cyber-grid opacity-20"></div>
+          
+          {/* Vertical accent line */}
+          <div className="absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-terminal-green via-cyan-400 to-transparent opacity-80"></div>
+          
+          {/* Subtle scanning effect */}
+          <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-terminal-green to-transparent opacity-5 animate-pulse"></div>
+        </div>
+        
+        {/* Center spacer - where content goes */}
+        <div className="w-full max-w-6xl"></div>
+        
+        {/* Right side panel */}
+        <div className="flex-1 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-l from-black via-gray-900 to-transparent opacity-90"></div>
+          <div className="absolute inset-0 bg-circuit-pattern opacity-30"></div>
+          <div className="absolute inset-0 bg-cyber-grid opacity-20"></div>
+          
+          {/* Vertical accent line */}
+          <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-terminal-green via-cyan-400 to-transparent opacity-80"></div>
+          
+          {/* Subtle scanning effect */}
+          <div className="absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-terminal-green to-transparent opacity-5 animate-pulse"></div>
+        </div>
+      </div>
+
       {/* Main content area with two-column layout */}
-      <div className="h-screen flex">
+      <div className="h-screen flex relative z-10">
         {/* Left Column - Terminal Interface */}
         <div className={`${isSplitView && isWideScreen ? 'w-1/2' : 'w-full'} flex flex-col h-full`}>
           <div className="mx-auto w-full flex flex-col h-full" style={{maxWidth: '45em'}}>
