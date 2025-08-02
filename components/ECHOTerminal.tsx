@@ -2497,7 +2497,8 @@ ${release.fullDescription}`
       {/* Main content area with two-column layout */}
       <div className="h-screen flex">
         {/* Left Column - Terminal Interface */}
-        <div className={`${isSplitView && isWideScreen ? 'w-1/2' : 'w-full'} flex flex-col h-full max-w-4xl mx-auto`}>
+        <div className={`${isSplitView && isWideScreen ? 'w-1/2' : 'w-full'} flex flex-col h-full`}>
+          <div className="max-w-4xl mx-auto w-full flex flex-col h-full">
           {/* Row 1: Header */}
           <div className="px-8 py-4">
             {renderHeader() || (
@@ -2547,7 +2548,7 @@ ${release.fullDescription}`
           )}
 
           {/* Row 3: Prompt Return Window - This is the old terminal display */}
-          <div className="flex-1 overflow-y-auto px-8 py-4 terminal-text scrollbar-hide" ref={terminalRef}>
+          <div className="flex-1 overflow-y-auto px-8 py-4 terminal-text scrollbar-hide max-w-4xl" ref={terminalRef}>
             {terminalLines.filter((line, index) => {
               if (currentMenu === 'main') {
                 // On main menu, filter out the startup header/menu that's now in dedicated rows
@@ -2760,6 +2761,7 @@ ${release.fullDescription}`
               COHERENCEISM.INFO {hasConversationContext && <span className="ml-2">• MEMORY: ACTIVE</span>}
             </span>
             <span className="hidden md:block">STATUS: {isProcessing ? 'PROCESSING...' : 'COHERENT & READY'}</span>
+          </div>
           </div>
         </div>
 
