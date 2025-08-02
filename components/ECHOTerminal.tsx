@@ -2520,48 +2520,52 @@ ${release.fullDescription}`
             )}
           </div>
 
-          {/* Row 2: Menu */}
+          {/* Row 2: Menu - Only show on main menu */}
           {currentMenu === 'main' && (
             <div className="px-8 py-4 border-b border-terminal-green-dim">
-              {renderMenu() || (
-                <div className="space-y-1">
-                  <div className="text-terminal-green">{createBorder('MAIN MENU')}</div>
-                  <div className="text-terminal-green cursor-pointer hover:brightness-125" onClick={() => handleLineClick('1')}>
-                    1. Journal - Read latest journal entries
-                  </div>
-                  <div className="text-terminal-green cursor-pointer hover:brightness-125" onClick={() => handleLineClick('2')}>
-                    2. Books - Browse Coherenceism texts
-                  </div>
-                  <div className="text-terminal-green cursor-pointer hover:brightness-125" onClick={() => handleLineClick('3')}>
-                    3. Music - Curated playlists and soundscapes
-                  </div>
-                  <div className="text-terminal-green cursor-pointer hover:brightness-125" onClick={() => handleLineClick('4')}>
-                    4. About - Introduction to Coherenceism
-                  </div>
-                  <div className="text-terminal-green">{createBorder()}</div>
+              <div className="space-y-1">
+                <div className="text-terminal-green">{createBorder('MAIN MENU')}</div>
+                <div className="text-terminal-green cursor-pointer hover:brightness-125" onClick={() => handleLineClick('1')}>
+                  1. Journal - Read latest journal entries
                 </div>
-              )}
+                <div className="text-terminal-green cursor-pointer hover:brightness-125" onClick={() => handleLineClick('2')}>
+                  2. Books - Browse Coherenceism texts
+                </div>
+                <div className="text-terminal-green cursor-pointer hover:brightness-125" onClick={() => handleLineClick('3')}>
+                  3. Music - Curated playlists and soundscapes
+                </div>
+                <div className="text-terminal-green cursor-pointer hover:brightness-125" onClick={() => handleLineClick('4')}>
+                  4. About - Introduction to Coherenceism
+                </div>
+                <div className="text-terminal-green">{createBorder()}</div>
+                <div className="mt-4">
+                  <div className="text-orange-500 opacity-70">────────────────────────────────────────</div>
+                  <div className="text-terminal-green">Type a number above or 'help' for more options.</div>
+                </div>
+              </div>
             </div>
           )}
 
           {/* Row 3: Prompt Return Window - This is the old terminal display */}
           <div className="flex-1 overflow-y-auto px-8 py-4 terminal-text scrollbar-hide" ref={terminalRef}>
             {terminalLines.filter((line, index) => {
-              // Filter out header and menu lines to avoid duplicates in new layout
-              const isHeaderOrMenuLine = line.type === 'ascii-art' || 
-                                        line.type === 'tagline' || 
-                                        (line.type === 'separator' && index < 20) ||
-                                        line.text.includes('MAIN MENU') ||
-                                        line.text.includes('AVAILABLE COMMANDS') ||
-                                        line.text.includes('C O H E R E N C E I S M') ||
+              // Only filter if we have very few lines (initial startup) and we're on main menu
+              if (currentMenu === 'main' && terminalLines.length <= 20) {
+                // Only filter the initial startup content when terminal is mostly empty
+                const isStartupContent = (line.type === 'ascii-art' && line.text.includes('C O H E R E N C E I S M')) ||
+                                        (line.type === 'tagline') ||
+                                        (line.type === 'separator' && index < 10) ||
+                                        (line.text.includes('MAIN MENU')) ||
                                         (line.clickableCommand && ['1', '2', '3', '4'].includes(line.clickableCommand)) ||
-                                        line.text.includes('Journal - Read') ||
-                                        line.text.includes('Books - Browse') ||
-                                        line.text.includes('Music - Curated') ||
-                                        line.text.includes('About - Introduction') ||
-                                        line.text.includes('Type a number above') ||
-                                        (line.text.includes('━') && index < 20)
-              return !isHeaderOrMenuLine
+                                        (line.text.includes('Journal - Read')) ||
+                                        (line.text.includes('Books - Browse')) ||
+                                        (line.text.includes('Music - Curated')) ||
+                                        (line.text.includes('About - Introduction')) ||
+                                        (line.text.includes('Type a number above'))
+                return !isStartupContent
+              }
+              // For all other cases (submenus, or main menu with content), show everything
+              return true
             }).map((line, index) => (
           <div 
             key={index} 
