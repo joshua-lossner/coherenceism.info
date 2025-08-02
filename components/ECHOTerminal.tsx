@@ -2454,9 +2454,6 @@ ${release.fullDescription}`
       className="min-h-screen bg-black text-terminal-green cursor-text relative overflow-hidden"
       onClick={handleClick}
     >
-      {/* Scanlines effect */}
-      <div className="absolute inset-0 pointer-events-none scanlines" />
-      
       {/* Hidden input for capturing keystrokes */}
       <input
         ref={hiddenInputRef}
@@ -2495,12 +2492,12 @@ ${release.fullDescription}`
       <div ref={musicRef} className="hidden" />
       
       {/* Cyberpunk side panels */}
-      <div className="absolute inset-0 flex">
+      <div className="absolute inset-0 flex pointer-events-none">
         {/* Left side panel */}
         <div className="flex-1 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-black via-gray-900 to-transparent opacity-90"></div>
-          <div className="absolute inset-0 bg-circuit-pattern opacity-30"></div>
-          <div className="absolute inset-0 bg-cyber-grid opacity-20"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-gray-900 to-transparent"></div>
+          <div className="absolute inset-0 bg-circuit-pattern opacity-50"></div>
+          <div className="absolute inset-0 bg-cyber-grid opacity-30"></div>
           
           {/* Vertical accent line */}
           <div className="absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-terminal-green via-cyan-400 to-transparent opacity-80"></div>
@@ -2510,13 +2507,13 @@ ${release.fullDescription}`
         </div>
         
         {/* Center spacer - where content goes */}
-        <div className="w-full max-w-6xl"></div>
+        <div className="w-full max-w-3xl mx-auto"></div>
         
         {/* Right side panel */}
         <div className="flex-1 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-l from-black via-gray-900 to-transparent opacity-90"></div>
-          <div className="absolute inset-0 bg-circuit-pattern opacity-30"></div>
-          <div className="absolute inset-0 bg-cyber-grid opacity-20"></div>
+          <div className="absolute inset-0 bg-gradient-to-l from-black via-gray-900 to-transparent"></div>
+          <div className="absolute inset-0 bg-circuit-pattern opacity-50"></div>
+          <div className="absolute inset-0 bg-cyber-grid opacity-30"></div>
           
           {/* Vertical accent line */}
           <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-terminal-green via-cyan-400 to-transparent opacity-80"></div>
@@ -2526,6 +2523,9 @@ ${release.fullDescription}`
         </div>
       </div>
 
+      {/* Scanlines effect - on top of side panels */}
+      <div className="absolute inset-0 pointer-events-none scanlines z-20" />
+      
       {/* Main content area with two-column layout */}
       <div className="h-screen flex relative z-10">
         {/* Left Column - Terminal Interface */}
