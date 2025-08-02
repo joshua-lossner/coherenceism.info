@@ -857,39 +857,25 @@ const ECHOTerminal = () => {
     }
   }
 
-  // Clean scanning transition effect with content masking
+  // Simple smooth transition effect
   const triggerTransition = async () => {
     setIsTransitioning(true)
     
     const terminal = terminalRef.current
     if (terminal) {
-      console.log('Starting scan transition')
+      // Simple fade out
+      terminal.style.transition = 'opacity 0.3s ease-out'
+      terminal.style.opacity = '0.3'
       
-      // Phase 1: Erase mask sweeps down (0.8s) - content disappears as scan line passes
-      terminal.style.animation = 'content-erase-mask 0.8s ease-out forwards'
-      
-      // Phase 2: Wait 2 seconds with content completely hidden
+      // Short pause then fade back in after content loads
       setTimeout(() => {
-        console.log('Content clearing phase')
-        // Keep content hidden with clip-path
-        terminal.style.clipPath = 'polygon(0 0, 100% 0, 100% 0, 0 0)'
-        
-        // Phase 3: After content is updated, reveal mask sweeps up (0.8s)
+        terminal.style.opacity = '1'
         setTimeout(() => {
-          console.log('Starting reveal phase')
-          terminal.style.animation = 'content-reveal-mask 0.8s ease-out forwards'
-          
-          // Clean up after reveal animation completes
-          setTimeout(() => {
-            terminal.style.animation = ''
-            terminal.style.clipPath = ''
-            setIsTransitioning(false)
-            console.log('Scan transition complete')
-          }, 800)
-        }, 100) // Small delay to ensure new content is loaded
-      }, 2000) // 2-second pause
+          terminal.style.transition = ''
+          setIsTransitioning(false)
+        }, 300)
+      }, 200)
     } else {
-      console.log('No terminal ref found')
       setIsTransitioning(false)
     }
   }
@@ -912,8 +898,8 @@ const ECHOTerminal = () => {
       case 'MENU':
       case '/MENU':
         stopNarration() // Stop narration immediately
-        // Wait for erase animation + pause before clearing (0.8s + 2s = 2.8s)
-        await new Promise(resolve => setTimeout(resolve, 2800))
+        // Wait for smooth transition (0.5s total)
+        await new Promise(resolve => setTimeout(resolve, 500))
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         setIsViewingContent(false)
@@ -949,8 +935,8 @@ const ECHOTerminal = () => {
       case 'H':
       case 'HELP':
       case '/HELP':
-        // Wait for erase animation + pause before clearing (0.8s + 2s = 2.8s)
-        await new Promise(resolve => setTimeout(resolve, 2800))
+        // Wait for smooth transition (0.5s total)
+        await new Promise(resolve => setTimeout(resolve, 500))
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('help')
@@ -986,8 +972,8 @@ const ECHOTerminal = () => {
         stopNarration() // Stop narration when navigating to journals
         setCurrentNarrationUrls([]) // Clear narration state
         setCurrentChunkIndex(0)
-        // Wait for erase animation + pause before clearing (0.8s + 2s = 2.8s)
-        await new Promise(resolve => setTimeout(resolve, 2800))
+        // Wait for smooth transition (0.5s total)
+        await new Promise(resolve => setTimeout(resolve, 500))
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('journals')
@@ -1048,8 +1034,8 @@ const ECHOTerminal = () => {
         stopNarration() // Stop narration when navigating to books
         setCurrentNarrationUrls([]) // Clear narration state
         setCurrentChunkIndex(0)
-        // Wait for erase animation + pause before clearing (0.8s + 2s = 2.8s)
-        await new Promise(resolve => setTimeout(resolve, 2800))
+        // Wait for smooth transition (0.5s total)
+        await new Promise(resolve => setTimeout(resolve, 500))
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('books')
@@ -1093,8 +1079,8 @@ const ECHOTerminal = () => {
         stopNarration() // Stop narration when navigating to music
         setCurrentNarrationUrls([]) // Clear narration state
         setCurrentChunkIndex(0)
-        // Wait for erase animation + pause before clearing (0.8s + 2s = 2.8s)
-        await new Promise(resolve => setTimeout(resolve, 2800))
+        // Wait for smooth transition (0.5s total)
+        await new Promise(resolve => setTimeout(resolve, 500))
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('music')
@@ -1127,8 +1113,8 @@ const ECHOTerminal = () => {
         stopNarration() // Stop narration when navigating to about
         setCurrentNarrationUrls([]) // Clear narration state
         setCurrentChunkIndex(0)
-        // Wait for erase animation + pause before clearing (0.8s + 2s = 2.8s)
-        await new Promise(resolve => setTimeout(resolve, 2800))
+        // Wait for smooth transition (0.5s total)
+        await new Promise(resolve => setTimeout(resolve, 500))
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('about')
@@ -2587,15 +2573,6 @@ ${release.fullDescription}`
       <div className="h-screen flex relative z-10">
         {/* Left Column - Terminal Interface */}
         <div className={`${isSplitView && isWideScreen ? 'w-1/2' : 'w-full'} flex flex-col h-full relative`}>
-          {/* Main terminal scan lines */}
-          {isTransitioning && (
-            <>
-              {/* Erase scan line - sweeps down */}
-              <div className="absolute inset-x-0 h-4 bg-gradient-to-r from-transparent via-terminal-green to-transparent opacity-90 z-50" style={{animation: 'scan-erase 0.8s ease-out', boxShadow: '0 0 20px rgba(0, 255, 0, 0.8)'}}></div>
-              {/* Reveal scan line - sweeps up */}
-              <div className="absolute inset-x-0 h-4 bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-90 z-50" style={{animation: 'scan-reveal 0.8s ease-out', animationDelay: '2.8s', boxShadow: '0 0 20px rgba(0, 255, 255, 0.8)'}}></div>
-            </>
-          )}
           <div className="mx-auto w-full flex flex-col h-full" style={{maxWidth: '45em'}}>
           {/* Row 1: Header */}
           <div className="px-8 py-4 text-sm">

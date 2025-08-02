@@ -212,69 +212,6 @@
   }
 }
 
-/* Scan line erasing effect - sweeps down to erase content */
-@keyframes scan-erase {
-  0% {
-    transform: translateY(-100vh);
-    opacity: 0.8;
-    box-shadow: 0 0 20px rgba(0, 255, 0, 0.8);
-  }
-  10% {
-    opacity: 1;
-    box-shadow: 0 0 30px rgba(0, 255, 0, 1);
-  }
-  90% {
-    opacity: 1;
-    box-shadow: 0 0 25px rgba(0, 255, 0, 0.8);
-  }
-  100% {
-    transform: translateY(100vh);
-    opacity: 0.8;
-    box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
-  }
-}
-
-/* Content erase mask - clips content below the scan line */
-@keyframes content-erase-mask {
-  0% {
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-  }
-  100% {
-    clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
-  }
-}
-
-/* Scan line revealing effect - sweeps up to reveal content */
-@keyframes scan-reveal {
-  0% {
-    transform: translateY(100vh);
-    opacity: 0.8;
-    box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
-  }
-  10% {
-    opacity: 1;
-    box-shadow: 0 0 30px rgba(0, 255, 255, 1);
-  }
-  90% {
-    opacity: 1;
-    box-shadow: 0 0 25px rgba(0, 255, 255, 0.8);
-  }
-  100% {
-    transform: translateY(-100vh);
-    opacity: 0.8;
-    box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
-  }
-}
-
-/* Content reveal mask - clips content above the scan line */
-@keyframes content-reveal-mask {
-  0% {
-    clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0 100%);
-  }
-  100% {
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-  }
-}
 
 
 /* Terminal boot sequence */
