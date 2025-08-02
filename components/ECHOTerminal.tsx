@@ -551,7 +551,7 @@ const ECHOTerminal = () => {
     // Adjusted for 42em container width to fit properly
     // With padding px-8 on each side
     // Approximate character width for terminal font
-    const totalChars = 60 // Balanced width for readability and single-line menu title
+    const totalChars = 70 // Increased for better readability with smaller text size
     
     if (!title) {
       return char.repeat(totalChars)
@@ -2498,15 +2498,15 @@ ${release.fullDescription}`
       <div className="h-screen flex">
         {/* Left Column - Terminal Interface */}
         <div className={`${isSplitView && isWideScreen ? 'w-1/2' : 'w-full'} flex flex-col h-full`}>
-          <div className="mx-auto w-full flex flex-col h-full" style={{maxWidth: '42em'}}>
+          <div className="mx-auto w-full flex flex-col h-full" style={{maxWidth: '45em'}}>
           {/* Row 1: Header */}
-          <div className="px-8 py-4">
+          <div className="px-8 py-4 text-sm">
             {renderHeader() || (
               <>
                 <div className="text-terminal-amber opacity-60 italic">
                   {createBorder('', '═')}
                 </div>
-                <div className="text-cyan-400 font-mono text-lg my-2">
+                <div className="text-cyan-400 font-mono text-base my-2">
                   C O H E R E N C E I S M . I N F O
                 </div>
                 <div className={`transition-all duration-300 ${isGlitching ? 'animate-pulse opacity-50 blur-sm' : 'opacity-100'}`}>
@@ -2523,7 +2523,7 @@ ${release.fullDescription}`
 
           {/* Row 2: Menu - Only show on main menu */}
           {currentMenu === 'main' && (
-            <div className="px-8 py-4">
+            <div className="px-8 py-4 text-sm">
               <div className="space-y-1">
                 <div className="text-terminal-green">{createBorder('MAIN MENU')}</div>
                 <div className="text-terminal-green cursor-pointer hover:brightness-125" onClick={() => handleLineClick('1')}>
@@ -2548,7 +2548,7 @@ ${release.fullDescription}`
           )}
 
           {/* Row 3: Prompt Return Window - This is the old terminal display */}
-          <div className="flex-1 overflow-y-auto px-8 py-4 terminal-text scrollbar-hide max-w-4xl" ref={terminalRef}>
+          <div className="flex-1 overflow-y-auto px-8 py-4 terminal-text scrollbar-hide max-w-4xl text-sm" ref={terminalRef}>
             {terminalLines.filter((line, index) => {
               if (currentMenu === 'main') {
                 // On main menu, filter out the startup header/menu that's now in dedicated rows
@@ -2628,7 +2628,7 @@ ${release.fullDescription}`
 
           {/* Row 4: Action Bar */}
           {(systemReady || isProcessing) && (
-            <div className="px-8 py-2 border-t border-terminal-green-dim">
+            <div className="px-8 py-2 border-t border-terminal-green-dim text-sm">
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => processCommand('x')}
@@ -2729,7 +2729,7 @@ ${release.fullDescription}`
 
           {/* Row 5: Prompt Box */}
           {(systemReady || isProcessing) && (
-            <div className="px-8 py-4 border-t border-terminal-green-dim">
+            <div className="px-8 py-4 border-t border-terminal-green-dim text-sm">
               <div className="flex justify-between items-center">
                 <div className="flex-1">
                   {systemReady && !isProcessing && (
@@ -2755,7 +2755,7 @@ ${release.fullDescription}`
           )}
 
           {/* Row 6: Footer */}
-          <div className="bg-terminal-green text-black px-8 py-1 flex justify-between text-sm border-t border-terminal-green">
+          <div className="bg-terminal-green text-black px-8 py-1 flex justify-between text-xs border-t border-terminal-green">
             <span className="hidden md:block">{changelog[0]?.version ? `v${changelog[0].version}` : 'LOADING...'}</span>
             <span className="md:block flex-1 text-center md:text-left md:flex-initial">
               COHERENCEISM.INFO {hasConversationContext && <span className="ml-2">• MEMORY: ACTIVE</span>}
