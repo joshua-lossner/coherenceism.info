@@ -51,6 +51,7 @@ const ECHOTerminal = () => {
   const [isSplitView, setIsSplitView] = useState(false)
   const [isWideScreen, setIsWideScreen] = useState(false)
   const [contentForRightPanel, setContentForRightPanel] = useState<{text: string, title?: string} | null>(null)
+  const [isTransitioning, setIsTransitioning] = useState(false)
   const terminalRef = useRef<HTMLDivElement>(null)
   const hiddenInputRef = useRef<HTMLInputElement>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -856,11 +857,43 @@ const ECHOTerminal = () => {
     }
   }
 
+  // Cyberpunk transition effect
+  const triggerTransition = async () => {
+    setIsTransitioning(true)
+    
+    // Create a glitch/scan effect on terminal
+    const terminal = terminalRef.current
+    if (terminal) {
+      terminal.style.animation = 'glitch-transition 0.5s ease-out'
+      
+      // Add cascading effect to new lines
+      const newLines = terminal.querySelectorAll('div')
+      newLines.forEach((line, index) => {
+        if (index < 20) { // Only animate first 20 lines
+          line.style.animation = `matrix-cascade 0.3s ease-out ${index * 0.02}s`
+        }
+      })
+      
+      setTimeout(() => {
+        terminal.style.animation = ''
+        newLines.forEach(line => {
+          line.style.animation = ''
+        })
+        setIsTransitioning(false)
+      }, 600)
+    }
+  }
+
   const processCommand = async (command: string) => {
     const cmd = command.toUpperCase().trim()
     
     // Reset markdown display mode when user types new command
     setIsDisplayingMarkdown(false)
+    
+    // Trigger transition effect for navigation commands
+    if (['1', '2', '3', '4', 'X', 'MENU', '/MENU', 'JOURNALS', 'BOOKS', 'MUSIC', 'ABOUT'].includes(cmd)) {
+      await triggerTransition()
+    }
     
     // Process command without echoing it to terminal
 
@@ -2504,6 +2537,11 @@ ${release.fullDescription}`
           
           {/* Subtle scanning effect */}
           <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-terminal-green to-transparent opacity-5 animate-pulse"></div>
+          
+          {/* Transition scan line */}
+          {isTransitioning && (
+            <div className="absolute inset-x-0 h-1 bg-gradient-to-b from-transparent via-terminal-green to-transparent opacity-80" style={{animation: 'scan-line 0.5s ease-out'}}></div>
+          )}
         </div>
         
         {/* Center spacer - where content goes */}
@@ -2520,6 +2558,11 @@ ${release.fullDescription}`
           
           {/* Subtle scanning effect */}
           <div className="absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-terminal-green to-transparent opacity-5 animate-pulse"></div>
+          
+          {/* Transition scan line */}
+          {isTransitioning && (
+            <div className="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-80" style={{animation: 'scan-line 0.5s ease-out'}}></div>
+          )}
         </div>
       </div>
 
