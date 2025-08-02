@@ -902,6 +902,8 @@ const ECHOTerminal = () => {
       case 'MENU':
       case '/MENU':
         stopNarration() // Stop narration immediately
+        // Wait for transition to complete before clearing
+        await new Promise(resolve => setTimeout(resolve, 700))
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         setIsViewingContent(false)
@@ -937,6 +939,8 @@ const ECHOTerminal = () => {
       case 'H':
       case 'HELP':
       case '/HELP':
+        // Wait for transition to complete before clearing
+        await new Promise(resolve => setTimeout(resolve, 700))
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('help')
@@ -972,6 +976,8 @@ const ECHOTerminal = () => {
         stopNarration() // Stop narration when navigating to journals
         setCurrentNarrationUrls([]) // Clear narration state
         setCurrentChunkIndex(0)
+        // Wait for transition to complete before clearing
+        await new Promise(resolve => setTimeout(resolve, 700))
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('journals')
@@ -1032,6 +1038,8 @@ const ECHOTerminal = () => {
         stopNarration() // Stop narration when navigating to books
         setCurrentNarrationUrls([]) // Clear narration state
         setCurrentChunkIndex(0)
+        // Wait for transition to complete before clearing
+        await new Promise(resolve => setTimeout(resolve, 700))
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('books')
@@ -1075,6 +1083,8 @@ const ECHOTerminal = () => {
         stopNarration() // Stop narration when navigating to music
         setCurrentNarrationUrls([]) // Clear narration state
         setCurrentChunkIndex(0)
+        // Wait for transition to complete before clearing
+        await new Promise(resolve => setTimeout(resolve, 700))
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('music')
@@ -1107,6 +1117,8 @@ const ECHOTerminal = () => {
         stopNarration() // Stop narration when navigating to about
         setCurrentNarrationUrls([]) // Clear narration state
         setCurrentChunkIndex(0)
+        // Wait for transition to complete before clearing
+        await new Promise(resolve => setTimeout(resolve, 700))
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('about')
@@ -2540,7 +2552,7 @@ ${release.fullDescription}`
           
           {/* Transition scan line */}
           {isTransitioning && (
-            <div className="absolute inset-x-0 h-1 bg-gradient-to-b from-transparent via-terminal-green to-transparent opacity-80" style={{animation: 'scan-line 0.5s ease-out'}}></div>
+            <div className="absolute inset-x-0 h-2 bg-gradient-to-b from-transparent via-terminal-green to-transparent" style={{animation: 'scan-line 0.5s ease-out'}}></div>
           )}
         </div>
         
@@ -2561,7 +2573,7 @@ ${release.fullDescription}`
           
           {/* Transition scan line */}
           {isTransitioning && (
-            <div className="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-80" style={{animation: 'scan-line 0.5s ease-out'}}></div>
+            <div className="absolute inset-x-0 h-2 bg-gradient-to-r from-transparent via-cyan-400 to-transparent" style={{animation: 'scan-line 0.5s ease-out'}}></div>
           )}
         </div>
       </div>
