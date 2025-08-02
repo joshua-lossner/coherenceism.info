@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { useRouter } from 'next/navigation'
 
@@ -373,7 +373,20 @@ const ECHOTerminal = () => {
     return () => window.removeEventListener('resize', checkScreenSize)
   }, [])
 
-  // Initialize terminal only on desktop after client hydration
+
+  // Function definitions (must be before useEffect that uses them)
+  const addLine = useCallback((text: string, type: 'normal' | 'error' | 'processing' | 'ai-response' | 'separator' | 'user-input' | 'markdown' | 'ascii-art' | 'tagline' | 'conversation-border' = 'normal', isMarkdown: boolean = false, clickableCommand?: string) => {
+    setTerminalLines(prev => [...prev, { text, type, isMarkdown, clickableCommand }])
+  }, [])
+
+  // Function to create dynamic borders that match content width
+  const addPromptWithOrangeBorder = useCallback((promptText: string) => {
+    addLine('────────────────────────────────────────', 'conversation-border')
+    addLine("")
+    addLine(promptText)
+  }, [addLine])
+
+  // Now the useEffect with proper dependencies
   useEffect(() => {
     // Only initialize terminal if client-side, not mobile, and not already initialized
     if (isClient && !isMobile && !isInitializedRef.current) {
@@ -403,7 +416,7 @@ const ECHOTerminal = () => {
       addPromptWithOrangeBorder("Type a number above or 'help' for more options.")
       addLine("")
     }
-  }, [isClient, isMobile, addPromptWithOrangeBorder])
+  }, [isClient, isMobile, addLine, addPromptWithOrangeBorder])
 
   // Tagline cycling effect
   useEffect(() => {
@@ -532,17 +545,6 @@ const ECHOTerminal = () => {
     }
     return () => clearInterval(interval)
   }, [isProcessing])
-
-  const addLine = (text: string, type: 'normal' | 'error' | 'processing' | 'ai-response' | 'separator' | 'user-input' | 'markdown' | 'ascii-art' | 'tagline' | 'conversation-border' = 'normal', isMarkdown: boolean = false, clickableCommand?: string) => {
-    setTerminalLines(prev => [...prev, { text, type, isMarkdown, clickableCommand }])
-  }
-
-  // Function to create dynamic borders that match content width
-  const addPromptWithOrangeBorder = (promptText: string) => {
-    addLine('────────────────────────────────────────', 'conversation-border')
-    addLine("")
-    addLine(promptText)
-  }
 
   const createBorder = (title?: string, char: string = '━'): string => {
     // Calculate available width based on terminal container
