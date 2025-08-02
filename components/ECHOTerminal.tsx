@@ -2498,7 +2498,7 @@ ${release.fullDescription}`
       <div className="h-screen flex">
         {/* Left Column - Terminal Interface */}
         <div className={`${isSplitView && isWideScreen ? 'w-1/2' : 'w-full'} flex flex-col h-full`}>
-          <div className="max-w-4xl mx-auto w-full flex flex-col h-full">
+          <div className="mx-auto w-full flex flex-col h-full" style={{maxWidth: '42em'}}>
           {/* Row 1: Header */}
           <div className="px-8 py-4">
             {renderHeader() || (
