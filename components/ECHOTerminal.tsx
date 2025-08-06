@@ -406,8 +406,7 @@ const ECHOTerminal = () => {
       addLine("")
       addLine("1. Journal - Read latest journal entries", 'normal', false, '1')
       addLine("2. Books - Browse Coherenceism texts", 'normal', false, '2') 
-      addLine("3. Music - Curated playlists and soundscapes", 'normal', false, '3')
-      addLine("4. About - Introduction to Coherenceism", 'normal', false, '4')
+      addLine("3. About - Introduction to Coherenceism", 'normal', false, '3')
       addLine("")
       addLine(createBorder(), 'normal')
       addLine("")
@@ -810,7 +809,7 @@ const ECHOTerminal = () => {
     setIsDisplayingMarkdown(false)
     
     // Trigger transition effect for navigation commands
-    if (['1', '2', '3', '4', 'X', 'MENU', '/MENU', 'JOURNALS', 'BOOKS', 'MUSIC', 'ABOUT'].includes(cmd)) {
+    if (['1', '2', '3', 'X', 'MENU', '/MENU', 'JOURNALS', 'BOOKS', 'ABOUT'].includes(cmd)) {
       await triggerTransition()
     }
     
@@ -846,8 +845,7 @@ const ECHOTerminal = () => {
         addLine("")
         addLine("1. Journal - Read latest journal entries", 'normal', false, '1')
         addLine("2. Books - Browse Coherenceism texts", 'normal', false, '2') 
-        addLine("3. Music - Curated playlists and soundscapes", 'normal', false, '3')
-        addLine("4. About - Introduction to Coherenceism", 'normal', false, '4')
+        addLine("3. About - Introduction to Coherenceism", 'normal', false, '3')
         addLine("")
         addLine(createBorder(), 'normal')
         addLine("")
@@ -2131,10 +2129,7 @@ ${release.fullDescription}`
             2. Books - Browse Coherenceism texts
           </div>
           <div className="text-terminal-green cursor-pointer hover:brightness-125" onClick={() => handleLineClick('3')}>
-            3. Music - Curated playlists and soundscapes
-          </div>
-          <div className="text-terminal-green cursor-pointer hover:brightness-125" onClick={() => handleLineClick('4')}>
-            4. About - Introduction to Coherenceism
+            3. About - Introduction to Coherenceism
           </div>
           <div className="text-terminal-green">{createBorder()}</div>
         </div>
@@ -2449,10 +2444,7 @@ ${release.fullDescription}`
                   2. Books - Browse Coherenceism texts
                 </div>
                 <div className="text-terminal-green cursor-pointer hover:brightness-125" onClick={() => handleLineClick('3')}>
-                  3. Music - Curated playlists and soundscapes
-                </div>
-                <div className="text-terminal-green cursor-pointer hover:brightness-125" onClick={() => handleLineClick('4')}>
-                  4. About - Introduction to Coherenceism
+                  3. About - Introduction to Coherenceism
                 </div>
                 <div className="text-terminal-green">{createBorder()}</div>
                 <div className="mt-4">
@@ -2473,10 +2465,9 @@ ${release.fullDescription}`
                                         (line.type === 'separator' && index < 15) ||
                                         (line.type === 'conversation-border' && index < 20) ||
                                         (line.text.includes('MAIN MENU')) ||
-                                        (line.clickableCommand && ['1', '2', '3', '4'].includes(line.clickableCommand)) ||
+                                        (line.clickableCommand && ['1', '2', '3'].includes(line.clickableCommand)) ||
                                         (line.text.includes('Journal - Read')) ||
                                         (line.text.includes('Books - Browse')) ||
-                                        (line.text.includes('Music - Curated')) ||
                                         (line.text.includes('About - Introduction')) ||
                                         (line.text.includes('Type a number above')) ||
                                         (line.text.includes('━') && index < 20) ||
