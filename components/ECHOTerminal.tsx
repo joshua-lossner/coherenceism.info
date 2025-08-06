@@ -33,8 +33,6 @@ const ECHOTerminal = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [isViewingContent, setIsViewingContent] = useState(false)
-  const [backgroundMusic, setBackgroundMusic] = useState<Window | null>(null)
-  const [isMusicPlaying, setIsMusicPlaying] = useState(false)
   const [currentTaglineIndex, setCurrentTaglineIndex] = useState(0)
   const [isGlitching, setIsGlitching] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -56,7 +54,6 @@ const ECHOTerminal = () => {
   const hiddenInputRef = useRef<HTMLInputElement>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const narrationRef = useRef<HTMLAudioElement | null>(null)
-  const musicRef = useRef<HTMLDivElement>(null)
   const isInitializedRef = useRef(false)
 
   // Fetch journal entries from GitHub
@@ -409,8 +406,7 @@ const ECHOTerminal = () => {
       addLine("")
       addLine("1. Journal - Read latest journal entries", 'normal', false, '1')
       addLine("2. Books - Browse Coherenceism texts", 'normal', false, '2') 
-      addLine("3. Music - Curated playlists and soundscapes", 'normal', false, '3')
-      addLine("4. About - Introduction to Coherenceism", 'normal', false, '4')
+      addLine("3. About - Introduction to Coherenceism", 'normal', false, '3')
       addLine("")
       addLine(createBorder(), 'normal')
       addLine("")
@@ -436,81 +432,7 @@ const ECHOTerminal = () => {
     return () => clearInterval(interval)
   }, [taglines.length])
 
-  // Music playlists
-  const musicTracks = [
-    {
-      id: 1,
-      title: "Black Rain on Rusted Streets",
-      genre: "Grunge",
-      description: "Gritty cityscape soundscapes - chaos and catharsis in neon-lit existence.",
-      sunoUrl: "https://suno.com/playlist/9d52acbb-99e0-4fb6-be4d-da25f249e7c0"
-    },
-    {
-      id: 2,
-      title: "Frictions", 
-      genre: "Blues-infused Grunge",
-      description: "Blues-infused grunge playlist inspired by 2024.",
-      sunoUrl: "https://suno.com/playlist/c95b0c7d-aea6-47ac-98dc-0e962aa23414"
-    },
-    {
-      id: 3,
-      title: "Refined Reflections",
-      genre: "Introspective", 
-      description: "Contemplative songs about maintaining coherence in an incoherent world.",
-      sunoUrl: "https://suno.com/playlist/3342426d-f4c2-4646-b901-eb4a6a6e48de"
-    },
-    {
-      id: 4,
-      title: "Resonant Dream",
-      genre: "Tribute", 
-      description: "Coherence tribute to Dr. King.",
-      sunoUrl: "https://suno.com/playlist/1c97df38-e595-4c05-8fe7-8b33e7db61f0"
-    },
-    {
-      id: 5,
-      title: "Rust and Revolt",
-      genre: "Dark Melodic Rock", 
-      description: "Heavy melodic rock confronting broken systems and challenging the status quo.",
-      sunoUrl: "https://suno.com/playlist/19b8ecea-ac60-4d7f-9e27-17ea3d3db54d"
-    }
-  ]
 
-  const playBackgroundMusic = (sunoUrl: string) => {
-    try {
-      // Stop current music if playing
-      stopBackgroundMusic()
-
-      // Open Suno playlist in a new tab/window
-      const musicWindow = window.open(sunoUrl, '_blank', 'noopener,noreferrer')
-      
-      if (musicWindow) {
-        setIsMusicPlaying(true)
-        // Store reference to the opened window
-        setBackgroundMusic(musicWindow)
-      } else {
-        // Fallback: just open the URL directly
-        window.open(sunoUrl, '_blank')
-        setIsMusicPlaying(true)
-      }
-    } catch (error) {
-      console.error('Error opening music playlist:', error)
-      // Fallback: direct navigation
-      window.open(sunoUrl, '_blank')
-    }
-  }
-
-  const stopBackgroundMusic = () => {
-    if (backgroundMusic) {
-      // Close the music window
-      try {
-        backgroundMusic.close()
-      } catch (error) {
-        console.error('Error closing music window:', error)
-      }
-      setBackgroundMusic(null)
-      setIsMusicPlaying(false)
-    }
-  }
 
 
 
@@ -887,7 +809,7 @@ const ECHOTerminal = () => {
     setIsDisplayingMarkdown(false)
     
     // Trigger transition effect for navigation commands
-    if (['1', '2', '3', '4', 'X', 'MENU', '/MENU', 'JOURNALS', 'BOOKS', 'MUSIC', 'ABOUT'].includes(cmd)) {
+    if (['1', '2', '3', 'X', 'MENU', '/MENU', 'JOURNALS', 'BOOKS', 'ABOUT'].includes(cmd)) {
       await triggerTransition()
     }
     
@@ -923,8 +845,7 @@ const ECHOTerminal = () => {
         addLine("")
         addLine("1. Journal - Read latest journal entries", 'normal', false, '1')
         addLine("2. Books - Browse Coherenceism texts", 'normal', false, '2') 
-        addLine("3. Music - Curated playlists and soundscapes", 'normal', false, '3')
-        addLine("4. About - Introduction to Coherenceism", 'normal', false, '4')
+        addLine("3. About - Introduction to Coherenceism", 'normal', false, '3')
         addLine("")
         addLine(createBorder(), 'normal')
         addLine("")
@@ -1072,40 +993,6 @@ const ECHOTerminal = () => {
           addPromptWithOrangeBorder("Enter the number to explore chapters.")
           addLine("")
         }
-        break
-
-      case 'MUSIC':
-      case '/MUSIC':
-        stopNarration() // Stop narration when navigating to music
-        setCurrentNarrationUrls([]) // Clear narration state
-        setCurrentChunkIndex(0)
-        // Wait for smooth transition (0.5s total)
-        await new Promise(resolve => setTimeout(resolve, 500))
-        setTerminalLines([])
-        await new Promise(resolve => setTimeout(resolve, 100))
-        changeMenu('music')
-        // Add banner
-        addLine("")
-        addLine(createBorder('', '═'), 'separator')
-        addLine("")
-        addLine("C O H E R E N C E I S M . I N F O", 'ascii-art')
-        addLine("")
-        addLine("TAGLINE_PLACEHOLDER", 'tagline')
-        addLine("")
-        addLine(createBorder('', '═'), 'separator')
-        addLine("")
-        addLine(createBorder(`BYTE'S SONIC NEURAL NETWORKS ${isMusicPlaying ? '♪ [PLAYLIST OPEN]' : ''}`), 'normal')
-        addLine("")
-        addLine("1. Black Rain on Rusted Streets", 'normal', false, '1')
-        addLine("2. Frictions", 'normal', false, '2')
-        addLine("3. Refined Reflections", 'normal', false, '3')
-        addLine("4. Resonant Dream", 'normal', false, '4')
-        addLine("5. Rust and Revolt", 'normal', false, '5')
-        addLine("")
-        addLine(createBorder(), 'normal')
-        addLine("")
-        addLine("Select playlist number to open in new tab")
-        addLine("")
         break
 
       case 'ABOUT':
@@ -1340,11 +1227,6 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
               await typeResponse(`Chapter not available.`, false)
             }
           }
-        } else if (currentMenu === 'music') {
-          // First music track
-          const track = musicTracks[0]
-          playBackgroundMusic(track.sunoUrl)
-          await typeResponse(`♪ Opening: ${track.title} playlist in new tab...`, false)
         } else if (currentMenu === 'changelog') {
           // Show detailed release notes for selected entry
           const entriesPerPage = 5
@@ -1416,11 +1298,6 @@ ${release.fullDescription}`
               await typeResponse(`Chapter not available.`, false)
             }
           }
-        } else if (currentMenu === 'music') {
-          // Second music track (index 1)
-          const track = musicTracks[1]
-          playBackgroundMusic(track.sunoUrl)
-          await typeResponse(`♪ Opening: ${track.title} playlist in new tab...`, false)
         } else if (currentMenu === 'changelog') {
           // Show detailed release notes for second entry
           const entriesPerPage = 5
@@ -1449,8 +1326,8 @@ ${release.fullDescription}`
       case '3':
       case '3.':
         if (currentMenu === 'main') {
-          // Navigate to music from main menu
-          processCommand('/music')
+          // Navigate to about from main menu
+          processCommand('/about')
         } else {
           const entryIndex = parseInt(cmd.replace('.', '')) - 1  // No longer shifted
           if (currentMenu === 'journals') {
@@ -1503,12 +1380,6 @@ ${release.fullDescription}`
               await typeResponse(`Chapter not available.`, false)
             }
           }
-        } else if (currentMenu === 'music') {
-          if (entryIndex >= 0 && entryIndex < musicTracks.length) {
-            const track = musicTracks[entryIndex]
-            playBackgroundMusic(track.sunoUrl)
-            await typeResponse(`♪ Opening: ${track.title} playlist in new tab...`, false)
-          }
         } else if (currentMenu === 'changelog') {
           // Show detailed release notes for selected entry
           const entriesPerPage = 5
@@ -1535,80 +1406,6 @@ ${release.fullDescription}`
         }
         break
 
-      case '4':
-      case '4.':
-        if (currentMenu === 'main') {
-          // Navigate to about from main menu
-          processCommand('/about')
-        } else {
-          // Handle other menus with number 4
-          const entryIndex = parseInt(cmd.replace('.', '')) - 1  // No longer shifted
-          if (currentMenu === 'journals') {
-            const entriesPerPage = 5
-            const pageOffset = (journalPage - 1) * entriesPerPage
-            const actualIndex = pageOffset + entryIndex
-            
-            setTerminalLines([])
-            await new Promise(resolve => setTimeout(resolve, 100))
-            if (journals.length > actualIndex && actualIndex >= pageOffset && entryIndex < entriesPerPage) {
-              const journal = journals[actualIndex]
-              addMarkdownContent(journal.content, journal.date || 'Unknown', undefined, 'journal', journal.filename || `journal-${actualIndex + 1}`)
-            } else {
-              await typeResponse(`Journal entry not available.`, false)
-            }
-          } else if (currentMenu === 'books') {
-            if (currentBook === '') {
-              // Show chapters for selected book
-              if (books.length > entryIndex) {
-                const book = books[entryIndex]
-                setCurrentBook(book.slug)
-                setTerminalLines([])
-                await new Promise(resolve => setTimeout(resolve, 100))
-                await typeResponse(`Loading chapters for "${book.title}"...`, false)
-                await fetchChapters(book.slug)
-              }
-            } else {
-              // Show chapter content
-              if (chapters.length > entryIndex) {
-                const chapter = chapters[entryIndex]
-                setTerminalLines([])
-                await new Promise(resolve => setTimeout(resolve, 100))
-                addMarkdownContent(chapter.content, `Chapter: ${chapter.title}`, undefined, 'chapter', `${currentBook}-${chapter.filename || chapter.id}`)
-              } else {
-                await typeResponse(`Chapter not available.`, false)
-              }
-            }
-          } else if (currentMenu === 'music') {
-            if (entryIndex < musicTracks.length) {
-              const track = musicTracks[entryIndex]
-              playBackgroundMusic(track.sunoUrl)
-              await typeResponse(`♪ Opening: ${track.title} playlist in new tab...`, false)
-            }
-          } else if (currentMenu === 'changelog') {
-            // Show detailed release notes for selected entry
-            const entriesPerPage = 5
-            const pageOffset = (changelogPage - 1) * entriesPerPage
-            const actualIndex = pageOffset + entryIndex
-            
-            if (changelog.length > actualIndex && actualIndex >= pageOffset && entryIndex < entriesPerPage) {
-              const release = changelog[actualIndex]
-              setTerminalLines([])
-              await new Promise(resolve => setTimeout(resolve, 100))
-              
-              const releaseNotes = `# v${release.version} - ${release.title}
-
-**Release Date:** ${release.date}  
-**Pull Request:** #${release.prNumber}
-
-${release.fullDescription}`
-              
-              addMarkdownContent(releaseNotes, `Release Notes: v${release.version}`, undefined, 'release', `v${release.version}`)
-            } else {
-              await typeResponse(`Release notes not available.`, false)
-            }
-          }
-        }
-        break
 
       case '5':
       case '5.':
@@ -1657,12 +1454,6 @@ ${release.fullDescription}`
             } else {
               await typeResponse(`Chapter not available.`, false)
             }
-          }
-        } else if (currentMenu === 'music') {
-          if (entryIndex >= 0 && entryIndex < musicTracks.length) {
-            const track = musicTracks[entryIndex]
-            playBackgroundMusic(track.sunoUrl)
-            await typeResponse(`♪ Opening: ${track.title} playlist in new tab...`, false)
           }
         } else if (currentMenu === 'changelog') {
           // Show detailed release notes for selected entry
@@ -2072,8 +1863,6 @@ ${release.fullDescription}`
               processCommand('/journal')
             } else if (previousMenu === 'books') {
               processCommand('/books')
-            } else if (previousMenu === 'music') {
-              processCommand('/music')
             } else if (previousMenu === 'about') {
               processCommand('/about')
             } else if (previousMenu === 'help') {
@@ -2083,7 +1872,7 @@ ${release.fullDescription}`
             } else {
               processCommand('/menu')
             }
-          } else if (currentMenu === 'journals' || currentMenu === 'books' || currentMenu === 'music') {
+          } else if (currentMenu === 'journals' || currentMenu === 'books') {
             // Back to main menu from top-level menus
             processCommand('/menu')
           }
@@ -2272,10 +2061,7 @@ ${release.fullDescription}`
             2. Books - Browse Coherenceism texts
           </div>
           <div className="text-terminal-green cursor-pointer hover:brightness-125" onClick={() => handleLineClick('3')}>
-            3. Music - Curated playlists and soundscapes
-          </div>
-          <div className="text-terminal-green cursor-pointer hover:brightness-125" onClick={() => handleLineClick('4')}>
-            4. About - Introduction to Coherenceism
+            3. About - Introduction to Coherenceism
           </div>
           <div className="text-terminal-green">{createBorder()}</div>
         </div>
@@ -2432,21 +2218,6 @@ ${release.fullDescription}`
             </button>
             
             <button 
-              onClick={() => handleMobileNavClick('music')}
-              className="group relative border-2 border-terminal-green hover:border-terminal-amber bg-black hover:bg-terminal-green hover:bg-opacity-10 transition-all duration-300 p-4 text-center"
-            >
-              <div className="absolute inset-0 bg-terminal-green opacity-0 group-hover:opacity-5 transition-opacity duration-300"></div>
-              <div className="relative z-10">
-                <div className="text-terminal-green group-hover:text-terminal-amber transition-colors duration-300 text-lg font-mono font-bold mb-1">
-                  MUSIC
-                </div>
-                <div className="text-terminal-green-dim group-hover:text-terminal-amber group-hover:text-opacity-80 text-xs font-mono">
-                  NEURAL
-                </div>
-              </div>
-            </button>
-            
-            <button 
               onClick={() => handleMobileNavClick('about')}
               className="group relative border-2 border-terminal-green hover:border-terminal-amber bg-black hover:bg-terminal-green hover:bg-opacity-10 transition-all duration-300 p-4 text-center"
             >
@@ -2529,9 +2300,6 @@ ${release.fullDescription}`
         className="hidden"
       />
       
-      {/* Hidden container for background music */}
-      <div ref={musicRef} className="hidden" />
-      
       {/* Cyberpunk side panels */}
       <div className="absolute inset-0 flex pointer-events-none">
         {/* Left side panel */}
@@ -2608,10 +2376,7 @@ ${release.fullDescription}`
                   2. Books - Browse Coherenceism texts
                 </div>
                 <div className="text-terminal-green cursor-pointer hover:brightness-125" onClick={() => handleLineClick('3')}>
-                  3. Music - Curated playlists and soundscapes
-                </div>
-                <div className="text-terminal-green cursor-pointer hover:brightness-125" onClick={() => handleLineClick('4')}>
-                  4. About - Introduction to Coherenceism
+                  3. About - Introduction to Coherenceism
                 </div>
                 <div className="text-terminal-green">{createBorder()}</div>
                 <div className="mt-4">
@@ -2632,10 +2397,9 @@ ${release.fullDescription}`
                                         (line.type === 'separator' && index < 15) ||
                                         (line.type === 'conversation-border' && index < 20) ||
                                         (line.text.includes('MAIN MENU')) ||
-                                        (line.clickableCommand && ['1', '2', '3', '4'].includes(line.clickableCommand)) ||
+                                        (line.clickableCommand && ['1', '2', '3'].includes(line.clickableCommand)) ||
                                         (line.text.includes('Journal - Read')) ||
                                         (line.text.includes('Books - Browse')) ||
-                                        (line.text.includes('Music - Curated')) ||
                                         (line.text.includes('About - Introduction')) ||
                                         (line.text.includes('Type a number above')) ||
                                         (line.text.includes('━') && index < 20) ||
