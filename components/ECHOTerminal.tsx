@@ -1326,8 +1326,8 @@ ${release.fullDescription}`
       case '3':
       case '3.':
         if (currentMenu === 'main') {
-          // Navigate to music from main menu
-          processCommand('/music')
+          // Navigate to about from main menu
+          processCommand('/about')
         } else {
           const entryIndex = parseInt(cmd.replace('.', '')) - 1  // No longer shifted
           if (currentMenu === 'journals') {
@@ -1406,74 +1406,6 @@ ${release.fullDescription}`
         }
         break
 
-      case '3':
-      case '3.':
-        if (currentMenu === 'main') {
-          // Navigate to about from main menu
-          processCommand('/about')
-        } else {
-          // Handle other menus with number 4
-          const entryIndex = parseInt(cmd.replace('.', '')) - 1  // No longer shifted
-          if (currentMenu === 'journals') {
-            const entriesPerPage = 5
-            const pageOffset = (journalPage - 1) * entriesPerPage
-            const actualIndex = pageOffset + entryIndex
-            
-            setTerminalLines([])
-            await new Promise(resolve => setTimeout(resolve, 100))
-            if (journals.length > actualIndex && actualIndex >= pageOffset && entryIndex < entriesPerPage) {
-              const journal = journals[actualIndex]
-              addMarkdownContent(journal.content, journal.date || 'Unknown', undefined, 'journal', journal.filename || `journal-${actualIndex + 1}`)
-            } else {
-              await typeResponse(`Journal entry not available.`, false)
-            }
-          } else if (currentMenu === 'books') {
-            if (currentBook === '') {
-              // Show chapters for selected book
-              if (books.length > entryIndex) {
-                const book = books[entryIndex]
-                setCurrentBook(book.slug)
-                setTerminalLines([])
-                await new Promise(resolve => setTimeout(resolve, 100))
-                await typeResponse(`Loading chapters for "${book.title}"...`, false)
-                await fetchChapters(book.slug)
-              }
-            } else {
-              // Show chapter content
-              if (chapters.length > entryIndex) {
-                const chapter = chapters[entryIndex]
-                setTerminalLines([])
-                await new Promise(resolve => setTimeout(resolve, 100))
-                addMarkdownContent(chapter.content, `Chapter: ${chapter.title}`, undefined, 'chapter', `${currentBook}-${chapter.filename || chapter.id}`)
-              } else {
-                await typeResponse(`Chapter not available.`, false)
-              }
-            }
-          } else if (currentMenu === 'changelog') {
-            // Show detailed release notes for selected entry
-            const entriesPerPage = 5
-            const pageOffset = (changelogPage - 1) * entriesPerPage
-            const actualIndex = pageOffset + entryIndex
-            
-            if (changelog.length > actualIndex && actualIndex >= pageOffset && entryIndex < entriesPerPage) {
-              const release = changelog[actualIndex]
-              setTerminalLines([])
-              await new Promise(resolve => setTimeout(resolve, 100))
-              
-              const releaseNotes = `# v${release.version} - ${release.title}
-
-**Release Date:** ${release.date}  
-**Pull Request:** #${release.prNumber}
-
-${release.fullDescription}`
-              
-              addMarkdownContent(releaseNotes, `Release Notes: v${release.version}`, undefined, 'release', `v${release.version}`)
-            } else {
-              await typeResponse(`Release notes not available.`, false)
-            }
-          }
-        }
-        break
 
       case '5':
       case '5.':
