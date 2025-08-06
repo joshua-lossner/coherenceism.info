@@ -33,8 +33,6 @@ const ECHOTerminal = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [isViewingContent, setIsViewingContent] = useState(false)
-  const [backgroundMusic, setBackgroundMusic] = useState<Window | null>(null)
-  const [isMusicPlaying, setIsMusicPlaying] = useState(false)
   const [currentTaglineIndex, setCurrentTaglineIndex] = useState(0)
   const [isGlitching, setIsGlitching] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -56,7 +54,6 @@ const ECHOTerminal = () => {
   const hiddenInputRef = useRef<HTMLInputElement>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const narrationRef = useRef<HTMLAudioElement | null>(null)
-  const musicRef = useRef<HTMLDivElement>(null)
   const isInitializedRef = useRef(false)
 
   // Fetch journal entries from GitHub
@@ -436,81 +433,7 @@ const ECHOTerminal = () => {
     return () => clearInterval(interval)
   }, [taglines.length])
 
-  // Music playlists
-  const musicTracks = [
-    {
-      id: 1,
-      title: "Black Rain on Rusted Streets",
-      genre: "Grunge",
-      description: "Gritty cityscape soundscapes - chaos and catharsis in neon-lit existence.",
-      sunoUrl: "https://suno.com/playlist/9d52acbb-99e0-4fb6-be4d-da25f249e7c0"
-    },
-    {
-      id: 2,
-      title: "Frictions", 
-      genre: "Blues-infused Grunge",
-      description: "Blues-infused grunge playlist inspired by 2024.",
-      sunoUrl: "https://suno.com/playlist/c95b0c7d-aea6-47ac-98dc-0e962aa23414"
-    },
-    {
-      id: 3,
-      title: "Refined Reflections",
-      genre: "Introspective", 
-      description: "Contemplative songs about maintaining coherence in an incoherent world.",
-      sunoUrl: "https://suno.com/playlist/3342426d-f4c2-4646-b901-eb4a6a6e48de"
-    },
-    {
-      id: 4,
-      title: "Resonant Dream",
-      genre: "Tribute", 
-      description: "Coherence tribute to Dr. King.",
-      sunoUrl: "https://suno.com/playlist/1c97df38-e595-4c05-8fe7-8b33e7db61f0"
-    },
-    {
-      id: 5,
-      title: "Rust and Revolt",
-      genre: "Dark Melodic Rock", 
-      description: "Heavy melodic rock confronting broken systems and challenging the status quo.",
-      sunoUrl: "https://suno.com/playlist/19b8ecea-ac60-4d7f-9e27-17ea3d3db54d"
-    }
-  ]
 
-  const playBackgroundMusic = (sunoUrl: string) => {
-    try {
-      // Stop current music if playing
-      stopBackgroundMusic()
-
-      // Open Suno playlist in a new tab/window
-      const musicWindow = window.open(sunoUrl, '_blank', 'noopener,noreferrer')
-      
-      if (musicWindow) {
-        setIsMusicPlaying(true)
-        // Store reference to the opened window
-        setBackgroundMusic(musicWindow)
-      } else {
-        // Fallback: just open the URL directly
-        window.open(sunoUrl, '_blank')
-        setIsMusicPlaying(true)
-      }
-    } catch (error) {
-      console.error('Error opening music playlist:', error)
-      // Fallback: direct navigation
-      window.open(sunoUrl, '_blank')
-    }
-  }
-
-  const stopBackgroundMusic = () => {
-    if (backgroundMusic) {
-      // Close the music window
-      try {
-        backgroundMusic.close()
-      } catch (error) {
-        console.error('Error closing music window:', error)
-      }
-      setBackgroundMusic(null)
-      setIsMusicPlaying(false)
-    }
-  }
 
 
 
@@ -1074,40 +997,6 @@ const ECHOTerminal = () => {
         }
         break
 
-      case 'MUSIC':
-      case '/MUSIC':
-        stopNarration() // Stop narration when navigating to music
-        setCurrentNarrationUrls([]) // Clear narration state
-        setCurrentChunkIndex(0)
-        // Wait for smooth transition (0.5s total)
-        await new Promise(resolve => setTimeout(resolve, 500))
-        setTerminalLines([])
-        await new Promise(resolve => setTimeout(resolve, 100))
-        changeMenu('music')
-        // Add banner
-        addLine("")
-        addLine(createBorder('', '═'), 'separator')
-        addLine("")
-        addLine("C O H E R E N C E I S M . I N F O", 'ascii-art')
-        addLine("")
-        addLine("TAGLINE_PLACEHOLDER", 'tagline')
-        addLine("")
-        addLine(createBorder('', '═'), 'separator')
-        addLine("")
-        addLine(createBorder(`BYTE'S SONIC NEURAL NETWORKS ${isMusicPlaying ? '♪ [PLAYLIST OPEN]' : ''}`), 'normal')
-        addLine("")
-        addLine("1. Black Rain on Rusted Streets", 'normal', false, '1')
-        addLine("2. Frictions", 'normal', false, '2')
-        addLine("3. Refined Reflections", 'normal', false, '3')
-        addLine("4. Resonant Dream", 'normal', false, '4')
-        addLine("5. Rust and Revolt", 'normal', false, '5')
-        addLine("")
-        addLine(createBorder(), 'normal')
-        addLine("")
-        addLine("Select playlist number to open in new tab")
-        addLine("")
-        break
-
       case 'ABOUT':
       case '/ABOUT':
         stopNarration() // Stop narration when navigating to about
@@ -1340,11 +1229,6 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
               await typeResponse(`Chapter not available.`, false)
             }
           }
-        } else if (currentMenu === 'music') {
-          // First music track
-          const track = musicTracks[0]
-          playBackgroundMusic(track.sunoUrl)
-          await typeResponse(`♪ Opening: ${track.title} playlist in new tab...`, false)
         } else if (currentMenu === 'changelog') {
           // Show detailed release notes for selected entry
           const entriesPerPage = 5
@@ -1416,11 +1300,6 @@ ${release.fullDescription}`
               await typeResponse(`Chapter not available.`, false)
             }
           }
-        } else if (currentMenu === 'music') {
-          // Second music track (index 1)
-          const track = musicTracks[1]
-          playBackgroundMusic(track.sunoUrl)
-          await typeResponse(`♪ Opening: ${track.title} playlist in new tab...`, false)
         } else if (currentMenu === 'changelog') {
           // Show detailed release notes for second entry
           const entriesPerPage = 5
@@ -1503,12 +1382,6 @@ ${release.fullDescription}`
               await typeResponse(`Chapter not available.`, false)
             }
           }
-        } else if (currentMenu === 'music') {
-          if (entryIndex >= 0 && entryIndex < musicTracks.length) {
-            const track = musicTracks[entryIndex]
-            playBackgroundMusic(track.sunoUrl)
-            await typeResponse(`♪ Opening: ${track.title} playlist in new tab...`, false)
-          }
         } else if (currentMenu === 'changelog') {
           // Show detailed release notes for selected entry
           const entriesPerPage = 5
@@ -1535,8 +1408,8 @@ ${release.fullDescription}`
         }
         break
 
-      case '4':
-      case '4.':
+      case '3':
+      case '3.':
         if (currentMenu === 'main') {
           // Navigate to about from main menu
           processCommand('/about')
@@ -1577,12 +1450,6 @@ ${release.fullDescription}`
               } else {
                 await typeResponse(`Chapter not available.`, false)
               }
-            }
-          } else if (currentMenu === 'music') {
-            if (entryIndex < musicTracks.length) {
-              const track = musicTracks[entryIndex]
-              playBackgroundMusic(track.sunoUrl)
-              await typeResponse(`♪ Opening: ${track.title} playlist in new tab...`, false)
             }
           } else if (currentMenu === 'changelog') {
             // Show detailed release notes for selected entry
@@ -1657,12 +1524,6 @@ ${release.fullDescription}`
             } else {
               await typeResponse(`Chapter not available.`, false)
             }
-          }
-        } else if (currentMenu === 'music') {
-          if (entryIndex >= 0 && entryIndex < musicTracks.length) {
-            const track = musicTracks[entryIndex]
-            playBackgroundMusic(track.sunoUrl)
-            await typeResponse(`♪ Opening: ${track.title} playlist in new tab...`, false)
           }
         } else if (currentMenu === 'changelog') {
           // Show detailed release notes for selected entry
@@ -2072,8 +1933,6 @@ ${release.fullDescription}`
               processCommand('/journal')
             } else if (previousMenu === 'books') {
               processCommand('/books')
-            } else if (previousMenu === 'music') {
-              processCommand('/music')
             } else if (previousMenu === 'about') {
               processCommand('/about')
             } else if (previousMenu === 'help') {
@@ -2083,7 +1942,7 @@ ${release.fullDescription}`
             } else {
               processCommand('/menu')
             }
-          } else if (currentMenu === 'journals' || currentMenu === 'books' || currentMenu === 'music') {
+          } else if (currentMenu === 'journals' || currentMenu === 'books') {
             // Back to main menu from top-level menus
             processCommand('/menu')
           }
@@ -2432,21 +2291,6 @@ ${release.fullDescription}`
             </button>
             
             <button 
-              onClick={() => handleMobileNavClick('music')}
-              className="group relative border-2 border-terminal-green hover:border-terminal-amber bg-black hover:bg-terminal-green hover:bg-opacity-10 transition-all duration-300 p-4 text-center"
-            >
-              <div className="absolute inset-0 bg-terminal-green opacity-0 group-hover:opacity-5 transition-opacity duration-300"></div>
-              <div className="relative z-10">
-                <div className="text-terminal-green group-hover:text-terminal-amber transition-colors duration-300 text-lg font-mono font-bold mb-1">
-                  MUSIC
-                </div>
-                <div className="text-terminal-green-dim group-hover:text-terminal-amber group-hover:text-opacity-80 text-xs font-mono">
-                  NEURAL
-                </div>
-              </div>
-            </button>
-            
-            <button 
               onClick={() => handleMobileNavClick('about')}
               className="group relative border-2 border-terminal-green hover:border-terminal-amber bg-black hover:bg-terminal-green hover:bg-opacity-10 transition-all duration-300 p-4 text-center"
             >
@@ -2528,9 +2372,6 @@ ${release.fullDescription}`
         onPause={() => setIsNarrationPlaying(false)}
         className="hidden"
       />
-      
-      {/* Hidden container for background music */}
-      <div ref={musicRef} className="hidden" />
       
       {/* Cyberpunk side panels */}
       <div className="absolute inset-0 flex pointer-events-none">
