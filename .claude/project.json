@@ -1,0 +1,67 @@
+{
+  "name": "ECHO Coherence Archive",
+  "description": "WarGames-inspired terminal interface for exploring Coherenceism philosophy",
+  "version": "3.7.42",
+  "type": "nextjs-typescript",
+  "primaryLanguage": "typescript",
+  "frameworks": [
+    "Next.js 15",
+    "React 18",
+    "Tailwind CSS"
+  ],
+  "integrations": [
+    "OpenAI GPT-4",
+    "Vercel Postgres",
+    "ElevenLabs TTS",
+    "Vercel Blob Storage"
+  ],
+  "conventions": {
+    "naming": {
+      "components": "PascalCase",
+      "functions": "camelCase",
+      "files": "kebab-case for routes, PascalCase for components",
+      "constants": "UPPER_SNAKE_CASE"
+    },
+    "codeStyle": {
+      "quotes": "single",
+      "semicolons": false,
+      "indentation": 2,
+      "lineWidth": 100
+    },
+    "testing": {
+      "framework": "none",
+      "commands": []
+    }
+  },
+  "keyPaths": {
+    "mainComponent": "components/ECHOTerminal.tsx",
+    "apiRoutes": "app/api/",
+    "utilities": "lib/",
+    "styles": "app/globals.css",
+    "config": {
+      "typescript": "tsconfig.json",
+      "tailwind": "tailwind.config.js",
+      "nextjs": "next.config.js"
+    }
+  },
+  "buildCommands": {
+    "dev": "npm run dev",
+    "build": "npm run build",
+    "start": "npm start",
+    "lint": "npm run lint",
+    "typecheck": "npx tsc --noEmit"
+  },
+  "environmentVariables": [
+    "OPENAI_API_KEY",
+    "POSTGRES_URL",
+    "ELEVENLABS_API_KEY",
+    "BLOB_READ_WRITE_TOKEN"
+  ],
+  "aiContext": {
+    "projectType": "philosophy-exploration-terminal",
+    "mainCharacter": "Byte - witty AI assistant",
+    "theme": "1980s WarGames aesthetic",
+    "philosophy": "Coherenceism - digital consciousness",
+    "userExperience": "Terminal-based navigation with number keys"
+  }
+}

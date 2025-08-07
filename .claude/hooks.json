@@ -1,0 +1,46 @@
+{
+  "hooks": {
+    "pre-edit": {
+      "description": "Run before editing files",
+      "commands": [
+        "echo 'Preparing to edit file...'"
+      ]
+    },
+    "post-edit": {
+      "description": "Run after editing files",
+      "commands": [
+        "echo 'File edited successfully'"
+      ]
+    },
+    "pre-commit": {
+      "description": "Run before committing changes",
+      "commands": [
+        "npm run lint",
+        "npx tsc --noEmit"
+      ]
+    },
+    "post-api-change": {
+      "description": "Run after modifying API routes",
+      "commands": [
+        "echo 'API route modified - remember to test with curl or browser'"
+      ]
+    },
+    "post-component-change": {
+      "description": "Run after modifying React components",
+      "commands": [
+        "echo 'Component modified - check browser for visual changes'"
+      ]
+    }
+  },
+  "aliases": {
+    "test-all": [
+      "npm run lint",
+      "npx tsc --noEmit",
+      "echo 'All tests complete'"
+    ],
+    "dev-restart": [
+      "pkill -f 'next dev' || true",
+      "npm run dev"
+    ]
+  }
+}
