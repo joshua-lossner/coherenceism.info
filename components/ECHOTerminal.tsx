@@ -840,9 +840,10 @@ const ECHOTerminal = () => {
     setIsDisplayingMarkdown(false)
     
     // Trigger transition effect for navigation commands
-    if (['1', '2', '3', 'X', 'MENU', '/MENU', 'JOURNALS', 'BOOKS', 'ABOUT'].includes(cmd)) {
-      await triggerTransition()
-    }
+    // Disable animated transition for instant switching
+    // if (['1', '2', '3', 'X', 'MENU', '/MENU', 'JOURNALS', 'BOOKS', 'ABOUT'].includes(cmd)) {
+    //   await triggerTransition()
+    // }
     
     // Process command without echoing it to terminal
 
@@ -851,8 +852,7 @@ const ECHOTerminal = () => {
       case 'MENU':
       case '/MENU':
         stopNarration() // Stop narration immediately
-        // Wait for smooth transition (0.5s total)
-        await new Promise(resolve => setTimeout(resolve, 500))
+        // Instant switch: remove transition delay
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         setIsViewingContent(false)
@@ -887,8 +887,7 @@ const ECHOTerminal = () => {
       case 'H':
       case 'HELP':
       case '/HELP':
-        // Wait for smooth transition (0.5s total)
-        await new Promise(resolve => setTimeout(resolve, 500))
+        // Instant switch: remove transition delay
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('help')
@@ -924,8 +923,7 @@ const ECHOTerminal = () => {
         stopNarration() // Stop narration when navigating to journals
         setCurrentNarrationUrls([]) // Clear narration state
         setCurrentChunkIndex(0)
-        // Wait for smooth transition (0.5s total)
-        await new Promise(resolve => setTimeout(resolve, 500))
+        // Instant switch: remove transition delay
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('journals')
@@ -986,8 +984,7 @@ const ECHOTerminal = () => {
         stopNarration() // Stop narration when navigating to books
         setCurrentNarrationUrls([]) // Clear narration state
         setCurrentChunkIndex(0)
-        // Wait for smooth transition (0.5s total)
-        await new Promise(resolve => setTimeout(resolve, 500))
+        // Instant switch: remove transition delay
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('books')
@@ -1031,8 +1028,7 @@ const ECHOTerminal = () => {
         stopNarration() // Stop narration when navigating to about
         setCurrentNarrationUrls([]) // Clear narration state
         setCurrentChunkIndex(0)
-        // Wait for smooth transition (0.5s total)
-        await new Promise(resolve => setTimeout(resolve, 500))
+        // Instant switch: remove transition delay
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('about')
