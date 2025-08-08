@@ -779,25 +779,56 @@ const ECHOTerminal = () => {
     }
   }
 
-  // Simple smooth transition effect
+  // Smooth, debounced transition effect (fade out/in)
   const triggerTransition = async () => {
+    // Prevent overlapping transitions
+    if (isTransitioning) return
     setIsTransitioning(true)
-    
-    const terminal = terminalRef.current
-    if (terminal) {
-      // Simple fade out
-      terminal.style.transition = 'opacity 0.3s ease-out'
-      terminal.style.opacity = '0.3'
-      
-      // Short pause then fade back in after content loads
-      setTimeout(() => {
-        terminal.style.opacity = '1'
-        setTimeout(() => {
-          terminal.style.transition = ''
-          setIsTransitioning(false)
-        }, 300)
-      }, 200)
-    } else {
+
+    try {
+      // Collect potential terminal panes (some layouts render different panes)
+      const panes: HTMLElement[] = []
+      if (terminalRef.current) panes.push(terminalRef.current)
+      if (typeof document !== 'undefined') {
+        document.querySelectorAll('.terminal-text').forEach(el => {
+          if (el instanceof HTMLElement && !panes.includes(el)) panes.push(el)
+        })
+      }
+
+      if (panes.length === 0) {
+        setIsTransitioning(false)
+        return
+      }
+
+      // Force reflow and apply fade-out
+      panes.forEach(el => {
+        el.style.willChange = 'opacity'
+        el.style.transition = 'opacity 200ms ease'
+        // ensure transition applies
+        void el.offsetHeight
+        el.style.opacity = '0.15'
+      })
+
+      // Wait for fade-out to complete
+      await new Promise(resolve => setTimeout(resolve, 210))
+
+      // Fade back in and clean up after transition end
+      await Promise.all(
+        panes.map(
+          el =>
+            new Promise<void>(resolve => {
+              const onEnd = () => {
+                el.style.transition = ''
+                el.style.willChange = ''
+                el.removeEventListener('transitionend', onEnd)
+                resolve()
+              }
+              el.addEventListener('transitionend', onEnd, { once: true })
+              el.style.opacity = '1'
+            })
+        )
+      )
+    } finally {
       setIsTransitioning(false)
     }
   }
