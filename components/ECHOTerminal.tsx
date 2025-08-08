@@ -779,25 +779,56 @@ const ECHOTerminal = () => {
     }
   }
 
-  // Simple smooth transition effect
+  // Smooth, debounced transition effect (fade out/in)
   const triggerTransition = async () => {
+    // Prevent overlapping transitions
+    if (isTransitioning) return
     setIsTransitioning(true)
-    
-    const terminal = terminalRef.current
-    if (terminal) {
-      // Simple fade out
-      terminal.style.transition = 'opacity 0.3s ease-out'
-      terminal.style.opacity = '0.3'
-      
-      // Short pause then fade back in after content loads
-      setTimeout(() => {
-        terminal.style.opacity = '1'
-        setTimeout(() => {
-          terminal.style.transition = ''
-          setIsTransitioning(false)
-        }, 300)
-      }, 200)
-    } else {
+
+    try {
+      // Collect potential terminal panes (some layouts render different panes)
+      const panes: HTMLElement[] = []
+      if (terminalRef.current) panes.push(terminalRef.current)
+      if (typeof document !== 'undefined') {
+        document.querySelectorAll('.terminal-text').forEach(el => {
+          if (el instanceof HTMLElement && !panes.includes(el)) panes.push(el)
+        })
+      }
+
+      if (panes.length === 0) {
+        setIsTransitioning(false)
+        return
+      }
+
+      // Force reflow and apply fade-out
+      panes.forEach(el => {
+        el.style.willChange = 'opacity'
+        el.style.transition = 'opacity 200ms ease'
+        // ensure transition applies
+        void el.offsetHeight
+        el.style.opacity = '0.15'
+      })
+
+      // Wait for fade-out to complete
+      await new Promise(resolve => setTimeout(resolve, 210))
+
+      // Fade back in and clean up after transition end
+      await Promise.all(
+        panes.map(
+          el =>
+            new Promise<void>(resolve => {
+              const onEnd = () => {
+                el.style.transition = ''
+                el.style.willChange = ''
+                el.removeEventListener('transitionend', onEnd)
+                resolve()
+              }
+              el.addEventListener('transitionend', onEnd, { once: true })
+              el.style.opacity = '1'
+            })
+        )
+      )
+    } finally {
       setIsTransitioning(false)
     }
   }
@@ -809,9 +840,10 @@ const ECHOTerminal = () => {
     setIsDisplayingMarkdown(false)
     
     // Trigger transition effect for navigation commands
-    if (['1', '2', '3', 'X', 'MENU', '/MENU', 'JOURNALS', 'BOOKS', 'ABOUT'].includes(cmd)) {
-      await triggerTransition()
-    }
+    // Disable animated transition for instant switching
+    // if (['1', '2', '3', 'X', 'MENU', '/MENU', 'JOURNALS', 'BOOKS', 'ABOUT'].includes(cmd)) {
+    //   await triggerTransition()
+    // }
     
     // Process command without echoing it to terminal
 
@@ -820,8 +852,7 @@ const ECHOTerminal = () => {
       case 'MENU':
       case '/MENU':
         stopNarration() // Stop narration immediately
-        // Wait for smooth transition (0.5s total)
-        await new Promise(resolve => setTimeout(resolve, 500))
+        // Instant switch: remove transition delay
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         setIsViewingContent(false)
@@ -856,8 +887,7 @@ const ECHOTerminal = () => {
       case 'H':
       case 'HELP':
       case '/HELP':
-        // Wait for smooth transition (0.5s total)
-        await new Promise(resolve => setTimeout(resolve, 500))
+        // Instant switch: remove transition delay
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('help')
@@ -893,8 +923,7 @@ const ECHOTerminal = () => {
         stopNarration() // Stop narration when navigating to journals
         setCurrentNarrationUrls([]) // Clear narration state
         setCurrentChunkIndex(0)
-        // Wait for smooth transition (0.5s total)
-        await new Promise(resolve => setTimeout(resolve, 500))
+        // Instant switch: remove transition delay
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('journals')
@@ -955,8 +984,7 @@ const ECHOTerminal = () => {
         stopNarration() // Stop narration when navigating to books
         setCurrentNarrationUrls([]) // Clear narration state
         setCurrentChunkIndex(0)
-        // Wait for smooth transition (0.5s total)
-        await new Promise(resolve => setTimeout(resolve, 500))
+        // Instant switch: remove transition delay
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('books')
@@ -1000,8 +1028,7 @@ const ECHOTerminal = () => {
         stopNarration() // Stop narration when navigating to about
         setCurrentNarrationUrls([]) // Clear narration state
         setCurrentChunkIndex(0)
-        // Wait for smooth transition (0.5s total)
-        await new Promise(resolve => setTimeout(resolve, 500))
+        // Instant switch: remove transition delay
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('about')
@@ -1407,6 +1434,8 @@ ${release.fullDescription}`
         break
 
 
+      case '4':
+      case '4.':
       case '5':
       case '5.':
       case '6':
