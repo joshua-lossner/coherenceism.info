@@ -1407,6 +1407,8 @@ ${release.fullDescription}`
         break
 
 
+      case '4':
+      case '4.':
       case '5':
       case '5.':
       case '6':
