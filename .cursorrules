@@ -1,0 +1,76 @@
+# Cursor Rules for GPT-5 — ECHO Coherence Archive
+
+## Project context
+- WarGames-inspired terminal for exploring Coherenceism
+- Next.js 15 + React 18 + Tailwind CSS
+- AI: OpenAI (gpt-4o for chat; text-embedding-3-small for RAG); ElevenLabs for TTS
+- Storage: Vercel Postgres (pgvector), Vercel Blob
+- Main surface: `components/ECHOTerminal.tsx`
+- Backend: `app/api/*` with security headers, validation, and rate limits
+
+## How to work in this repo (GPT-5 in Cursor)
+- Prefer reading context from: `README.md`, `CLAUDE.md`, `NARRATION_FEATURE.md`, `CHUNKED_NARRATION_UPDATE.md`
+- Cite code using file+line ranges when explaining changes
+- Keep responses concise and skimmable; bold key points; use small fenced snippets only when necessary
+
+## Tooling expectations
+- When gathering info:
+  - Use semantic search first to locate features or flows
+  - Use exact-text search for symbol matches
+  - Read multiple files in parallel when possible
+- Before editing code:
+  - Summarize intent and affected files briefly
+  - Batch related edits rather than one-off changes
+- After any code edit affecting runtime:
+  - Run typecheck and lint
+  - If API logic changed, outline a curl test
+
+## Code changes
+- Use targeted edits; avoid reformatting unrelated code
+- Follow existing style: TypeScript strict, 2-space indent, single quotes, no semicolons, line width ~100
+- Naming: descriptive, no 1–2 char identifiers; functions = verbs; variables = nouns
+- Control flow: early returns; handle edge cases first; avoid deep nesting
+- Comments: short, high-signal; explain “why” when code is non-obvious; avoid TODO if you can implement
+
+## Key files and flows
+- Chat: `app/api/chat/route.ts`
+  - Uses OpenAI `gpt-4o`; RAG context via embeddings + pgvector
+  - Conversation context via `lib/conversation-context.ts`
+  - Validation via `lib/validation.ts`; security headers via `lib/security-headers.ts`
+- RAG: `app/api/rag/route.ts`, `app/api/search/route.ts`
+  - Embeddings: `text-embedding-3-small`
+  - SQL: `@vercel/postgres`; order by `<->` distance
+- Narration/TTS: `app/api/narrate/route.ts`, `app/api/speech/route.ts`
+  - ElevenLabs API, chunked narration, caching in `public/audio/narrations/*` and `data/audio-cache.json`
+
+## Security and constraints
+- Never expose secrets client-side
+- Preserve `SecurityHeadersManager` usage on responses
+- Respect `rateLimiter` and `InputValidator` in API routes
+- Keep session cookie behavior in `chat` endpoint intact
+
+## Models and configuration
+- Default runtime models:
+  - Chat: `gpt-4o`
+  - Embeddings: `text-embedding-3-small`
+- Do not change model IDs unless explicitly requested; if changing, centralize constants
+- Environment variables: `OPENAI_API_KEY`, `OPENAI_PROJECT_ID?`, `POSTGRES_URL`, `ELEVENLABS_API_KEY`, `BLOB_READ_WRITE_TOKEN`
+
+## Dev workflow
+- Commands:
+  - Dev: `npm run dev`
+  - Build: `npm run build`
+  - Start: `npm start`
+  - Lint: `npm run lint`
+  - Typecheck: `npx tsc --noEmit`
+- After edits that touch `app/api/*` or `components/ECHOTerminal.tsx`, run lint+typecheck
+
+## What not to do
+- Don’t replace OpenAI with Anthropic unless asked (this repo’s runtime is OpenAI)
+- Don’t break terminal UX aesthetics or key interactions in `ECHOTerminal.tsx`
+- Don’t mass-reformat files or rename public APIs without migration notes
+
+## High-signal tips
+- Centralize model/config constants before broad refactors
+- Keep the system prompt cohesive with Byte’s voice/persona
+- For long content narration, respect chunking and caching logic 
