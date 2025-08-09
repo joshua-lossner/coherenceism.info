@@ -81,7 +81,9 @@ export default function BooksPage() {
                 bodyContent = frontmatterMatch[2]
                 
                 const titleMatch = frontmatter.match(/title:\s*"?([^"\n]+)"?/)
+                const publishedMatch = frontmatter.match(/published:\s*(true|yes|on|1)/i)
                 if (titleMatch) title = titleMatch[1]
+                if (!publishedMatch) return null
               }
               
               return {
