@@ -304,7 +304,18 @@ async function updateDatabase(documents: ProcessedDocument[], embeddingDim: numb
     await sql`ALTER TABLE coherence_vectors ADD COLUMN IF NOT EXISTS content_tsv tsvector`;
 
     // Ensure indexes exist for vector and FTS
-    await sql`CREATE INDEX IF NOT EXISTS coherence_vectors_embedding_idx ON coherence_vectors USING ivfflat (embedding vector_l2_ops)`;
+    // Use HNSW for high-dimensional vectors (>2000), fallback to IVFFLAT otherwise
+    try {
+      if (embeddingDim > 2000) {
+        await sql`DROP INDEX IF EXISTS coherence_vectors_embedding_idx`;
+        await sql`CREATE INDEX IF NOT EXISTS coherence_vectors_embedding_idx ON coherence_vectors USING hnsw (embedding vector_l2_ops)`;
+      } else {
+        await sql`CREATE INDEX IF NOT EXISTS coherence_vectors_embedding_idx ON coherence_vectors USING ivfflat (embedding vector_l2_ops)`;
+      }
+    } catch (e) {
+      // Fallback: if HNSW is not supported on the server, use IVFFLAT
+      await sql`CREATE INDEX IF NOT EXISTS coherence_vectors_embedding_idx ON coherence_vectors USING ivfflat (embedding vector_l2_ops)`;
+    }
     await sql`CREATE INDEX IF NOT EXISTS coherence_vectors_content_tsv_idx ON coherence_vectors USING GIN (content_tsv)`;
 
     // Insert new vectors
