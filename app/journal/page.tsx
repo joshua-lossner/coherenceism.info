@@ -48,9 +48,12 @@ export default function JournalPage() {
                 
                 const titleMatch = frontmatter.match(/title:\s*"?([^"\n]+)"?/)
                 const dateMatch = frontmatter.match(/date:\s*"?([^"\n]+)"?/)
+                const publishedMatch = frontmatter.match(/published:\s*(true|yes|on|1)/i)
                 
                 if (titleMatch) title = titleMatch[1]
                 if (dateMatch) date = dateMatch[1]
+                // Skip if not published
+                if (!publishedMatch) return null
               }
               
               if (!date) {

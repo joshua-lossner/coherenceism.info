@@ -87,9 +87,15 @@ const ECHOTerminal = () => {
                 // Extract title and date from frontmatter
                 const titleMatch = frontmatter.match(/title:\s*"?([^"\n]+)"?/)
                 const dateMatch = frontmatter.match(/date:\s*"?([^"\n]+)"?/)
+                // Extract published flag (checkbox)
+                const publishedMatch = frontmatter.match(/published:\s*(true|yes|on|1)/i)
                 
                 if (titleMatch) title = titleMatch[1]
                 if (dateMatch) date = dateMatch[1]
+                // Only include published entries; if not published, skip by returning null
+                if (!publishedMatch) {
+                  return null
+                }
               }
               
               // If no date in frontmatter, try to extract from filename
@@ -222,9 +228,14 @@ const ECHOTerminal = () => {
                 const frontmatter = frontmatterMatch[1]
                 bodyContent = frontmatterMatch[2]
                 
-                // Extract title from frontmatter
+                // Extract title and published flag from frontmatter
                 const titleMatch = frontmatter.match(/title:\s*"?([^"\n]+)"?/)
+                const publishedMatch = frontmatter.match(/published:\s*(true|yes|on|1)/i)
                 if (titleMatch) title = titleMatch[1]
+                // Only include published chapters; skip otherwise
+                if (!publishedMatch) {
+                  return null
+                }
               }
               
               // Clean up title (remove numbers, capitalize)
