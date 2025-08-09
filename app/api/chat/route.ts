@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { sql } from '@vercel/postgres';
 import { rateLimiter, RATE_LIMITS } from '../../../lib/rate-limit';
+import { CHAT_MODEL, EMBEDDING_MODEL, FALLBACK_CHAT_MODEL, FALLBACK_EMBEDDING_MODEL } from '../../../lib/models'
 import { InputValidator } from '../../../lib/validation';
 import { SecurityHeadersManager } from '../../../lib/security-headers';
 import { ConversationManager } from '../../../lib/conversation-context';
@@ -128,11 +129,20 @@ export async function POST(request: NextRequest) {
     let ragContext = '';
     let sources: Array<{slug: string, chunk_index: number}> = [];
     try {
-      const { data } = await openai.embeddings.create({
-        model: 'text-embedding-3-small',
-        input: sanitizedMessage
-      });
-      const queryVec = data[0].embedding;
+      let queryVec: number[] | null = null
+      try {
+        const { data } = await openai.embeddings.create({
+          model: EMBEDDING_MODEL,
+          input: sanitizedMessage
+        });
+        queryVec = data[0].embedding
+      } catch (e) {
+        const { data } = await openai.embeddings.create({
+          model: FALLBACK_EMBEDDING_MODEL,
+          input: sanitizedMessage
+        });
+        queryVec = data[0].embedding
+      }
 
       // Validate that embedding only contains numbers
       if (!Array.isArray(queryVec) || !queryVec.every(v => typeof v === 'number' && isFinite(v))) {
@@ -203,12 +213,22 @@ For queries: Lead with humor, follow with insight. When Coherenceism concepts ap
       }
     }
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: messages,
-      max_tokens: ragContext ? 500 : 200, // More tokens for RAG-enhanced responses
-      temperature: 0.8, // Slightly higher for more creative synthesis
-    });
+    let completion
+    try {
+      completion = await openai.chat.completions.create({
+        model: CHAT_MODEL,
+        messages: messages,
+        max_tokens: ragContext ? 500 : 200,
+        temperature: 0.8,
+      })
+    } catch (e) {
+      completion = await openai.chat.completions.create({
+        model: FALLBACK_CHAT_MODEL,
+        messages: messages,
+        max_tokens: ragContext ? 500 : 200,
+        temperature: 0.8,
+      })
+    }
 
     const response = completion.choices[0]?.message?.content || 'Neural link unstable. Please retry.';
     
