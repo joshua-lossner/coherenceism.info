@@ -307,14 +307,21 @@ async function updateDatabase(documents: ProcessedDocument[], embeddingDim: numb
     // Use HNSW for high-dimensional vectors (>2000), fallback to IVFFLAT otherwise
     try {
       if (embeddingDim > 2000) {
+        // Prefer HNSW for high-dimensional vectors
         await sql`DROP INDEX IF EXISTS coherence_vectors_embedding_idx`;
         await sql`CREATE INDEX IF NOT EXISTS coherence_vectors_embedding_idx ON coherence_vectors USING hnsw (embedding vector_l2_ops)`;
       } else {
         await sql`CREATE INDEX IF NOT EXISTS coherence_vectors_embedding_idx ON coherence_vectors USING ivfflat (embedding vector_l2_ops)`;
       }
     } catch (e) {
-      // Fallback: if HNSW is not supported on the server, use IVFFLAT
-      await sql`CREATE INDEX IF NOT EXISTS coherence_vectors_embedding_idx ON coherence_vectors USING ivfflat (embedding vector_l2_ops)`;
+      // If HNSW is not available and dimensions > 2000, skip vector index entirely to avoid ivfflat 2000-d cap
+      if (embeddingDim > 2000) {
+        await sql`DROP INDEX IF EXISTS coherence_vectors_embedding_idx`;
+        SecureLogger.warn('HNSW not supported; proceeding without vector index due to >2000 dimensions. Queries will use sequential scan.');
+      } else {
+        // For <=2000 dims, attempt ivfflat as a safe fallback
+        await sql`CREATE INDEX IF NOT EXISTS coherence_vectors_embedding_idx ON coherence_vectors USING ivfflat (embedding vector_l2_ops)`;
+      }
     }
     await sql`CREATE INDEX IF NOT EXISTS coherence_vectors_content_tsv_idx ON coherence_vectors USING GIN (content_tsv)`;
 
