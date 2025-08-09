@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@vercel/postgres';
 import OpenAI from 'openai';
 import { rateLimiter, RATE_LIMITS } from '../../../lib/rate-limit';
+import { EMBEDDING_MODEL, FALLBACK_EMBEDDING_MODEL } from '../../../lib/models'
 import { InputValidator } from '../../../lib/validation';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -30,11 +31,20 @@ export async function GET(req: NextRequest) {
   const sanitizedQuery = queryValidation.sanitized!;
 
   // 1 – embed query
-  const { data } = await openai.embeddings.create({
-    model: 'text-embedding-3-small',
-    input: sanitizedQuery
-  });
-  const queryVec = data[0].embedding;
+  let queryVec: number[]
+  try {
+    const { data } = await openai.embeddings.create({
+      model: EMBEDDING_MODEL,
+      input: sanitizedQuery
+    });
+    queryVec = data[0].embedding;
+  } catch (e) {
+    const { data } = await openai.embeddings.create({
+      model: FALLBACK_EMBEDDING_MODEL,
+      input: sanitizedQuery
+    });
+    queryVec = data[0].embedding;
+  }
 
   // Validate that embedding only contains numbers
   if (!Array.isArray(queryVec) || !queryVec.every(v => typeof v === 'number' && isFinite(v))) {

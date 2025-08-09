@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@vercel/postgres';
 import OpenAI from 'openai';
+import { EMBEDDING_MODEL } from '../../../../lib/models'
 import SecureLogger from '../../../../lib/secure-logger';
 import { SecurityHeadersManager } from '../../../../lib/security-headers';
 
@@ -45,11 +46,15 @@ export async function POST(request: NextRequest) {
     // Process documents: chunk and generate embeddings
     let totalChunks = 0;
     const processedDocs: ProcessedDocument[] = [];
+    let embeddingDim = 1536;
 
     for (const doc of documents) {
       try {
         const chunks = chunkDocument(doc.content, doc.slug);
         const embeddings = await generateEmbeddings(openai, chunks);
+        if (embeddings.length > 0) {
+          embeddingDim = embeddings[0].length;
+        }
         
         processedDocs.push({
           slug: doc.slug,
@@ -66,8 +71,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Clear existing vectors and insert new ones
-    await updateDatabase(processedDocs);
+    // Clear existing vectors, migrate dimension and insert new ones
+    await updateDatabase(processedDocs, embeddingDim);
 
     const timeTaken = ((Date.now() - startTime) / 1000).toFixed(2) + 's';
     SecureLogger.info('RAG refresh completed', {
@@ -258,7 +263,7 @@ async function generateEmbeddings(openai: OpenAI, chunks: string[]): Promise<num
     const batch = chunks.slice(i, i + batchSize);
     try {
       const response = await openai.embeddings.create({
-        model: 'text-embedding-3-small',
+        model: EMBEDDING_MODEL,
         input: batch
       });
 
@@ -280,13 +285,27 @@ async function generateEmbeddings(openai: OpenAI, chunks: string[]): Promise<num
   return embeddings;
 }
 
-async function updateDatabase(documents: ProcessedDocument[]): Promise<void> {
+async function updateDatabase(documents: ProcessedDocument[], embeddingDim: number): Promise<void> {
   try {
     // Start a transaction
     await sql`BEGIN`;
 
     // Clear existing vectors
     await sql`DELETE FROM coherence_vectors`;
+
+    // Migrate vector dimension to match current embedding model
+    if (embeddingDim === 3072) {
+      await sql`ALTER TABLE coherence_vectors ALTER COLUMN embedding TYPE vector(3072)`;
+    } else if (embeddingDim === 1536) {
+      await sql`ALTER TABLE coherence_vectors ALTER COLUMN embedding TYPE vector(1536)`;
+    }
+
+    // Ensure full-text search column exists
+    await sql`ALTER TABLE coherence_vectors ADD COLUMN IF NOT EXISTS content_tsv tsvector`;
+
+    // Ensure indexes exist for vector and FTS
+    await sql`CREATE INDEX IF NOT EXISTS coherence_vectors_embedding_idx ON coherence_vectors USING ivfflat (embedding vector_l2_ops)`;
+    await sql`CREATE INDEX IF NOT EXISTS coherence_vectors_content_tsv_idx ON coherence_vectors USING GIN (content_tsv)`;
 
     // Insert new vectors
     for (const doc of documents) {
@@ -300,6 +319,9 @@ async function updateDatabase(documents: ProcessedDocument[]): Promise<void> {
         `;
       }
     }
+
+    // Populate FTS column
+    await sql`UPDATE coherence_vectors SET content_tsv = to_tsvector('english', content)`;
 
     // Commit transaction
     await sql`COMMIT`;
