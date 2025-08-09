@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@vercel/postgres';
 import OpenAI from 'openai';
 import { rateLimiter, RATE_LIMITS } from '../../../lib/rate-limit';
+import { EMBEDDING_MODEL } from '../../../lib/models'
 import { InputValidator } from '../../../lib/validation';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -31,7 +32,7 @@ export async function GET(req: NextRequest) {
 
   // 1 – embed query
   const { data } = await openai.embeddings.create({
-    model: 'text-embedding-3-small',
+    model: EMBEDDING_MODEL,
     input: sanitizedQuery
   });
   const queryVec = data[0].embedding;

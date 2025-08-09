@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@vercel/postgres';
 import OpenAI from 'openai';
 import { rateLimiter, RATE_LIMITS } from '../../../lib/rate-limit';
+import { CHAT_MODEL, EMBEDDING_MODEL } from '../../../lib/models'
 import { InputValidator } from '../../../lib/validation';
 import SecureLogger from '../../../lib/secure-logger';
 
@@ -33,7 +34,7 @@ export async function POST(req: NextRequest) {
 
     // Step 1: Get relevant context from vector search
     const { data } = await openai.embeddings.create({
-      model: 'text-embedding-3-small',
+      model: EMBEDDING_MODEL,
       input: sanitizedMessage
     });
     const queryVec = data[0].embedding;
@@ -60,7 +61,7 @@ export async function POST(req: NextRequest) {
 
     // Step 3: Generate response using context
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o',
+      model: CHAT_MODEL,
       messages: [
         {
           role: 'system',

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@vercel/postgres';
 import OpenAI from 'openai';
+import { EMBEDDING_MODEL } from '../../../../lib/models'
 import SecureLogger from '../../../../lib/secure-logger';
 import { SecurityHeadersManager } from '../../../../lib/security-headers';
 
@@ -258,7 +259,7 @@ async function generateEmbeddings(openai: OpenAI, chunks: string[]): Promise<num
     const batch = chunks.slice(i, i + batchSize);
     try {
       const response = await openai.embeddings.create({
-        model: 'text-embedding-3-small',
+        model: EMBEDDING_MODEL,
         input: batch
       });
 

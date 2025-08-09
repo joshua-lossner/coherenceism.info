@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { sql } from '@vercel/postgres';
 import { rateLimiter, RATE_LIMITS } from '../../../lib/rate-limit';
+import { CHAT_MODEL, EMBEDDING_MODEL } from '../../../lib/models'
 import { InputValidator } from '../../../lib/validation';
 import { SecurityHeadersManager } from '../../../lib/security-headers';
 import { ConversationManager } from '../../../lib/conversation-context';
@@ -129,7 +130,7 @@ export async function POST(request: NextRequest) {
     let sources: Array<{slug: string, chunk_index: number}> = [];
     try {
       const { data } = await openai.embeddings.create({
-        model: 'text-embedding-3-small',
+        model: EMBEDDING_MODEL,
         input: sanitizedMessage
       });
       const queryVec = data[0].embedding;
@@ -204,7 +205,7 @@ For queries: Lead with humor, follow with insight. When Coherenceism concepts ap
     }
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: CHAT_MODEL,
       messages: messages,
       max_tokens: ragContext ? 500 : 200, // More tokens for RAG-enhanced responses
       temperature: 0.8, // Slightly higher for more creative synthesis
