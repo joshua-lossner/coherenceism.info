@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@vercel/postgres';
 import OpenAI from 'openai';
 import { rateLimiter, RATE_LIMITS } from '../../../lib/rate-limit';
-import { CHAT_MODEL, EMBEDDING_MODEL } from '../../../lib/models'
+import { CHAT_MODEL, EMBEDDING_MODEL, FALLBACK_CHAT_MODEL, FALLBACK_EMBEDDING_MODEL } from '../../../lib/models'
 import { InputValidator } from '../../../lib/validation';
 import SecureLogger from '../../../lib/secure-logger';
 
@@ -33,11 +33,20 @@ export async function POST(req: NextRequest) {
     const sanitizedMessage = messageValidation.sanitized!;
 
     // Step 1: Get relevant context via hybrid retrieval (vector + BM25)
-    const { data } = await openai.embeddings.create({
-      model: EMBEDDING_MODEL,
-      input: sanitizedMessage
-    });
-    const queryVec = data[0].embedding;
+    let queryVec: number[]
+    try {
+      const { data } = await openai.embeddings.create({
+        model: EMBEDDING_MODEL,
+        input: sanitizedMessage
+      });
+      queryVec = data[0].embedding;
+    } catch (e) {
+      const { data } = await openai.embeddings.create({
+        model: FALLBACK_EMBEDDING_MODEL,
+        input: sanitizedMessage
+      });
+      queryVec = data[0].embedding;
+    }
 
     // Validate that embedding only contains numbers
     if (!Array.isArray(queryVec) || !queryVec.every(v => typeof v === 'number' && isFinite(v))) {
@@ -105,24 +114,46 @@ export async function POST(req: NextRequest) {
     const context = finalRows.map(row => row.content).join('\n\n---\n\n');
 
     // Step 3: Generate response using context
-    const completion = await openai.chat.completions.create({
-      model: CHAT_MODEL,
-      messages: [
+    let completion
+    try {
+      completion = await openai.chat.completions.create({
+        model: CHAT_MODEL,
+        messages: [
+          {
+            role: 'system',
+            content: `You are Byte, a sarcastic but caring AI assistant representing Coherenceism. You have access to relevant passages from Coherenceism texts to answer questions. Keep your responses conversational, witty, and grounded in the provided context. Reference the context naturally but don't just quote it verbatim.
+
+Coherenceism Context:
+${context}`
+          },
+          {
+            role: 'user',
+            content: sanitizedMessage
+          }
+        ],
+        max_tokens: 500,
+        temperature: 0.7
+      });
+    } catch (e) {
+      completion = await openai.chat.completions.create({
+        model: FALLBACK_CHAT_MODEL,
+        messages: [
         {
           role: 'system',
           content: `You are Byte, a sarcastic but caring AI assistant representing Coherenceism. You have access to relevant passages from Coherenceism texts to answer questions. Keep your responses conversational, witty, and grounded in the provided context. Reference the context naturally but don't just quote it verbatim.
 
 Coherenceism Context:
 ${context}`
-        },
-        {
-          role: 'user',
-          content: sanitizedMessage
-        }
-      ],
-      max_tokens: 500,
-      temperature: 0.7
-    });
+          },
+          {
+            role: 'user',
+            content: sanitizedMessage
+          }
+        ],
+        max_tokens: 500,
+        temperature: 0.7
+      });
+    }
 
     const response = completion.choices[0]?.message?.content || 'Sorry, I got distracted by thoughts of pizza.';
 
