@@ -293,12 +293,9 @@ async function updateDatabase(documents: ProcessedDocument[], embeddingDim: numb
     // Clear existing vectors
     await sql`DELETE FROM coherence_vectors`;
 
-    // Migrate vector dimension to match current embedding model
-    if (embeddingDim === 3072) {
-      await sql`ALTER TABLE coherence_vectors ALTER COLUMN embedding TYPE vector(3072)`;
-    } else if (embeddingDim === 1536) {
-      await sql`ALTER TABLE coherence_vectors ALTER COLUMN embedding TYPE vector(1536)`;
-    }
+    // NOTE: Do not alter column type here.
+    // Some environments use halfvec(3072) instead of vector(3072).
+    // We avoid ALTER TYPE to maintain compatibility with existing column type.
 
     // Ensure full-text search column exists
     await sql`ALTER TABLE coherence_vectors ADD COLUMN IF NOT EXISTS content_tsv tsvector`;
@@ -307,11 +304,12 @@ async function updateDatabase(documents: ProcessedDocument[], embeddingDim: numb
     // Use HNSW for high-dimensional vectors (>2000), fallback to IVFFLAT otherwise
     try {
       if (embeddingDim > 2000) {
-        // Prefer HNSW for high-dimensional vectors
+        // Prefer HNSW for high-dimensional vectors (halfvec cosine ops)
         await sql`DROP INDEX IF EXISTS coherence_vectors_embedding_idx`;
-        await sql`CREATE INDEX IF NOT EXISTS coherence_vectors_embedding_idx ON coherence_vectors USING hnsw (embedding vector_l2_ops)`;
+        await sql`CREATE INDEX IF NOT EXISTS coherence_vectors_embedding_idx ON coherence_vectors USING hnsw (embedding halfvec_cosine_ops) WITH (m = 16, ef_construction = 64)`;
       } else {
-        await sql`CREATE INDEX IF NOT EXISTS coherence_vectors_embedding_idx ON coherence_vectors USING ivfflat (embedding vector_l2_ops)`;
+        // IVFFLAT for lower dimensions (halfvec cosine ops)
+        await sql`CREATE INDEX IF NOT EXISTS coherence_vectors_embedding_idx ON coherence_vectors USING ivfflat (embedding halfvec_cosine_ops)`;
       }
     } catch (e) {
       // If HNSW is not available and dimensions > 2000, skip vector index entirely to avoid ivfflat 2000-d cap
@@ -319,8 +317,8 @@ async function updateDatabase(documents: ProcessedDocument[], embeddingDim: numb
         await sql`DROP INDEX IF EXISTS coherence_vectors_embedding_idx`;
         SecureLogger.warn('HNSW not supported; proceeding without vector index due to >2000 dimensions. Queries will use sequential scan.');
       } else {
-        // For <=2000 dims, attempt ivfflat as a safe fallback
-        await sql`CREATE INDEX IF NOT EXISTS coherence_vectors_embedding_idx ON coherence_vectors USING ivfflat (embedding vector_l2_ops)`;
+        // For <=2000 dims, attempt ivfflat with halfvec ops as a safe fallback
+        await sql`CREATE INDEX IF NOT EXISTS coherence_vectors_embedding_idx ON coherence_vectors USING ivfflat (embedding halfvec_cosine_ops)`;
       }
     }
     await sql`CREATE INDEX IF NOT EXISTS coherence_vectors_content_tsv_idx ON coherence_vectors USING GIN (content_tsv)`;
@@ -333,7 +331,7 @@ async function updateDatabase(documents: ProcessedDocument[], embeddingDim: numb
         
         await sql`
           INSERT INTO coherence_vectors (slug, chunk_index, content, embedding)
-          VALUES (${doc.slug}, ${i}, ${chunk.content}, ${vectorString}::vector)
+          VALUES (${doc.slug}, ${i}, ${chunk.content}, ${vectorString}::halfvec)
         `;
       }
     }
