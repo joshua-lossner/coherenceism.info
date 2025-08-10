@@ -45,6 +45,14 @@ const ECHOTerminal = () => {
   const [changelog, setChangelog] = useState<any[]>([])
   const [changelogLoaded, setChangelogLoaded] = useState(false)
   const [changelogPage, setChangelogPage] = useState(1)
+  // Admin state
+  const [adminAuthed, setAdminAuthed] = useState(false)
+  const [adminMode, setAdminMode] = useState(false)
+  const [waitingForAdminPassword, setWaitingForAdminPassword] = useState(false)
+  const [maskInput, setMaskInput] = useState(false)
+  const [adminIdMap, setAdminIdMap] = useState<Record<string, string>>({})
+  const [adminUnpublishedItems, setAdminUnpublishedItems] = useState<Array<{id: string, title?: string, date?: string | Date, confidence?: number, tags?: any}>>([])
+  const [adminUnpublishedPage, setAdminUnpublishedPage] = useState(1)
   const [journalPage, setJournalPage] = useState(1)
   const [isSplitView, setIsSplitView] = useState(false)
   const [isWideScreen, setIsWideScreen] = useState(false)
@@ -500,9 +508,40 @@ const ECHOTerminal = () => {
     return char.repeat(leftPadding) + titleWithSpaces + char.repeat(rightPadding)
   }
 
+  const pad = (text: string, width: number): string => {
+    const s = (text ?? '').toString()
+    if (s.length >= width) return s.slice(0, width)
+    return s + ' '.repeat(width - s.length)
+  }
+
   const changeMenu = (newMenu: string) => {
     setPreviousMenu(currentMenu)
     setCurrentMenu(newMenu)
+  }
+
+  const showAdminMenu = async () => {
+    setAdminMode(true)
+    changeMenu('admin')
+    setTerminalLines([])
+    await new Promise(resolve => setTimeout(resolve, 100))
+    addLine('')
+    addLine(createBorder('', '═'), 'separator')
+    addLine('')
+    addLine('C O H E R E N C E I S M . I N F O', 'ascii-art')
+    addLine('')
+    addLine('TAGLINE_PLACEHOLDER', 'tagline')
+    addLine('')
+    addLine(createBorder('', '═'), 'separator')
+    addLine('')
+    addLine(createBorder('ADMIN MENU'), 'normal')
+    addLine('')
+    addLine('1. Unpublished drafts (news)', 'normal', false, '1')
+    addLine('2. Generate — Daily News Brief', 'normal', false, '2')
+    addLine('3. Help — Admin commands', 'normal', false, '3')
+    addLine('4. Exit admin', 'normal', false, '4')
+    addLine('')
+    addLine(createBorder(), 'normal')
+    addLine('')
   }
 
   const addMarkdownContent = (content: string, date?: string, pageInfo?: {current: number, total: number}, contentType?: string, contentId?: string) => {
@@ -858,7 +897,324 @@ const ECHOTerminal = () => {
     
     // Process command without echoing it to terminal
 
+    // Handle commands with arguments via prefix checks to avoid leaking sensitive info
+    if (cmd.startsWith('/__ADMIN_PASSWORD')) {
+      const pw = command.slice('/__admin_password'.length).trim()
+      try {
+        const resp = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: pw }),
+          credentials: 'include'
+        })
+        if (resp.ok) {
+          setAdminAuthed(true)
+          setAdminMode(true)
+          addLine('Access granted. Welcome, Admin.')
+          // Immediately show Admin Menu
+          await showAdminMenu()
+        } else {
+          addLine('Access denied.', 'error')
+        }
+      } catch (e) {
+        addLine('Network error.', 'error')
+      }
+      return
+    }
+
+    if (cmd.startsWith('/UNPUBLISHED')) {
+      const parts = command.split(/\s+/)
+      const type = (parts[1] || 'news').toLowerCase()
+      try {
+        const resp = await fetch(`/api/admin/unpublished?type=${encodeURIComponent(type)}`, { credentials: 'include' })
+        if (!resp.ok) {
+          addLine('Unauthorized or error fetching drafts.', 'error')
+        } else {
+          const data: Array<{ id: string; title?: string; date?: string; confidence?: number; tags?: any }> = await resp.json()
+          const map: Record<string, string> = {}
+          data.forEach((item, idx) => { map[String(idx + 1)] = item.id })
+          setAdminIdMap(map)
+          setAdminUnpublishedItems(data as any)
+          // Navigate to unpublished page
+          setTerminalLines([])
+          await new Promise(resolve => setTimeout(resolve, 100))
+          changeMenu('admin-unpublished')
+          addLine('')
+          addLine(createBorder('', '═'), 'separator')
+          addLine('')
+          addLine('C O H E R E N C E I S M . I N F O', 'ascii-art')
+          addLine('')
+          addLine('TAGLINE_PLACEHOLDER', 'tagline')
+          addLine('')
+          addLine(createBorder('', '═'), 'separator')
+          addLine('')
+          addLine(createBorder('UNPUBLISHED DRAFTS'), 'normal')
+          addLine('')
+          const perPage = 10
+          setAdminUnpublishedPage(1)
+          const total = data.length
+          const totalPages = Math.ceil(total / perPage) || 1
+          const startIndex = 0
+          const endIndex = Math.min(perPage, total)
+          const header = pad('ID', 4) + pad('TITLE', 50) + pad('DATE', 13) + 'CONF'
+          addLine(header)
+          data.slice(startIndex, endIndex).forEach((item, i) => {
+            const idDisp = pad(String(i + 1), 4)
+            const titleDisp = pad((item.title || '').slice(0, 48), 50)
+            const dateDisp = pad((item.date ? String(item.date) : '').slice(0, 11), 13)
+            const confDisp = (item.confidence != null ? item.confidence.toFixed(2) : '').padEnd(4)
+            addLine(`${idDisp}${titleDisp}${dateDisp}${confDisp}`, 'normal', false, String(i + 1))
+          })
+          if (totalPages > 1) {
+            addLine('')
+            addLine(createBorder('', '─'), 'separator')
+            addLine(`Page 1 of ${totalPages} • ${total} total drafts`, 'ai-response')
+          }
+          addLine('')
+          addLine(createBorder(), 'normal')
+          addLine('')
+          addPromptWithOrangeBorder('Enter a number to open the draft.')
+          addLine('')
+        }
+      } catch {
+        addLine('Failed to load unpublished drafts.', 'error')
+      }
+      return
+    }
+
+    if (cmd.startsWith('/PREVIEW')) {
+      const parts = command.split(/\s+/)
+      const shortId = parts[1]
+      if (!shortId) { addLine('Usage: /preview <id>', 'error'); return }
+      const apiId = adminIdMap[shortId]
+      if (!apiId) { addLine('Unknown id. Run /unpublished first.', 'error'); return }
+      try {
+        const resp = await fetch(`/api/admin/preview?id=${encodeURIComponent(apiId)}`, { credentials: 'include' })
+        if (!resp.ok) { addLine('Unauthorized or not found.', 'error'); return }
+        const data = await resp.json()
+        const body: string = data?.body || ''
+        const lines = body.split('\n')
+        const preview = lines.slice(0, 20).join('\n') + (lines.length > 20 ? '\n(…truncated…)\n' : '')
+        changeMenu('admin-draft')
+        setTerminalLines([])
+        await new Promise(resolve => setTimeout(resolve, 100))
+        addMarkdownContent(preview, 'Preview', undefined, 'preview', apiId)
+      } catch {
+        addLine('Failed to preview.', 'error')
+      }
+      return
+    }
+
+    if (cmd.startsWith('/PUBLISH')) {
+      const parts = command.split(/\s+/)
+      const shortId = parts[1]
+      if (!shortId) { addLine('Usage: /publish <id>', 'error'); return }
+      const apiId = adminIdMap[shortId]
+      if (!apiId) { addLine('Unknown id. Run /unpublished first.', 'error'); return }
+      try {
+        const resp = await fetch('/api/admin/publish', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: apiId }),
+          credentials: 'include'
+        })
+        if (resp.ok) {
+          addLine('Published ✅')
+        } else {
+          addLine('Publish failed.', 'error')
+        }
+      } catch {
+        addLine('Publish error.', 'error')
+      }
+      return
+    }
+
+    if (cmd.startsWith('/GENERATE')) {
+      const parts = command.split(/\s+/)
+      const sub = (parts[1] || '').toLowerCase()
+      if (sub === 'news') {
+        try {
+          const resp = await fetch('/api/admin/generate', { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify({ type: 'news' }),
+            credentials: 'include'
+          })
+          const data = await resp.json().catch(() => ({}))
+          if (resp.status === 202) {
+            addLine(data?.message || 'Generation accepted.')
+          } else if (resp.status === 401) {
+            addLine('Unauthorized.', 'error')
+          } else {
+            addLine('Generation failed.', 'error')
+          }
+        } catch {
+          addLine('Network error.', 'error')
+        }
+      } else {
+        addLine('Usage: /generate news', 'error')
+      }
+      return
+    }
+
     switch (cmd) {
+      case '/ADMIN':
+      case 'ADMIN': {
+        if (!adminAuthed) {
+          addLine('ADMIN ACCESS — Enter password:')
+          setWaitingForAdminPassword(true)
+          setMaskInput(true)
+          break
+        }
+        await showAdminMenu()
+        break
+      }
+
+      case '/__ADMIN_PASSWORD': {
+        const pw = command.slice('/__admin_password'.length).trim()
+        try {
+          const resp = await fetch('/api/admin/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: pw })
+          })
+          if (resp.ok) {
+            setAdminAuthed(true)
+            setAdminMode(true)
+            addLine('Access granted. Welcome, Admin.')
+            // Immediately show Admin Menu
+            await showAdminMenu()
+          } else {
+            addLine('Access denied.', 'error')
+          }
+        } catch (e) {
+          addLine('Network error.', 'error')
+        }
+        break
+      }
+
+      case '/LOGOUT':
+      case 'LOGOUT': {
+        // Clear client-side cookie (best-effort; server cookie is HttpOnly)
+        try {
+          document.cookie = 'admin_token=; Max-Age=0; path=/'
+        } catch {}
+        setAdminAuthed(false)
+        setAdminMode(false)
+        addLine('Logged out.')
+        break
+      }
+
+      case '/UNPUBLISHED':
+      case 'UNPUBLISHED': {
+        const parts = command.split(/\s+/)
+        const type = (parts[1] || 'news').toLowerCase()
+        try {
+          const resp = await fetch(`/api/admin/unpublished?type=${encodeURIComponent(type)}`)
+          if (!resp.ok) {
+            addLine('Unauthorized or error fetching drafts.', 'error')
+            break
+          }
+          const data: Array<{ id: string; title?: string; date?: string; confidence?: number; tags?: any }> = await resp.json()
+          // Build ID map
+          const map: Record<string, string> = {}
+          data.forEach((item, idx) => { map[String(idx + 1)] = item.id })
+          setAdminIdMap(map)
+          // Render table
+          addLine('')
+          addLine(createBorder('UNPUBLISHED DRAFTS'), 'normal')
+          addLine('')
+          const header = pad('ID', 4) + pad('TITLE', 35) + pad('DATE', 13) + 'CONF'
+          addLine(header)
+          data.forEach((item, idx) => {
+            const idDisp = pad(String(idx + 1), 4)
+            const titleDisp = pad((item.title || '').slice(0, 33), 35)
+            const dateDisp = pad((item.date ? String(item.date) : '').slice(0, 11), 13)
+            const confDisp = (item.confidence != null ? item.confidence.toFixed(2) : '').padEnd(4)
+            addLine(`${idDisp}${titleDisp}${dateDisp}${confDisp}`)
+          })
+          addLine('')
+          addLine(createBorder(), 'normal')
+          addLine('')
+        } catch (e) {
+          addLine('Failed to load unpublished drafts.', 'error')
+        }
+        break
+      }
+
+      case '/PREVIEW':
+      case 'PREVIEW': {
+        const parts = command.split(/\s+/)
+        const shortId = parts[1]
+        if (!shortId) { addLine('Usage: /preview <id>', 'error'); break }
+        const apiId = adminIdMap[shortId]
+        if (!apiId) { addLine('Unknown id. Run /unpublished first.', 'error'); break }
+        try {
+          const resp = await fetch(`/api/admin/preview?id=${encodeURIComponent(apiId)}`)
+          if (!resp.ok) { addLine('Unauthorized or not found.', 'error'); break }
+          const data = await resp.json()
+          const body: string = data?.body || ''
+          // If no markdown renderer desired, show first 20 lines
+          const lines = body.split('\n')
+          const preview = lines.slice(0, 20).join('\n') + (lines.length > 20 ? '\n(…truncated…)\n' : '')
+          addMarkdownContent(preview, 'Preview', undefined, 'preview', apiId)
+        } catch (e) {
+          addLine('Failed to preview.', 'error')
+        }
+        break
+      }
+
+      case '/PUBLISH':
+      case 'PUBLISH': {
+        const parts = command.split(/\s+/)
+        const shortId = parts[1]
+        if (!shortId) { addLine('Usage: /publish <id>', 'error'); break }
+        const apiId = adminIdMap[shortId]
+        if (!apiId) { addLine('Unknown id. Run /unpublished first.', 'error'); break }
+        try {
+          const resp = await fetch('/api/admin/publish', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: apiId })
+          })
+          if (resp.ok) {
+            addLine('Published ✅')
+          } else {
+            addLine('Publish failed.', 'error')
+          }
+        } catch (e) {
+          addLine('Publish error.', 'error')
+        }
+        break
+      }
+
+      case '/GENERATE':
+      case 'GENERATE': {
+        const parts = command.split(/\s+/)
+        const sub = (parts[1] || '').toLowerCase()
+        if (sub === 'news') {
+          try {
+            const resp = await fetch('/api/admin/generate', { 
+              method: 'POST', 
+              headers: { 'Content-Type': 'application/json' }, 
+              body: JSON.stringify({ type: 'news' }) 
+            })
+            const data = await resp.json().catch(() => ({}))
+            if (resp.status === 202) {
+              addLine(data?.message || 'Generation accepted.')
+            } else if (resp.status === 401) {
+              addLine('Unauthorized.', 'error')
+            } else {
+              addLine('Generation failed.', 'error')
+            }
+          } catch (e) {
+            addLine('Network error.', 'error')
+          }
+        } else {
+          addLine('Usage: /generate news', 'error')
+        }
+        break
+      }
       case 'M':
       case 'MENU':
       case '/MENU':
@@ -912,16 +1268,26 @@ const ECHOTerminal = () => {
         addLine("")
         addLine(createBorder('', '═'), 'separator')
         addLine("")
-        addLine(createBorder('AVAILABLE COMMANDS'), 'normal')
+        addLine(createBorder(adminMode ? 'ADMIN HELP' : 'AVAILABLE COMMANDS'), 'normal')
         addLine("")
-        addLine("/menu     - Return to main menu", 'normal')
-        addLine("/help     - Display available commands and instructions", 'normal')
-        addLine("/contact  - Information for reaching out", 'normal')
-        addLine("/changelog- View release notes and version history", 'normal')
-        addLine("/random   - Receive a random Byte-generated thought or humorous quip", 'normal')
-        addLine("/voice    - Toggle audio output (Byte speaks responses aloud)", 'normal')
-        addLine("/clear    - Clear terminal screen", 'normal')
-        addLine("/reset    - Reset Byte's memory and start fresh conversation", 'normal')
+        if (adminMode) {
+          addLine("/menu     - Return to main menu", 'normal')
+          addLine("/help     - Display available commands and instructions", 'normal')
+          addLine("/logout   - Log out of admin", 'normal')
+          addLine("/unpublished [type] - List unpublished drafts (default: news)", 'normal')
+          addLine("/preview <id> - Preview an unpublished draft", 'normal')
+          addLine("/publish <id> - Publish a draft", 'normal')
+          addLine("/generate news - Generate Daily News Brief", 'normal')
+        } else {
+          addLine("/menu     - Return to main menu", 'normal')
+          addLine("/help     - Display available commands and instructions", 'normal')
+          addLine("/contact  - Information for reaching out", 'normal')
+          addLine("/changelog- View release notes and version history", 'normal')
+          addLine("/random   - Receive a random Byte-generated thought or humorous quip", 'normal')
+          addLine("/voice    - Toggle audio output (Byte speaks responses aloud)", 'normal')
+          addLine("/clear    - Clear terminal screen", 'normal')
+          addLine("/reset    - Reset Byte's memory and start fresh conversation", 'normal')
+        }
         addLine("")
         addLine(createBorder(), 'normal')
         addLine("")
@@ -1224,7 +1590,29 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
 
       case '1':
       case '1.':
-        if (currentMenu === 'main') {
+        if (adminMode && currentMenu === 'admin') {
+          processCommand('/unpublished')
+        } else if (adminMode && currentMenu === 'admin-unpublished') {
+          // Open first item fully
+          const apiId = adminIdMap['1']
+          if (apiId) {
+            try {
+              const resp = await fetch(`/api/admin/preview?id=${encodeURIComponent(apiId)}`, { credentials: 'include' })
+              if (resp.ok) {
+                const data = await resp.json()
+                const body: string = data?.body || ''
+                changeMenu('admin-draft')
+                setTerminalLines([])
+                await new Promise(resolve => setTimeout(resolve, 100))
+                addMarkdownContent(body, adminUnpublishedItems[0]?.title || 'Draft', undefined, 'draft', apiId)
+              } else {
+                addLine('Unauthorized or not found.', 'error')
+              }
+            } catch {
+              addLine('Failed to preview.', 'error')
+            }
+          }
+        } else if (currentMenu === 'main') {
           // Navigate to journal from main menu
           processCommand('/journal')
         } else if (currentMenu === 'journals') {
@@ -1293,7 +1681,28 @@ ${release.fullDescription}`
 
       case '2':
       case '2.':
-        if (currentMenu === 'main') {
+        if (adminMode && currentMenu === 'admin') {
+          processCommand('/generate news')
+        } else if (adminMode && currentMenu === 'admin-unpublished') {
+          const apiId = adminIdMap['2']
+          if (apiId) {
+            try {
+              const resp = await fetch(`/api/admin/preview?id=${encodeURIComponent(apiId)}`, { credentials: 'include' })
+              if (resp.ok) {
+                const data = await resp.json()
+                const body: string = data?.body || ''
+                changeMenu('admin-draft')
+                setTerminalLines([])
+                await new Promise(resolve => setTimeout(resolve, 100))
+                addMarkdownContent(body, adminUnpublishedItems[1]?.title || 'Draft', undefined, 'draft', apiId)
+              } else {
+                addLine('Unauthorized or not found.', 'error')
+              }
+            } catch {
+              addLine('Failed to preview.', 'error')
+            }
+          }
+        } else if (currentMenu === 'main') {
           // Navigate to books from main menu
           processCommand('/books')
         } else if (currentMenu === 'journals') {
@@ -1363,7 +1772,28 @@ ${release.fullDescription}`
 
       case '3':
       case '3.':
-        if (currentMenu === 'main') {
+        if (adminMode && currentMenu === 'admin') {
+          processCommand('/help')
+        } else if (adminMode && currentMenu === 'admin-unpublished') {
+          const apiId = adminIdMap['3']
+          if (apiId) {
+            try {
+              const resp = await fetch(`/api/admin/preview?id=${encodeURIComponent(apiId)}`, { credentials: 'include' })
+              if (resp.ok) {
+                const data = await resp.json()
+                const body: string = data?.body || ''
+                changeMenu('admin-draft')
+                setTerminalLines([])
+                await new Promise(resolve => setTimeout(resolve, 100))
+                addMarkdownContent(body, adminUnpublishedItems[2]?.title || 'Draft', undefined, 'draft', apiId)
+              } else {
+                addLine('Unauthorized or not found.', 'error')
+              }
+            } catch {
+              addLine('Failed to preview.', 'error')
+            }
+          }
+        } else if (currentMenu === 'main') {
           // Navigate to about from main menu
           processCommand('/about')
         } else {
@@ -1447,6 +1877,39 @@ ${release.fullDescription}`
 
       case '4':
       case '4.':
+        if (adminMode && currentMenu === 'admin') {
+          // Exit admin and require re-login to re-enter admin console
+          setAdminMode(false)
+          setAdminAuthed(false)
+          setWaitingForAdminPassword(false)
+          setMaskInput(false)
+          setAdminIdMap({})
+          addLine('Exited admin.')
+          processCommand('/menu')
+          break
+        }
+        if (adminMode && currentMenu === 'admin-unpublished') {
+          // Preview fourth item
+          const apiId = adminIdMap['4']
+          if (apiId) {
+            try {
+              const resp = await fetch(`/api/admin/preview?id=${encodeURIComponent(apiId)}`, { credentials: 'include' })
+              if (resp.ok) {
+                const data = await resp.json()
+                const body: string = data?.body || ''
+                changeMenu('admin-draft')
+                setTerminalLines([])
+                await new Promise(resolve => setTimeout(resolve, 100))
+                addMarkdownContent(body, adminUnpublishedItems[3]?.title || 'Draft', undefined, 'draft', apiId)
+              } else {
+                addLine('Unauthorized or not found.', 'error')
+              }
+            } catch {
+              addLine('Failed to preview.', 'error')
+            }
+          }
+          break
+        }
       case '5':
       case '5.':
       case '6':
@@ -1723,6 +2186,49 @@ ${release.fullDescription}`
           } else {
             await typeResponse(`Already on the last page.`, false)
           }
+        } else if (currentMenu === 'admin-unpublished' && !isViewingContent) {
+          // Next page in unpublished
+          const perPage = 10
+          const totalPages = Math.ceil(adminUnpublishedItems.length / perPage) || 1
+          if (adminUnpublishedPage < totalPages) {
+            const nextPage = adminUnpublishedPage + 1
+            setAdminUnpublishedPage(nextPage)
+            setTerminalLines([])
+            await new Promise(resolve => setTimeout(resolve, 100))
+            addLine('')
+            addLine(createBorder('', '═'), 'separator')
+            addLine('')
+            addLine('C O H E R E N C E I S M . I N F O', 'ascii-art')
+            addLine('')
+            addLine('TAGLINE_PLACEHOLDER', 'tagline')
+            addLine('')
+            addLine(createBorder('', '═'), 'separator')
+            addLine('')
+            addLine(createBorder('UNPUBLISHED DRAFTS'), 'normal')
+            addLine('')
+            const startIndex = (nextPage - 1) * perPage
+            const endIndex = Math.min(nextPage * perPage, adminUnpublishedItems.length)
+            const header = pad('ID', 4) + pad('TITLE', 50) + pad('DATE', 13) + 'CONF'
+            addLine(header)
+            adminUnpublishedItems.slice(startIndex, endIndex).forEach((item, idx) => {
+              const displayNum = (idx + 1) // 1..10 per page
+              const idDisp = pad(String(displayNum), 4)
+              const titleDisp = pad((item.title || '').slice(0, 48), 50)
+              const dateDisp = pad((item.date ? String(item.date) : '').slice(0, 11), 13)
+              const confDisp = (item.confidence != null ? item.confidence.toFixed(2) : '').padEnd(4)
+              addLine(`${idDisp}${titleDisp}${dateDisp}${confDisp}`, 'normal', false, String(displayNum))
+            })
+            addLine('')
+            addLine(createBorder('', '─'), 'separator')
+            addLine(`Page ${nextPage} of ${totalPages} • ${adminUnpublishedItems.length} total drafts`, 'ai-response')
+            addLine('')
+            addLine(createBorder(), 'normal')
+            addLine('')
+            addPromptWithOrangeBorder('Enter a number to open the draft.')
+            addLine('')
+          } else {
+            await typeResponse('Already on the last page.', false)
+          }
         } else if (!currentContent) {
           await typeResponse(`No content available to narrate. Navigate to a journal entry or book chapter first.`, false)
         } else {
@@ -1846,6 +2352,49 @@ ${release.fullDescription}`
           } else {
             await typeResponse(`Already on the first page.`, false)
           }
+        } else if (currentMenu === 'admin-unpublished' && !isViewingContent) {
+          // Previous page in unpublished
+          const perPage = 10
+          const totalPages = Math.ceil(adminUnpublishedItems.length / perPage) || 1
+          if (adminUnpublishedPage > 1) {
+            const prevPage = adminUnpublishedPage - 1
+            setAdminUnpublishedPage(prevPage)
+            setTerminalLines([])
+            await new Promise(resolve => setTimeout(resolve, 100))
+            addLine('')
+            addLine(createBorder('', '═'), 'separator')
+            addLine('')
+            addLine('C O H E R E N C E I S M . I N F O', 'ascii-art')
+            addLine('')
+            addLine('TAGLINE_PLACEHOLDER', 'tagline')
+            addLine('')
+            addLine(createBorder('', '═'), 'separator')
+            addLine('')
+            addLine(createBorder('UNPUBLISHED DRAFTS', '═'), 'normal')
+            addLine('')
+            const startIndex = (prevPage - 1) * perPage
+            const endIndex = Math.min(prevPage * perPage, adminUnpublishedItems.length)
+            const header = pad('ID', 4) + pad('TITLE', 50) + pad('DATE', 13) + 'CONF'
+            addLine(header)
+            adminUnpublishedItems.slice(startIndex, endIndex).forEach((item, idx) => {
+              const displayNum = (idx + 1)
+              const idDisp = pad(String(displayNum), 4)
+              const titleDisp = pad((item.title || '').slice(0, 48), 50)
+              const dateDisp = pad((item.date ? String(item.date) : '').slice(0, 11), 13)
+              const confDisp = (item.confidence != null ? item.confidence.toFixed(2) : '').padEnd(4)
+              addLine(`${idDisp}${titleDisp}${dateDisp}${confDisp}`, 'normal', false, String(displayNum))
+            })
+            addLine('')
+            addLine(createBorder('', '─'), 'separator')
+            addLine(`Page ${prevPage} of ${totalPages} • ${adminUnpublishedItems.length} total drafts`, 'ai-response')
+            addLine('')
+            addLine(createBorder(), 'normal')
+            addLine('')
+            addPromptWithOrangeBorder('Enter a number to open the draft.')
+            addLine('')
+          } else {
+            await typeResponse('Already on the first page.', false)
+          }
         } else if (currentNarrationUrls.length === 0) {
           await typeResponse(`No narration available to pause. Use 'n' to start narration first.`, false)
         } else {
@@ -1861,7 +2410,72 @@ ${release.fullDescription}`
 
       case 'x':
       case 'X':
-        // Go back to previous menu/view
+      case 'EXIT':
+      case '/EXIT':
+        // In admin mode
+        if (adminMode) {
+          // If viewing a draft, go back to Unpublished page
+          if (isViewingContent && (currentMenu === 'admin-unpublished' || currentContent?.type === 'draft')) {
+            setIsViewingContent(false)
+            setCurrentPage(1)
+            setTotalPages(1)
+            setCurrentContent(null)
+            setCurrentNarrationUrls([])
+            setCurrentChunkIndex(0)
+            stopNarration()
+            // Re-render unpublished page at current pagination
+            setTerminalLines([])
+            await new Promise(resolve => setTimeout(resolve, 100))
+            changeMenu('admin-unpublished')
+            addLine('')
+            addLine(createBorder('', '═'), 'separator')
+            addLine('')
+            addLine('C O H E R E N C E I S M . I N F O', 'ascii-art')
+            addLine('')
+            addLine('TAGLINE_PLACEHOLDER', 'tagline')
+            addLine('')
+            addLine(createBorder('', '═'), 'separator')
+            addLine('')
+            addLine(createBorder('UNPUBLISHED DRAFTS', '═'), 'normal')
+            addLine('')
+            const perPage = 10
+            const totalPages = Math.ceil(adminUnpublishedItems.length / perPage) || 1
+            const startIndex = (adminUnpublishedPage - 1) * perPage
+            const endIndex = Math.min(adminUnpublishedPage * perPage, adminUnpublishedItems.length)
+            const header = pad('ID', 4) + pad('TITLE', 50) + pad('DATE', 13) + 'CONF'
+            addLine(header)
+            adminUnpublishedItems.slice(startIndex, endIndex).forEach((item, idx) => {
+              const displayNum = (idx + 1)
+              const idDisp = pad(String(displayNum), 4)
+              const titleDisp = pad((item.title || '').slice(0, 48), 50)
+              const dateDisp = pad((item.date ? String(item.date) : '').slice(0, 11), 13)
+              const confDisp = (item.confidence != null ? item.confidence.toFixed(2) : '').padEnd(4)
+              addLine(`${idDisp}${titleDisp}${dateDisp}${confDisp}`, 'normal', false, String(displayNum))
+            })
+            if (totalPages > 1) {
+              addLine('')
+              addLine(createBorder('', '─'), 'separator')
+              addLine(`Page ${adminUnpublishedPage} of ${totalPages} • ${adminUnpublishedItems.length} total drafts`, 'ai-response')
+            }
+            addLine('')
+            addLine(createBorder(), 'normal')
+            addLine('')
+            addPromptWithOrangeBorder('Enter a number to open the draft.')
+            addLine('')
+            break
+          }
+          // Otherwise, return to Admin Menu
+          setIsViewingContent(false)
+          setCurrentPage(1)
+          setTotalPages(1)
+          setCurrentContent(null)
+          setCurrentNarrationUrls([])
+          setCurrentChunkIndex(0)
+          stopNarration()
+          await showAdminMenu()
+          break
+        }
+        // Go back to previous menu/view (non-admin)
         if (isViewingContent || currentMenu === 'about') {
           // If viewing content (journal entry, chapter, about page, etc.), go back to the listing
           setIsViewingContent(false)
@@ -1920,7 +2534,12 @@ ${release.fullDescription}`
         break
 
       default:
-        // Any input gets sent to conversational AI (with memory)
+        // If it's a slash-command we didn't recognize, don't fall back to AI chat
+        if (command.trim().startsWith('/')) {
+          addLine('Unknown command.', 'error')
+          break
+        }
+        // Any non-command input gets sent to conversational AI (with memory)
         // Add spacing before conversation starts
         addLine("")
         addLine('────────────────────────────────────────', 'separator')
@@ -1942,6 +2561,14 @@ ${release.fullDescription}`
     if (!systemReady || isProcessing) return
 
     if (e.key === 'Enter') {
+      if (waitingForAdminPassword) {
+        const pw = currentInput
+        setCurrentInput('')
+        setWaitingForAdminPassword(false)
+        setMaskInput(false)
+        processCommand(`/__admin_password ${pw}`)
+        return
+      }
       if (currentInput.trim()) {
         processCommand(currentInput)
         setCurrentInput('')
@@ -2084,13 +2711,35 @@ ${release.fullDescription}`
   }
 
   const renderMenu = () => {
+    // Admin menu overlay
+    if (currentMenu === 'admin') {
+      return (
+        <div className="space-y-1">
+          <div className="text-terminal-green">{createBorder('ADMIN MENU')}</div>
+          <div className="text-terminal-green cursor-pointer hover:brightness-125" onClick={() => handleLineClick('1')}>
+            1. Unpublished drafts (news)
+          </div>
+          <div className="text-terminal-green cursor-pointer hover:brightness-125" onClick={() => handleLineClick('2')}>
+            2. Generate — Daily News Brief
+          </div>
+          <div className="text-terminal-green cursor-pointer hover:brightness-125" onClick={() => handleLineClick('3')}>
+            3. Help — Admin commands
+          </div>
+          <div className="text-terminal-green cursor-pointer hover:brightness-125" onClick={() => handleLineClick('4')}>
+            4. Exit admin
+          </div>
+          <div className="text-terminal-green">{createBorder()}</div>
+        </div>
+      )
+    }
+
     const menuLines = terminalLines.filter((line, index) => {
       const isMenuHeader = line.text.includes('MAIN MENU') || line.text.includes('AVAILABLE COMMANDS')
       const isMenuItem = line.clickableCommand || (index > 0 && terminalLines[index - 1].text.includes('MENU'))
       return isMenuHeader || isMenuItem
     })
     
-    if (menuLines.length === 0 && currentMenu === 'main') {
+    if (menuLines.length === 0 && currentMenu === 'main' && !adminMode) {
       return (
         <div className="space-y-1">
           <div className="text-terminal-green">{createBorder('MAIN MENU')}</div>
@@ -2103,6 +2752,19 @@ ${release.fullDescription}`
           <div className="text-terminal-green cursor-pointer hover:brightness-125" onClick={() => handleLineClick('3')}>
             3. About - Introduction to Coherenceism
           </div>
+          <div className="text-terminal-green">{createBorder()}</div>
+        </div>
+      )
+    }
+    if (menuLines.length === 0 && currentMenu === 'main' && adminMode) {
+      return (
+        <div className="space-y-1">
+          <div className="text-terminal-green">{createBorder('ADMIN MENU')}</div>
+          <div className="text-terminal-green">/logout    - Log out of admin</div>
+          <div className="text-terminal-green">/unpublished [type] - List unpublished drafts (default: news)</div>
+          <div className="text-terminal-green">/preview &lt;id&gt; - Preview an unpublished draft</div>
+          <div className="text-terminal-green">/publish &lt;id&gt; - Publish a draft</div>
+          <div className="text-terminal-green">/generate news - Generate Daily News Brief</div>
           <div className="text-terminal-green">{createBorder()}</div>
         </div>
       )
@@ -2604,7 +3266,7 @@ ${release.fullDescription}`
                 <div className="flex-1">
                   {systemReady && !isProcessing && (
                     <div className="flex text-terminal-green font-bold brightness-125">
-                      <span>&gt; {currentInput}</span>
+                      <span>&gt; {maskInput ? '•'.repeat(currentInput.length) : currentInput}</span>
                       <span className="terminal-cursor ml-1">█</span>
                     </div>
                   )}

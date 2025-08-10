@@ -59,6 +59,43 @@ Type `/help` to see:
 - `/voice` - Toggle audio output (Byte speaks responses aloud)
 - `/clear` - Clear terminal screen
 
+## 🔐 Admin Terminal
+
+The terminal includes an admin console for content operations.
+
+### Enter admin
+- `/admin` → prompts for a password (masked), then shows the Admin Menu on success
+- Cookie used: `admin_token=ok` (HttpOnly, Secure, SameSite=Lax)
+
+### Admin Menu (numbers 1–4)
+- `1` Unpublished drafts (news) → opens an Unpublished page (paginated 1–10)
+- `2` Generate — Daily News Brief → queues a stub generation
+- `3` Help — Admin commands
+- `4` Exit admin (requires re-login to re-enter)
+
+### Admin pages and commands
+- Unpublished page: shows 1–10 per page; press number to open full draft; `N`/`P` for paging; `X` to go back
+- Draft page: shows the selected draft; `X` returns to Unpublished
+- Commands available while authed:
+  - `/unpublished [type]` (default `news`)
+  - `/preview <id>` (uses the current page's numeric id)
+  - `/publish <id>`
+  - `/generate news`
+  - `/logout` (clears client state)
+
+### Admin API (server)
+- `POST /api/admin/login` → `{ password }` → sets cookie on 200
+- `GET /api/admin/unpublished?type=news` → list of unpublished frontmatter items
+- `GET /api/admin/preview?id=<base64-abs-path>` → `{ frontmatter, body }`
+- `POST /api/admin/publish` → `{ id }` → writes `published: true`
+  - Uses GitHub API to update the file in `coherenceism.content` (requires `GITHUB_TOKEN`)
+- `POST /api/admin/generate` → `{ type: 'news' }` → 202 stub
+- `GET /api/admin/ping` → 200 if authed
+
+### Content layout
+- Drafts are read from `CONTENT_DIR/content/generated/<type>`
+- Markdown is parsed with gray-matter and filtered to `published !== true`
+
 ### Content Navigation Commands
 When viewing journal entries or book chapters:
 - `n` or `n.` - Narrate current content (Byte reads it aloud)
@@ -185,11 +222,13 @@ LIMIT 4;
 ```bash
 OPENAI_API_KEY=sk-...          # OpenAI API access
 POSTGRES_URL=postgres://...    # Vercel Postgres with pgvector
+ADMIN_TOKEN=...                # Admin console password
 ```
 
 **Optional Variables**:
 ```bash
 OPENAI_PROJECT_ID=proj-...     # OpenAI project organization
+CONTENT_DIR=../coherenceism.content  # Content repo root (defaults to this path)
 ```
 
 ## 🛠️ Tech Stack

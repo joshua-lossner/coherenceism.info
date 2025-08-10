@@ -148,6 +148,15 @@ curl -X POST http://localhost:3000/api/narrate \
 - **RAG API**: `app/api/rag/route.ts` - Vector search with AI
 - **Search API**: `app/api/search/route.ts` - Content search
 - **Narration API**: `app/api/narrate/route.ts` - Audio generation
+ 
+#### Admin API
+- `app/api/admin/login/route.ts` (POST) — password auth, sets `admin_token`
+- `app/api/admin/unpublished/route.ts` (GET) — lists unpublished content
+- `app/api/admin/preview/route.ts` (GET) — returns `{ frontmatter, body }`
+- `app/api/admin/publish/route.ts` (POST) — sets `published: true`
+  - Edits the file in `joshua-lossner/coherenceism.content` via GitHub Contents API (requires `GITHUB_TOKEN`)
+- `app/api/admin/generate/route.ts` (POST) — stub generation endpoint
+- `app/api/admin/ping/route.ts` (GET) — cookie check
 
 ### Configuration
 - **TypeScript**: `tsconfig.json` - Compiler settings
@@ -158,6 +167,8 @@ curl -X POST http://localhost:3000/api/narrate \
 ### Content & Data
 - **Audio Cache**: `data/audio-cache.json` - Narration cache manifest
 - **Narrations**: `public/audio/narrations/` - Cached audio files
+ - **Content root**: `CONTENT_DIR` (defaults to `../coherenceism.content`)
+   - Unpublished drafts: `CONTENT_DIR/content/generated/<type>`
 
 ## Dependencies & Their Roles
 
@@ -187,10 +198,12 @@ curl -X POST http://localhost:3000/api/narrate \
 - `POSTGRES_URL`: Vercel Postgres connection for vector database
 - `ELEVENLABS_API_KEY`: Text-to-speech audio generation
 - `BLOB_READ_WRITE_TOKEN`: Vercel Blob storage for audio files
+ - `ADMIN_TOKEN`: Password for admin console
 
 ### Optional
 - `OPENAI_PROJECT_ID`: OpenAI project organization
 - `GITHUB_TOKEN`: Enhanced API rate limits for changelog
+ - `CONTENT_DIR`: Root of content repository (defaults to `../coherenceism.content`)
 
 ## RAG System Architecture
 
