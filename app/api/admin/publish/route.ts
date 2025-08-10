@@ -31,14 +31,19 @@ export async function POST(request: NextRequest) {
     return SecurityHeadersManager.createErrorResponse('Invalid id encoding', 400)
   }
 
-  const resolved = path.resolve(absPath)
+  // Support GitHub-provided repo-relative id as well as absolute local path id
   const base = path.resolve(CONTENT_DIR)
-  if (!(resolved === base || resolved.startsWith(base + path.sep))) {
-    return SecurityHeadersManager.createErrorResponse('Invalid path', 400)
+  let relPathRaw = ''
+  if (absPath.startsWith('content/')) {
+    relPathRaw = absPath
+  } else {
+    const resolved = path.resolve(absPath)
+    if (!(resolved === base || resolved.startsWith(base + path.sep))) {
+      return SecurityHeadersManager.createErrorResponse('Invalid path', 400)
+    }
+    relPathRaw = path.relative(base, resolved)
   }
 
-  // Compute repository-relative path
-  const relPathRaw = path.relative(base, resolved)
   const relPath = relPathRaw.split(path.sep).join('/') // ensure POSIX path for GitHub API
 
   const ghToken = process.env.GITHUB_TOKEN
