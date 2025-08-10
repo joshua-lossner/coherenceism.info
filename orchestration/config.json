@@ -1,0 +1,20 @@
+{
+  "paths": {
+    "contentRoot": "./content",
+    "drafts": "./content/drafts",
+    "journals": "./content/journals",
+    "research": "./content/research"
+  },
+  "policies": {
+    "freshnessDays": 60,
+    "minSources": 3,
+    "stopOnQAFail": true
+  },
+  "workflows": {
+    "daily-brief": { "actors": ["researcher", "analyst", "writer", "qa"], "output": "news_brief" },
+    "journal-from-conversation": { "actors": ["extractor", "arranger", "writer", "qa"], "output": "journal" },
+    "code-rag-maintenance": { "actors": ["diff", "planner", "evaluator", "qa"], "output": "tech_note" }
+  }
+}
+
+
