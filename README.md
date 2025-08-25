@@ -2,6 +2,8 @@
 
 A WarGames-inspired terminal interface for exploring Coherenceism philosophy, powered by OpenAI's GPT-4.
 
+For guidelines when using AI coding assistants (e.g., OpenAI Codex or ChatGPT), see [AGENTS.md](AGENTS.md).
+
 ## 🖥️ Features
 
 - **Authentic 1980s Terminal**: Green phosphor display with CRT scanlines
