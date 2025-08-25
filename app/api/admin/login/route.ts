@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
 
   if (password.trim() === token) {
     const res = NextResponse.json({ ok: true }, { status: 200 })
-    res.cookies.set('admin_token', 'ok', {
+    res.cookies.set('auth_session', 'ok', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',

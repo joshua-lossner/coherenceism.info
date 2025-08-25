@@ -7,7 +7,7 @@ import { CHAT_MODEL, FALLBACK_CHAT_MODEL } from '../../../../lib/models'
 export const runtime = 'nodejs'
 
 export async function POST(request: NextRequest) {
-  const cookie = request.cookies.get('admin_token')?.value
+  const cookie = request.cookies.get('auth_session')?.value
   if (cookie !== 'ok') {
     return SecurityHeadersManager.createErrorResponse('Unauthorized', 401)
   }

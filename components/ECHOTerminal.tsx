@@ -1097,7 +1097,7 @@ const ECHOTerminal = () => {
       case 'LOGOUT': {
         // Clear client-side cookie (best-effort; server cookie is HttpOnly)
         try {
-          document.cookie = 'admin_token=; Max-Age=0; path=/'
+          document.cookie = 'auth_session=; Max-Age=0; path=/'
         } catch {}
         setAdminAuthed(false)
         setAdminMode(false)

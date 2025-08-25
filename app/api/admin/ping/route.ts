@@ -4,7 +4,7 @@ import { SecurityHeadersManager } from '../../../../lib/security-headers'
 export const runtime = 'nodejs'
 
 export async function GET(request: NextRequest) {
-  const cookie = request.cookies.get('admin_token')?.value
+  const cookie = request.cookies.get('auth_session')?.value
   if (cookie !== 'ok') {
     return SecurityHeadersManager.createErrorResponse('Unauthorized', 401)
   }
