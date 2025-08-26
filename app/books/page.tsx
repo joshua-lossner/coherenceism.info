@@ -15,12 +15,15 @@ interface Chapter {
   title: string
   content: string
   filename: string
+  part?: string
 }
 
 export default function BooksPage() {
   const [books, setBooks] = useState<Book[]>([])
   const [chapters, setChapters] = useState<Chapter[]>([])
+  const [parts, setParts] = useState<string[]>([])
   const [selectedBook, setSelectedBook] = useState<Book | null>(null)
+  const [selectedPart, setSelectedPart] = useState<string | null>(null)
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -75,6 +78,7 @@ export default function BooksPage() {
               const frontmatterMatch = content.match(/^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)/)
               let title = file.name.replace('.md', '').replace(/^\d+-/, '')
               let bodyContent = content
+              let part: string | undefined = undefined
               
               if (frontmatterMatch) {
                 const frontmatter = frontmatterMatch[1]
@@ -82,15 +86,18 @@ export default function BooksPage() {
                 
                 const titleMatch = frontmatter.match(/title:\s*"?([^"\n]+)"?/)
                 const publishedMatch = frontmatter.match(/published:\s*(true|yes|on|1)/i)
+                const partMatch = frontmatter.match(/part:\s*"?([^"\n]+)"?/)
                 if (titleMatch) title = titleMatch[1]
+                if (partMatch) part = partMatch[1]
                 if (!publishedMatch) return null
               }
-              
+
               return {
                 id: index + 1,
                 title: title,
                 content: bodyContent.trim(),
-                filename: file.name
+                filename: file.name,
+                part: part
               }
             } catch (error) {
               console.error(`Error fetching chapter ${file.name}:`, error)
@@ -98,8 +105,10 @@ export default function BooksPage() {
             }
           })
         )
-        
-        setChapters(chapterEntries.filter(chapter => chapter !== null))
+        const validChapters = chapterEntries.filter(chapter => chapter !== null) as Chapter[]
+        setChapters(validChapters)
+        const uniqueParts = Array.from(new Set(validChapters.map(ch => ch.part).filter((p): p is string => !!p)))
+        setParts(uniqueParts)
       }
     } catch (error) {
       console.error('Error fetching chapters:', error)
@@ -108,9 +117,14 @@ export default function BooksPage() {
 
   const handleBookSelect = async (book: Book) => {
     setSelectedBook(book)
+    setSelectedPart(null)
     setLoading(true)
     await fetchChapters(book.slug)
     setLoading(false)
+  }
+
+  const handlePartSelect = (part: string) => {
+    setSelectedPart(part)
   }
 
   if (selectedChapter) {
@@ -138,33 +152,64 @@ export default function BooksPage() {
   }
 
   if (selectedBook) {
+    const visibleChapters = selectedPart
+      ? chapters.filter(ch => ch.part === selectedPart)
+      : chapters
+
     return (
       <div className="h-screen bg-black text-terminal-green overflow-y-auto">
         <div className="max-w-2xl mx-auto p-4 pb-8">
           <ECHOBanner />
           <div className="mb-6">
-            <button 
-              onClick={() => setSelectedBook(null)}
-              className="text-terminal-amber hover:brightness-125 mb-4"
-            >
-              ← Back to Books
-            </button>
+            {selectedPart ? (
+              <button
+                onClick={() => setSelectedPart(null)}
+                className="text-terminal-amber hover:brightness-125 mb-4"
+              >
+                ← Back to Parts
+              </button>
+            ) : (
+              <button
+                onClick={() => setSelectedBook(null)}
+                className="text-terminal-amber hover:brightness-125 mb-4"
+              >
+                ← Back to Books
+              </button>
+            )}
             <h1 className="text-2xl font-bold text-cyan-400 mb-2">{selectedBook.title}</h1>
-            <p className="text-terminal-green-dim">Chapters</p>
+            {selectedPart ? (
+              <p className="text-terminal-green-dim">Chapters</p>
+            ) : parts.length > 0 ? (
+              <p className="text-terminal-green-dim">Parts</p>
+            ) : (
+              <p className="text-terminal-green-dim">Chapters</p>
+            )}
           </div>
 
           {loading ? (
             <div className="text-center py-8">
               <p className="text-terminal-green-dim">Loading chapters...</p>
             </div>
-          ) : chapters.length === 0 ? (
+          ) : selectedPart === null && parts.length > 0 ? (
+            <div className="space-y-4">
+              {parts.map((part, index) => (
+                <div
+                  key={index}
+                  className="border border-terminal-green-dim p-4 cursor-pointer hover:border-terminal-green transition-colors"
+                  onClick={() => handlePartSelect(part)}
+                >
+                  <h3 className="text-terminal-green font-bold mb-2">{part}</h3>
+                </div>
+              ))}
+            </div>
+          ) : visibleChapters.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-terminal-green-dim">No chapters found.</p>
             </div>
           ) : (
             <div className="space-y-4">
-              {chapters.map((chapter) => (
-                <div 
+              {visibleChapters.map((chapter) => (
+                <div
                   key={chapter.id}
                   className="border border-terminal-green-dim p-4 cursor-pointer hover:border-terminal-green transition-colors"
                   onClick={() => setSelectedChapter(chapter)}

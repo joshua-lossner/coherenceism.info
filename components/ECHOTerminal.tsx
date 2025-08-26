@@ -11,6 +11,14 @@ interface TerminalLine {
   clickableCommand?: string
 }
 
+interface Chapter {
+  id: number
+  title: string
+  content: string
+  filename: string
+  part?: string
+}
+
 const ECHOTerminal = () => {
   const router = useRouter()
   const [currentInput, setCurrentInput] = useState('')
@@ -25,8 +33,11 @@ const ECHOTerminal = () => {
   const [books, setBooks] = useState<Array<{id: number, title: string, slug: string}>>([])
   const [booksLoaded, setBooksLoaded] = useState(false)
   const [currentBook, setCurrentBook] = useState<string>('')
-  const [chapters, setChapters] = useState<Array<{id: number, title: string, content: string, filename: string}>>([])
+  const [chapters, setChapters] = useState<Chapter[]>([])
+  const [allChapters, setAllChapters] = useState<Chapter[]>([])
   const [chaptersLoaded, setChaptersLoaded] = useState(false)
+  const [parts, setParts] = useState<string[]>([])
+  const [currentPart, setCurrentPart] = useState<string>('')
   const [isPlaying, setIsPlaying] = useState(false)
   const [audioEnabled, setAudioEnabled] = useState(false)
   const [isDisplayingMarkdown, setIsDisplayingMarkdown] = useState(false)
@@ -218,40 +229,44 @@ const ECHOTerminal = () => {
               console.log(`Fetching content for chapter: ${file.name}`)
               const contentResponse = await fetch(file.download_url)
               const content = await contentResponse.text()
-              
+
               // Parse frontmatter and content
               const frontmatterMatch = content.match(/^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)/)
               let title = file.name.replace('.md', '').replace(/^\d+-/, '')
               let bodyContent = content
-              
+              let part: string | undefined = undefined
+
               if (frontmatterMatch) {
                 const frontmatter = frontmatterMatch[1]
                 bodyContent = frontmatterMatch[2]
-                
-                // Extract title and published flag from frontmatter
+
+                // Extract title, part and published flag from frontmatter
                 const titleMatch = frontmatter.match(/title:\s*"?([^"\n]+)"?/)
+                const partMatch = frontmatter.match(/part:\s*"?([^"\n]+)"?/)
                 const publishedMatch = frontmatter.match(/published:\s*(true|yes|on|1)/i)
                 if (titleMatch) title = titleMatch[1]
+                if (partMatch) part = partMatch[1]
                 // Only include published chapters; skip otherwise
                 if (!publishedMatch) {
                   return null
                 }
               }
-              
+
               // Clean up title (remove numbers, capitalize)
               title = title
                 .replace(/^\d+-/, '')
                 .split('-')
                 .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
                 .join(' ')
-              
+
               console.log(`Processed chapter: ${title}`)
-              
+
               return {
                 id: index + 1,
                 title: title,
                 content: bodyContent.trim(),
-                filename: file.name
+                filename: file.name,
+                part: part
               }
             } catch (error) {
               console.error(`Error fetching chapter ${file.name}:`, error)
@@ -259,22 +274,30 @@ const ECHOTerminal = () => {
             }
           })
         )
-        
-        const validChapters = chapterEntries.filter(entry => entry !== null)
+
+        const validChapters = chapterEntries.filter(entry => entry !== null) as Chapter[]
         console.log('Final chapter entries:', validChapters)
-        setChapters(validChapters)
-        
-        // Display the chapters immediately after fetching
+        setAllChapters(validChapters)
+        const uniqueParts = Array.from(new Set(validChapters.map(ch => ch.part).filter((p): p is string => !!p)))
+        setParts(uniqueParts)
+        setCurrentPart('')
+        if (uniqueParts.length === 0) {
+          setChapters(validChapters)
+        } else {
+          setChapters([])
+        }
+
+        // Display the chapters or parts immediately after fetching
         setTerminalLines([])
         await new Promise(resolve => setTimeout(resolve, 100))
-        
+
         if (validChapters.length === 0) {
           await typeResponse(`No chapters found for this book.`, false)
         } else {
           // Get the current book title for display
           const currentBookData = books.find(book => book.slug === currentBook)
           const bookTitle = currentBookData ? currentBookData.title : 'Book'
-          
+
           // Add banner
           addLine("")
           addLine(createBorder('', '═'), 'separator')
@@ -285,17 +308,30 @@ const ECHOTerminal = () => {
           addLine("")
           addLine(createBorder('', '═'), 'separator')
           addLine("")
-          
-          addLine(createBorder(`${bookTitle.toUpperCase()} - CHAPTERS`), 'normal')
-          addLine("")
-          validChapters.forEach((chapter, index) => {
-            addLine(`${index + 1}. ${chapter.title}`, 'normal', false, `${index + 1}`)
-          })
-          addLine("")
-          addLine(createBorder(), 'normal')
-          addLine("")
-          addLine("Enter the number to read a chapter.")
-          addLine("")
+
+          if (uniqueParts.length > 0) {
+            addLine(createBorder(`${bookTitle.toUpperCase()} - PARTS`), 'normal')
+            addLine("")
+            uniqueParts.forEach((part, index) => {
+              addLine(`${index + 1}. ${part}`, 'normal', false, `${index + 1}`)
+            })
+            addLine("")
+            addLine(createBorder(), 'normal')
+            addLine("")
+            addLine("Enter the number to explore chapters.")
+            addLine("")
+          } else {
+            addLine(createBorder(`${bookTitle.toUpperCase()} - CHAPTERS`), 'normal')
+            addLine("")
+            validChapters.forEach((chapter, index) => {
+              addLine(`${index + 1}. ${chapter.title}`, 'normal', false, `${index + 1}`)
+            })
+            addLine("")
+            addLine(createBorder(), 'normal')
+            addLine("")
+            addLine("Enter the number to read a chapter.")
+            addLine("")
+          }
         }
       } else {
         console.error('Chapters response is not an array:', files)
@@ -846,6 +882,51 @@ const ECHOTerminal = () => {
 
   const processCommand = async (command: string) => {
     const cmd = command.toUpperCase().trim()
+
+    const handleBooksSelection = async (entryIndex: number) => {
+      if (currentBook === '') {
+        if (books.length > entryIndex) {
+          const book = books[entryIndex]
+          setCurrentBook(book.slug)
+          setCurrentPart('')
+          setParts([])
+          setChapters([])
+          setAllChapters([])
+          setTerminalLines([])
+          await new Promise(resolve => setTimeout(resolve, 100))
+          await typeResponse(`Loading chapters for "${book.title}"...`, false)
+          await fetchChapters(book.slug)
+        }
+      } else if (parts.length > 0 && currentPart === '') {
+        if (parts.length > entryIndex) {
+          const part = parts[entryIndex]
+          setCurrentPart(part)
+          const filtered = allChapters.filter(ch => ch.part === part)
+          setChapters(filtered)
+          setTerminalLines([])
+          await new Promise(resolve => setTimeout(resolve, 100))
+          addLine(createBorder(`${part.toUpperCase()} - CHAPTERS`), 'normal')
+          addLine("")
+          filtered.forEach((chapter, idx) => {
+            addLine(`${idx + 1}. ${chapter.title}`, 'normal', false, `${idx + 1}`)
+          })
+          addLine("")
+          addLine(createBorder(), 'normal')
+          addLine("")
+          addPromptWithOrangeBorder("Enter the number to read a chapter.")
+          addLine("")
+        }
+      } else {
+        if (chapters.length > entryIndex) {
+          const chapter = chapters[entryIndex]
+          setTerminalLines([])
+          await new Promise(resolve => setTimeout(resolve, 100))
+          addMarkdownContent(chapter.content, `Chapter: ${chapter.title}`, undefined, 'chapter', `${currentBook}-${chapter.filename || chapter.id}`)
+        } else {
+          await typeResponse(`Chapter not available.`, false)
+        }
+      }
+    }
     
     // Reset markdown display mode when user types new command
     setIsDisplayingMarkdown(false)
@@ -1000,6 +1081,10 @@ const ECHOTerminal = () => {
         await new Promise(resolve => setTimeout(resolve, 100))
         changeMenu('books')
         setCurrentBook('') // Reset current book
+        setCurrentPart('')
+        setParts([])
+        setChapters([])
+        setAllChapters([])
         setChaptersLoaded(false) // Reset chapters
         
         if (!booksLoaded) {
@@ -1225,14 +1310,12 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
       case '1':
       case '1.':
         if (currentMenu === 'main') {
-          // Navigate to journal from main menu
           processCommand('/journal')
         } else if (currentMenu === 'journals') {
-          // First journal entry on current page
           const entriesPerPage = 5
           const pageOffset = (journalPage - 1) * entriesPerPage
           const actualIndex = pageOffset + 0
-          
+
           setTerminalLines([])
           await new Promise(resolve => setTimeout(resolve, 100))
           if (journals.length > actualIndex) {
@@ -1242,29 +1325,7 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
             await typeResponse(`Journal entry not available.`, false)
           }
         } else if (currentMenu === 'books') {
-          if (currentBook === '') {
-            // Show chapters for first book
-            if (books.length > 0) {
-              const book = books[0]
-              setCurrentBook(book.slug)
-              setChapters([]) // Clear chapters first
-              setChaptersLoaded(false) // Reset loaded state
-              setTerminalLines([])
-              await new Promise(resolve => setTimeout(resolve, 100))
-              await typeResponse(`Loading chapters for "${book.title}"...`, false)
-              await fetchChapters(book.slug)
-            }
-          } else {
-            // Show first chapter content
-            if (chapters.length > 0) {
-              const chapter = chapters[0]
-              setTerminalLines([])
-              await new Promise(resolve => setTimeout(resolve, 100))
-              addMarkdownContent(chapter.content, `Chapter: ${chapter.title}`, undefined, 'chapter', `${currentBook}-${chapter.filename || chapter.id}`)
-            } else {
-              await typeResponse(`Chapter not available.`, false)
-            }
-          }
+          await handleBooksSelection(0)
         } else if (currentMenu === 'changelog') {
           // Show detailed release notes for selected entry
           const entriesPerPage = 5
@@ -1294,14 +1355,12 @@ ${release.fullDescription}`
       case '2':
       case '2.':
         if (currentMenu === 'main') {
-          // Navigate to books from main menu
           processCommand('/books')
         } else if (currentMenu === 'journals') {
-          // Second journal entry on current page
           const entriesPerPage = 5
           const pageOffset = (journalPage - 1) * entriesPerPage
           const actualIndex = pageOffset + 1
-          
+
           setTerminalLines([])
           await new Promise(resolve => setTimeout(resolve, 100))
           if (journals.length > actualIndex) {
@@ -1312,30 +1371,7 @@ ${release.fullDescription}`
           }
         } else if (currentMenu === 'books') {
           const entryIndex = parseInt(cmd.replace('.', '')) - 1
-          if (currentBook === '') {
-            // Show chapters for selected book
-            if (books.length > entryIndex && entryIndex >= 0) {
-              const book = books[entryIndex]
-              setCurrentBook(book.slug)
-              setChapters([]) // Clear chapters first
-              setChaptersLoaded(false) // Reset loaded state
-              setTerminalLines([])
-              await new Promise(resolve => setTimeout(resolve, 100))
-              await typeResponse(`Loading chapters for "${book.title}"...`, false)
-              await fetchChapters(book.slug)
-              // Display logic is now handled inside fetchChapters
-            }
-          } else {
-            // Show chapter content
-            if (chapters.length > entryIndex && entryIndex >= 0) {
-              const chapter = chapters[entryIndex]
-              setTerminalLines([])
-              await new Promise(resolve => setTimeout(resolve, 100))
-              addMarkdownContent(chapter.content, `Chapter: ${chapter.title}`, undefined, 'chapter', `${currentBook}-${chapter.filename || chapter.id}`)
-            } else {
-              await typeResponse(`Chapter not available.`, false)
-            }
-          }
+          await handleBooksSelection(entryIndex)
         } else if (currentMenu === 'changelog') {
           // Show detailed release notes for second entry
           const entriesPerPage = 5
@@ -1372,7 +1408,7 @@ ${release.fullDescription}`
             const entriesPerPage = 5
             const pageOffset = (journalPage - 1) * entriesPerPage
             const actualIndex = pageOffset + entryIndex
-            
+
             setTerminalLines([])
             await new Promise(resolve => setTimeout(resolve, 100))
             if (journals.length > actualIndex && actualIndex >= pageOffset && entryIndex < entriesPerPage) {
@@ -1382,47 +1418,12 @@ ${release.fullDescription}`
               await typeResponse(`Journal entry not available.`, false)
             }
           } else if (currentMenu === 'books') {
-          if (currentBook === '') {
-            // Show chapters for selected book
-            if (books.length > entryIndex) {
-              const book = books[entryIndex]
-              setCurrentBook(book.slug)
-              setTerminalLines([])
-              await new Promise(resolve => setTimeout(resolve, 100))
-              await typeResponse(`Loading chapters for "${book.title}"...`, false)
-              await fetchChapters(book.slug)
-              
-              if (chapters.length === 0) {
-                await typeResponse(`No chapters found for this book.`, false)
-              } else {
-                addLine(createBorder(`${book.title.toUpperCase()} - CHAPTERS`), 'normal')
-                addLine("")
-                chapters.forEach((chapter, index) => {
-                  addLine(`${index + 1}. ${chapter.title}`, 'normal', false, `${index + 1}`)
-                })
-                addLine("")
-                addLine(createBorder(), 'normal')
-                addLine("")
-                addPromptWithOrangeBorder("Enter the number to read a chapter.")
-                addLine("")
-              }
-            }
-          } else {
-            // Show chapter content
-            if (chapters.length > entryIndex) {
-              const chapter = chapters[entryIndex]
-              setTerminalLines([])
-              await new Promise(resolve => setTimeout(resolve, 100))
-              addMarkdownContent(chapter.content, `Chapter: ${chapter.title}`, undefined, 'chapter', `${currentBook}-${chapter.filename || chapter.id}`)
-            } else {
-              await typeResponse(`Chapter not available.`, false)
-            }
-          }
-        } else if (currentMenu === 'changelog') {
-          // Show detailed release notes for selected entry
-          const entriesPerPage = 5
-          const pageOffset = (changelogPage - 1) * entriesPerPage
-          const actualIndex = pageOffset + entryIndex
+            await handleBooksSelection(entryIndex)
+          } else if (currentMenu === 'changelog') {
+            // Show detailed release notes for selected entry
+            const entriesPerPage = 5
+            const pageOffset = (changelogPage - 1) * entriesPerPage
+            const actualIndex = pageOffset + entryIndex
           
           if (changelog.length > actualIndex && actualIndex >= pageOffset && entryIndex < entriesPerPage) {
             const release = changelog[actualIndex]
@@ -1464,7 +1465,7 @@ ${release.fullDescription}`
           const entriesPerPage = 5
           const pageOffset = (journalPage - 1) * entriesPerPage
           const actualIndex = pageOffset + entryIndex
-          
+
           setTerminalLines([])
           await new Promise(resolve => setTimeout(resolve, 100))
           if (journals.length > actualIndex && actualIndex >= pageOffset && entryIndex < entriesPerPage) {
@@ -1474,27 +1475,7 @@ ${release.fullDescription}`
             await typeResponse(`Journal entry not available.`, false)
           }
         } else if (currentMenu === 'books') {
-          if (currentBook === '') {
-            // Show chapters for selected book
-            if (books.length > entryIndex) {
-              const book = books[entryIndex]
-              setCurrentBook(book.slug)
-              setTerminalLines([])
-              await new Promise(resolve => setTimeout(resolve, 100))
-              await typeResponse(`Loading chapters for "${book.title}"...`, false)
-              await fetchChapters(book.slug)
-            }
-          } else {
-            // Show chapter content
-            if (chapters.length > entryIndex) {
-              const chapter = chapters[entryIndex]
-              setTerminalLines([])
-              await new Promise(resolve => setTimeout(resolve, 100))
-              addMarkdownContent(chapter.content, `Chapter: ${chapter.title}`, undefined, 'chapter', `${currentBook}-${chapter.filename || chapter.id}`)
-            } else {
-              await typeResponse(`Chapter not available.`, false)
-            }
-          }
+          await handleBooksSelection(entryIndex)
         } else if (currentMenu === 'changelog') {
           // Show detailed release notes for selected entry
           const entriesPerPage = 5
@@ -1529,15 +1510,34 @@ ${release.fullDescription}`
         setCurrentNarrationUrls([])
         setCurrentChunkIndex(0)
         stopNarration()
-        
+
         if (previousMenu === 'main' || currentMenu === 'main') {
           // If we're at main or previous was main, go to main menu
           processCommand('/menu')
         } else if (currentMenu === 'books' && currentBook !== '') {
-          // If we're viewing chapters, go back to books list
-          setCurrentBook('')
-          setChaptersLoaded(false)
-          processCommand('/books')
+          if (currentPart !== '') {
+            setCurrentPart('')
+            setChapters([])
+            setTerminalLines([])
+            await new Promise(resolve => setTimeout(resolve, 100))
+            const currentBookData = books.find(book => book.slug === currentBook)
+            const bookTitle = currentBookData ? currentBookData.title : 'Book'
+            addLine(createBorder(`${bookTitle.toUpperCase()} - PARTS`), 'normal')
+            addLine("")
+            parts.forEach((part, index) => {
+              addLine(`${index + 1}. ${part}`, 'normal', false, `${index + 1}`)
+            })
+            addLine("")
+            addLine(createBorder(), 'normal')
+            addLine("")
+            addPromptWithOrangeBorder("Enter the number to explore chapters.")
+            addLine("")
+          } else {
+            setCurrentBook('')
+            setParts([])
+            setChaptersLoaded(false)
+            processCommand('/books')
+          }
         } else {
           // Otherwise go to main menu
           processCommand('/menu')
