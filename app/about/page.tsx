@@ -3,8 +3,8 @@
 import Link from 'next/link'
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import ReactMarkdown from 'react-markdown'
 import ECHOBanner from '@/components/ECHOBanner'
+import TerminalMarkdown from '@/components/TerminalMarkdown'
 
 const aboutMarkdown = `# About Coherenceism
 
@@ -83,9 +83,7 @@ export default function AboutPage() {
             ← Back to Home
           </Link>
         </div>
-        <div className="prose prose-invert prose-green max-w-none">
-          <ReactMarkdown>{aboutMarkdown}</ReactMarkdown>
-        </div>
+        <TerminalMarkdown content={aboutMarkdown} />
       </div>
     </div>
   )

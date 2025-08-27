@@ -61,7 +61,7 @@ const ECHOBanner = () => {
 
         {/* Mobile banner without overflow-causing borders */}
         <div className="md:hidden space-y-2">
-          <h1 className="text-2xl font-mono text-cyan-400 tracking-wider">
+          <h1 className="text-xl font-mono text-cyan-400 tracking-wider">
             COHERENCEISM.INFO
           </h1>
           <div

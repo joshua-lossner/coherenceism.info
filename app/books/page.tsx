@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import ReactMarkdown from 'react-markdown'
 import ECHOBanner from '@/components/ECHOBanner'
+import TerminalMarkdown from '@/components/TerminalMarkdown'
 
 interface Book {
   id: number
@@ -146,11 +146,9 @@ export default function BooksPage() {
             >
               ← Back to {selectedBook?.title}
             </button>
-            <h1 className="text-xl font-bold text-terminal-green mb-2">{selectedChapter.title}</h1>
+            <h1 className="text-lg font-bold text-terminal-green mb-2">{selectedChapter.title}</h1>
           </div>
-          <div className="prose prose-invert prose-green max-w-none">
-            <ReactMarkdown>{selectedChapter.content}</ReactMarkdown>
-          </div>
+          <TerminalMarkdown content={selectedChapter.content} />
         </div>
       </div>
     )
@@ -181,7 +179,7 @@ export default function BooksPage() {
                 ← Back to Books
               </button>
             )}
-            <h1 className="text-2xl font-bold text-cyan-400 mb-2">{selectedBook.title}</h1>
+            <h1 className="text-xl font-bold text-cyan-400 mb-2">{selectedBook.title}</h1>
             {selectedPart ? (
               <p className="text-terminal-green-dim">Chapters</p>
             ) : parts.length > 0 ? (
@@ -240,7 +238,7 @@ export default function BooksPage() {
           <Link href="/" className="text-terminal-amber hover:brightness-125 mb-4 inline-block">
             ← Back to Home
           </Link>
-          <h1 className="text-2xl font-bold text-cyan-400 mb-2">Coherenceism Texts</h1>
+          <h1 className="text-xl font-bold text-cyan-400 mb-2">Coherenceism Texts</h1>
           <p className="text-terminal-green-dim">Philosophical writings and explorations</p>
         </div>
 

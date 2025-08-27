@@ -62,7 +62,7 @@ export default function MusicPage() {
           <Link href="/" className="text-terminal-amber hover:brightness-125 mb-4 inline-block">
             ← Back to Home
           </Link>
-          <h1 className="text-2xl font-bold text-cyan-400 mb-2">🎵 Sonic Neural Networks</h1>
+          <h1 className="text-xl font-bold text-cyan-400 mb-2">🎵 Sonic Neural Networks</h1>
           <p className="text-terminal-green-dim">Curated playlists and soundscapes inspired by Coherenceism</p>
         </div>
 
