@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import ReactMarkdown from 'react-markdown'
 import ECHOBanner from '@/components/ECHOBanner'
 
 interface JournalEntry {
@@ -11,6 +12,12 @@ interface JournalEntry {
   content: string
   filename: string
 }
+
+const stripMarkdown = (text: string): string =>
+  text
+    .replace(/[#*_`>~\-]/g, '')
+    .replace(/\[(.*?)\]\((.*?)\)/g, '$1')
+    .replace(/\n+/g, ' ')
 
 export default function JournalPage() {
   const [journals, setJournals] = useState<JournalEntry[]>([])
@@ -103,9 +110,7 @@ export default function JournalPage() {
             )}
           </div>
           <div className="prose prose-invert prose-green max-w-none">
-            <div className="whitespace-pre-wrap text-terminal-green leading-relaxed">
-              {selectedEntry.content}
-            </div>
+            <ReactMarkdown>{selectedEntry.content}</ReactMarkdown>
           </div>
         </div>
       </div>
@@ -145,7 +150,7 @@ export default function JournalPage() {
                   <p className="text-terminal-green-dim text-sm mb-2">{entry.date}</p>
                 )}
                 <p className="text-terminal-green-dim text-sm">
-                  {entry.content.substring(0, 150)}...
+                  {stripMarkdown(entry.content).substring(0, 150)}...
                 </p>
               </div>
             ))}

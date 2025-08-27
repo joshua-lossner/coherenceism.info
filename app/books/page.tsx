@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import ReactMarkdown from 'react-markdown'
 import ECHOBanner from '@/components/ECHOBanner'
 
 interface Book {
@@ -17,6 +18,12 @@ interface Chapter {
   filename: string
   part?: string
 }
+
+const stripMarkdown = (text: string): string =>
+  text
+    .replace(/[#*_`>~\-]/g, '')
+    .replace(/\[(.*?)\]\((.*?)\)/g, '$1')
+    .replace(/\n+/g, ' ')
 
 export default function BooksPage() {
   const [books, setBooks] = useState<Book[]>([])
@@ -142,9 +149,7 @@ export default function BooksPage() {
             <h1 className="text-xl font-bold text-terminal-green mb-2">{selectedChapter.title}</h1>
           </div>
           <div className="prose prose-invert prose-green max-w-none">
-            <div className="whitespace-pre-wrap text-terminal-green leading-relaxed">
-              {selectedChapter.content}
-            </div>
+            <ReactMarkdown>{selectedChapter.content}</ReactMarkdown>
           </div>
         </div>
       </div>
@@ -216,7 +221,7 @@ export default function BooksPage() {
                 >
                   <h3 className="text-terminal-green font-bold mb-2">{chapter.title}</h3>
                   <p className="text-terminal-green-dim text-sm">
-                    {chapter.content.substring(0, 150)}...
+                    {stripMarkdown(chapter.content).substring(0, 150)}...
                   </p>
                 </div>
               ))}
