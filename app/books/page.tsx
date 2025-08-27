@@ -130,7 +130,7 @@ export default function BooksPage() {
   if (selectedChapter) {
     return (
       <div className="h-screen bg-black text-terminal-green overflow-y-auto">
-        <div className="max-w-2xl mx-auto p-4 pb-8">
+        <div className="w-full max-w-full md:max-w-2xl mx-auto p-4 pb-8">
           <ECHOBanner />
           <div className="mb-6">
             <button 
@@ -158,7 +158,7 @@ export default function BooksPage() {
 
     return (
       <div className="h-screen bg-black text-terminal-green overflow-y-auto">
-        <div className="max-w-2xl mx-auto p-4 pb-8">
+        <div className="w-full max-w-full md:max-w-2xl mx-auto p-4 pb-8">
           <ECHOBanner />
           <div className="mb-6">
             {selectedPart ? (
@@ -229,7 +229,7 @@ export default function BooksPage() {
 
   return (
     <div className="h-screen bg-black text-terminal-green overflow-y-auto">
-      <div className="max-w-2xl mx-auto p-4 pb-8">
+      <div className="w-full max-w-full md:max-w-2xl mx-auto p-4 pb-8">
         <ECHOBanner />
         <div className="mb-6">
           <Link href="/" className="text-terminal-amber hover:brightness-125 mb-4 inline-block">
