@@ -55,14 +55,14 @@ export default function MusicPage() {
   }
 
   return (
-    <div className="h-screen bg-black text-terminal-green overflow-y-auto">
-      <div className="max-w-2xl mx-auto p-4 pb-8">
+    <div className="h-screen bg-black text-terminal-green overflow-y-auto overflow-x-hidden">
+      <div className="w-full max-w-full md:max-w-2xl mx-auto p-4 pb-8">
         <ECHOBanner />
         <div className="mb-6">
           <Link href="/" className="text-terminal-amber hover:brightness-125 mb-4 inline-block">
             ← Back to Home
           </Link>
-          <h1 className="text-2xl font-bold text-cyan-400 mb-2">🎵 Sonic Neural Networks</h1>
+          <h1 className="text-xl font-bold text-cyan-400 mb-2">🎵 Sonic Neural Networks</h1>
           <p className="text-terminal-green-dim">Curated playlists and soundscapes inspired by Coherenceism</p>
         </div>
 

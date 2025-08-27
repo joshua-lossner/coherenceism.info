@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import ECHOBanner from '@/components/ECHOBanner'
+import TerminalMarkdown from '@/components/TerminalMarkdown'
 
 interface JournalEntry {
   id: number
@@ -11,6 +12,12 @@ interface JournalEntry {
   content: string
   filename: string
 }
+
+const stripMarkdown = (text: string): string =>
+  text
+    .replace(/[#*_`>~\-]/g, '')
+    .replace(/\[(.*?)\]\((.*?)\)/g, '$1')
+    .replace(/\n+/g, ' ')
 
 export default function JournalPage() {
   const [journals, setJournals] = useState<JournalEntry[]>([])
@@ -87,8 +94,8 @@ export default function JournalPage() {
 
   if (selectedEntry) {
     return (
-      <div className="h-screen bg-black text-terminal-green overflow-y-auto">
-        <div className="max-w-2xl mx-auto p-4 pb-8">
+      <div className="h-screen bg-black text-terminal-green overflow-y-auto overflow-x-hidden">
+        <div className="w-full max-w-full md:max-w-2xl mx-auto p-4 pb-8">
           <ECHOBanner />
           <div className="mb-6">
             <button 
@@ -97,30 +104,26 @@ export default function JournalPage() {
             >
               ← Back to Journal List
             </button>
-            <h1 className="text-xl font-bold text-terminal-green mb-2">{selectedEntry.title}</h1>
+            <h1 className="text-lg font-bold text-terminal-green mb-2">{selectedEntry.title}</h1>
             {selectedEntry.date && (
               <p className="text-terminal-green-dim text-sm mb-4">{selectedEntry.date}</p>
             )}
           </div>
-          <div className="prose prose-invert prose-green max-w-none">
-            <div className="whitespace-pre-wrap text-terminal-green leading-relaxed">
-              {selectedEntry.content}
-            </div>
-          </div>
+          <TerminalMarkdown content={selectedEntry.content} />
         </div>
       </div>
     )
   }
 
   return (
-          <div className="h-screen bg-black text-terminal-green overflow-y-auto">
-        <div className="max-w-2xl mx-auto p-4 pb-8">
+          <div className="h-screen bg-black text-terminal-green overflow-y-auto overflow-x-hidden">
+        <div className="w-full max-w-full md:max-w-2xl mx-auto p-4 pb-8">
         <ECHOBanner />
         <div className="mb-6">
           <Link href="/" className="text-terminal-amber hover:brightness-125 mb-4 inline-block">
             ← Back to Home
           </Link>
-          <h1 className="text-2xl font-bold text-cyan-400 mb-2">Journal Entries</h1>
+          <h1 className="text-xl font-bold text-cyan-400 mb-2">Journal Entries</h1>
           <p className="text-terminal-green-dim">Thoughts and reflections on coherence</p>
         </div>
 
@@ -145,7 +148,7 @@ export default function JournalPage() {
                   <p className="text-terminal-green-dim text-sm mb-2">{entry.date}</p>
                 )}
                 <p className="text-terminal-green-dim text-sm">
-                  {entry.content.substring(0, 150)}...
+                  {stripMarkdown(entry.content).substring(0, 150)}...
                 </p>
               </div>
             ))}

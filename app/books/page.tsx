@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import ECHOBanner from '@/components/ECHOBanner'
+import TerminalMarkdown from '@/components/TerminalMarkdown'
 
 interface Book {
   id: number
@@ -17,6 +18,12 @@ interface Chapter {
   filename: string
   part?: string
 }
+
+const stripMarkdown = (text: string): string =>
+  text
+    .replace(/[#*_`>~\-]/g, '')
+    .replace(/\[(.*?)\]\((.*?)\)/g, '$1')
+    .replace(/\n+/g, ' ')
 
 export default function BooksPage() {
   const [books, setBooks] = useState<Book[]>([])
@@ -129,8 +136,8 @@ export default function BooksPage() {
 
   if (selectedChapter) {
     return (
-      <div className="h-screen bg-black text-terminal-green overflow-y-auto">
-        <div className="max-w-2xl mx-auto p-4 pb-8">
+      <div className="h-screen bg-black text-terminal-green overflow-y-auto overflow-x-hidden">
+        <div className="w-full max-w-full md:max-w-2xl mx-auto p-4 pb-8">
           <ECHOBanner />
           <div className="mb-6">
             <button 
@@ -139,13 +146,9 @@ export default function BooksPage() {
             >
               ← Back to {selectedBook?.title}
             </button>
-            <h1 className="text-xl font-bold text-terminal-green mb-2">{selectedChapter.title}</h1>
+            <h1 className="text-lg font-bold text-terminal-green mb-2">{selectedChapter.title}</h1>
           </div>
-          <div className="prose prose-invert prose-green max-w-none">
-            <div className="whitespace-pre-wrap text-terminal-green leading-relaxed">
-              {selectedChapter.content}
-            </div>
-          </div>
+          <TerminalMarkdown content={selectedChapter.content} />
         </div>
       </div>
     )
@@ -157,8 +160,8 @@ export default function BooksPage() {
       : chapters
 
     return (
-      <div className="h-screen bg-black text-terminal-green overflow-y-auto">
-        <div className="max-w-2xl mx-auto p-4 pb-8">
+      <div className="h-screen bg-black text-terminal-green overflow-y-auto overflow-x-hidden">
+        <div className="w-full max-w-full md:max-w-2xl mx-auto p-4 pb-8">
           <ECHOBanner />
           <div className="mb-6">
             {selectedPart ? (
@@ -176,7 +179,7 @@ export default function BooksPage() {
                 ← Back to Books
               </button>
             )}
-            <h1 className="text-2xl font-bold text-cyan-400 mb-2">{selectedBook.title}</h1>
+            <h1 className="text-xl font-bold text-cyan-400 mb-2">{selectedBook.title}</h1>
             {selectedPart ? (
               <p className="text-terminal-green-dim">Chapters</p>
             ) : parts.length > 0 ? (
@@ -216,7 +219,7 @@ export default function BooksPage() {
                 >
                   <h3 className="text-terminal-green font-bold mb-2">{chapter.title}</h3>
                   <p className="text-terminal-green-dim text-sm">
-                    {chapter.content.substring(0, 150)}...
+                    {stripMarkdown(chapter.content).substring(0, 150)}...
                   </p>
                 </div>
               ))}
@@ -228,14 +231,14 @@ export default function BooksPage() {
   }
 
   return (
-    <div className="h-screen bg-black text-terminal-green overflow-y-auto">
-      <div className="max-w-2xl mx-auto p-4 pb-8">
+    <div className="h-screen bg-black text-terminal-green overflow-y-auto overflow-x-hidden">
+      <div className="w-full max-w-full md:max-w-2xl mx-auto p-4 pb-8">
         <ECHOBanner />
         <div className="mb-6">
           <Link href="/" className="text-terminal-amber hover:brightness-125 mb-4 inline-block">
             ← Back to Home
           </Link>
-          <h1 className="text-2xl font-bold text-cyan-400 mb-2">Coherenceism Texts</h1>
+          <h1 className="text-xl font-bold text-cyan-400 mb-2">Coherenceism Texts</h1>
           <p className="text-terminal-green-dim">Philosophical writings and explorations</p>
         </div>
 
