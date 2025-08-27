@@ -41,18 +41,37 @@ const ECHOBanner = () => {
   return (
     <div className="text-terminal-green mb-6">
       <div className="text-center">
-        <div className="mb-1">{createBorder()}</div>
-        <div className="py-2">
-          <div className="text-cyan-400 font-mono text-xl tracking-wider mb-2">
-            C O H E R E N C E I S M . I N F O
+        {/* Desktop banner with wide borders */}
+        <div className="hidden md:block">
+          <div className="mb-1">{createBorder()}</div>
+          <div className="py-2">
+            <div className="text-cyan-400 font-mono text-xl tracking-wider mb-2">
+              C O H E R E N C E I S M . I N F O
+            </div>
+            <div
+              className={`transition-all duration-300 ${isGlitching ? 'animate-pulse opacity-50 blur-sm' : 'opacity-100'}`}
+            >
+              <span className="text-terminal-green-dim italic text-sm">
+                {taglines[currentTaglineIndex]}
+              </span>
+            </div>
           </div>
-          <div className={`transition-all duration-300 ${isGlitching ? 'animate-pulse opacity-50 blur-sm' : 'opacity-100'}`}>
+          <div className="mt-1">{createBorder()}</div>
+        </div>
+
+        {/* Mobile banner without overflow-causing borders */}
+        <div className="md:hidden space-y-2">
+          <h1 className="text-2xl font-mono text-cyan-400 tracking-wider">
+            COHERENCEISM.INFO
+          </h1>
+          <div
+            className={`transition-all duration-300 ${isGlitching ? 'animate-pulse opacity-50 blur-sm' : 'opacity-100'}`}
+          >
             <span className="text-terminal-green-dim italic text-sm">
               {taglines[currentTaglineIndex]}
             </span>
           </div>
         </div>
-        <div className="mt-1">{createBorder()}</div>
       </div>
     </div>
   )

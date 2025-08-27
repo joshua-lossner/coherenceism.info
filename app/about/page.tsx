@@ -40,7 +40,7 @@ export default function AboutPage() {
     }
   }, [router])
   return (
-    <div className="h-screen bg-black text-terminal-green overflow-y-auto">
+    <div className="h-screen bg-black text-terminal-green overflow-y-auto overflow-x-hidden">
       <div className="w-full max-w-full md:max-w-2xl mx-auto p-4 pb-8">
         <ECHOBanner />
         <div className="mb-6">
