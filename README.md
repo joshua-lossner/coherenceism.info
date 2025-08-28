@@ -1,14 +1,14 @@
 # ECHO COHERENCE ARCHIVE
 
-A WarGames-inspired terminal interface for exploring Coherenceism philosophy, powered by OpenAI's GPT-4.
+A retro terminal interface for exploring Coherenceism philosophy, powered by OpenAI's GPT-5.
 
 For guidelines when using AI coding assistants (e.g., OpenAI Codex or ChatGPT), see [AGENTS.md](AGENTS.md).
 
 ## 🖥️ Features
 
 - **Authentic 1980s Terminal**: Green phosphor display with CRT scanlines
-- **Byte AI Assistant**: GPT-4 powered conversations about consciousness and technology
-- **Audio Narration**: Byte narrates all content with intelligent caching and seamless playback
+- **Ivy AI Assistant**: GPT-5 powered conversations about consciousness and technology
+- **Audio Narration**: Ivy narrates all content with intelligent caching and seamless playback
 - **Content Archive**: Browse philosophical texts and futuristic journal entries
 - **Interactive Commands**: Navigate through books, journals, and AI queries
 - **Retro Aesthetics**: JetBrains Mono font, terminal effects, and classic styling
@@ -57,18 +57,18 @@ Type `/help` to see:
 - `/menu` - Return to main menu
 - `/help` - Display available commands and instructions
 - `/contact` - Information for reaching out
-- `/random` - Receive a random Byte-generated thought or humorous quip
-- `/voice` - Toggle audio output (Byte speaks responses aloud)
+- `/random` - Receive a random Ivy-generated thought or wry quip
+- `/voice` - Toggle audio output (Ivy speaks responses aloud)
 - `/clear` - Clear terminal screen
 
 ### Content Navigation Commands
-When viewing journal entries or book chapters:
-- `n` or `n.` - Narrate current content (Byte reads it aloud)
+-When viewing journal entries or book chapters:
+- `n` or `n.` - Narrate current content (Ivy reads it aloud)
 - `p` or `p.` - Pause/resume narration
 
 ## 🤖 AI Interaction
 
-**Direct Conversation**: Type anything to chat with Byte about consciousness, technology, and philosophy.
+**Direct Conversation**: Type anything to chat with Ivy about consciousness, technology, and philosophy.
 
 **Structured Queries**: Use `query [your question]` for focused philosophical discussions.
 
@@ -93,7 +93,7 @@ User Query → OpenAI Embedding → Vector Similarity Search → Context Assembl
 **Technologies**:
 - **Embeddings**: OpenAI `text-embedding-3-small` model
 - **Vector Database**: Vercel Postgres with pgvector extension
-- **Generation**: OpenAI `gpt-4o-mini` with 500 token limit
+- **Generation**: OpenAI `gpt-5` with 500 token limit
 - **Storage**: `coherence_vectors` table with semantic chunks
 
 #### 2. Conversation Management
@@ -119,7 +119,7 @@ POST /api/rag
 
 # Response includes contextual answer + source attribution
 {
-  "response": "Byte's contextual response...",
+  "response": "Ivy's contextual response...",
   "sources": [{"slug": "digital-consciousness", "chunk_index": 0}]
 }
 ```
@@ -134,7 +134,7 @@ GET /api/search?q=consciousness
 ```bash
 POST /api/chat
 {
-  "message": "Hello Byte",
+  "message": "Hello Ivy",
   "mode": "conversation",  # or "query"
   "clearContext": false
 }
@@ -199,7 +199,7 @@ OPENAI_PROJECT_ID=proj-...     # OpenAI project organization
 - **Next.js 14** - React framework with App Router
 - **TypeScript** - Type safety
 - **Tailwind CSS** - Styling and terminal effects
-- **OpenAI API** - GPT-4 integration for AI conversations and embeddings
+- **OpenAI API** - GPT-5 integration for AI conversations and embeddings
 - **Vercel Postgres** - Database with pgvector extension for vector search
 - **ElevenLabs API** - High-quality text-to-speech for audio narration
 
@@ -207,7 +207,7 @@ OPENAI_PROJECT_ID=proj-...     # OpenAI project organization
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| `OPENAI_API_KEY` | Your OpenAI API key for GPT-4 access and embeddings | Yes |
+| `OPENAI_API_KEY` | Your OpenAI API key for GPT-5 access and embeddings | Yes |
 | `POSTGRES_URL` | Vercel Postgres connection string for vector database | Yes |
 | `ELEVENLABS_API_KEY` | Your ElevenLabs API key for audio narration | Yes |
 | `BLOB_READ_WRITE_TOKEN` | Your Vercel Blob token for audio file storage | Yes |
@@ -216,7 +216,7 @@ OPENAI_PROJECT_ID=proj-...     # OpenAI project organization
 
 ## 🎧 Audio Narration System
 
-The audio narration feature allows Byte to read journal entries and book chapters aloud using ElevenLabs' advanced text-to-speech technology.
+The audio narration feature allows Ivy to read journal entries and book chapters aloud using ElevenLabs' advanced text-to-speech technology.
 
 ### How It Works
 - **Intelligent Chunking**: Long content is automatically split into ~950 character chunks at natural boundaries

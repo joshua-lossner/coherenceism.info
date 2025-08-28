@@ -1,6 +1,6 @@
 # Working with GPT-5 in Cursor
 
-This repository includes a Claude-oriented setup (`.claude/`, `CLAUDE.md`). Runtime code is OpenAI-first (GPT-4o), so for Cursor the goal is to streamline how GPT-5 assists you while preserving the existing architecture.
+This repository includes a Claude-oriented setup (`.claude/`, `CLAUDE.md`). Runtime code is OpenAI-first (GPT-5), so for Cursor the goal is to streamline how GPT-5 assists you while preserving the existing architecture.
 
 ## Quickstart
 - Open `components/ECHOTerminal.tsx` and `app/api/chat/route.ts` for most tasks
@@ -18,7 +18,7 @@ This repository includes a Claude-oriented setup (`.claude/`, `CLAUDE.md`). Runt
 ### Modify AI behavior (system prompt / model)
 1. Open `app/api/chat/route.ts`
 2. Adjust the system prompt construction and/or message assembly
-3. Keep Byte’s persona consistent (see `CLAUDE.md` and `README.md`)
+3. Keep Ivy’s persona consistent (see `CLAUDE.md` and `README.md`)
 4. Leave model IDs as-is unless you intend to change defaults project-wide
 
 ### Extend RAG behavior

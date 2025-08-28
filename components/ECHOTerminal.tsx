@@ -618,7 +618,7 @@ const ECHOTerminal = () => {
   const generateNarration = async (text: string, contentType: string, contentId: string) => {
     try {
       setIsProcessing(true)
-      await typeResponse(`Byte is preparing narration... This may take a moment.`, false)
+      await typeResponse(`Ivy is preparing narration... This may take a moment.`, false)
       
       const response = await fetch('/api/narrate', {
         method: 'POST',
@@ -757,30 +757,39 @@ const ECHOTerminal = () => {
     }
   }
 
-  const typeResponse = async (text: string, enableVoice: boolean = true) => {
+  const typeResponse = async (
+    text: string,
+    enableVoice: boolean = true,
+    sources: Array<{ slug: string; chunk_index: number }> = []
+  ) => {
     // Add separator before response
     addLine("────────────────────────────────────────", 'separator')
-    
+
     // Generate speech for AI responses (not menu content)
     let audioUrl = null
     if (audioEnabled && enableVoice && text.length < 1000) { // Only for shorter responses
       audioUrl = await generateSpeech(text)
     }
-    
+
     const lines = text.split('\n')
-    
+
     // Start playing audio if available
     if (audioUrl && audioRef.current) {
       setIsPlaying(true)
       audioRef.current.src = audioUrl
       audioRef.current.play().catch(console.error)
     }
-    
+
     for (const line of lines) {
       await new Promise(resolve => setTimeout(resolve, 100))
       addLine(`    ${line}`, 'ai-response') // 4-space indentation
     }
-    
+
+    if (sources.length > 0) {
+      const citationLine = sources.map(s => `${s.slug}#${s.chunk_index}`).join(' ')
+      addLine(`    Sources: ${citationLine}`, 'ai-response')
+    }
+
     // Add separator after response
     addLine("────────────────────────────────────────", 'separator')
     await new Promise(resolve => setTimeout(resolve, 200))
@@ -815,7 +824,7 @@ const ECHOTerminal = () => {
         setHasConversationContext(false)
       }
 
-      return data.response
+      return { response: data.response, sources: data.sources || [] }
     } catch (error: any) {
       console.error('API call failed:', error)
       // Show clean error message with separators
@@ -999,14 +1008,14 @@ const ECHOTerminal = () => {
         addLine("/help     - Display available commands and instructions", 'normal')
         addLine("/contact  - Information for reaching out", 'normal')
         addLine("/changelog- View release notes and version history", 'normal')
-        addLine("/random   - Receive a random Byte-generated thought or humorous quip", 'normal')
-        addLine("/voice    - Toggle audio output (Byte speaks responses aloud)", 'normal')
+        addLine("/random   - Receive a random Ivy-generated thought or wry quip", 'normal')
+        addLine("/voice    - Toggle audio output (Ivy speaks responses aloud)", 'normal')
         addLine("/clear    - Clear terminal screen", 'normal')
-        addLine("/reset    - Reset Byte's memory and start fresh conversation", 'normal')
+        addLine("/reset    - Reset Ivy's memory and start fresh conversation", 'normal')
         addLine("")
         addLine(createBorder(), 'normal')
         addLine("")
-        addPromptWithOrangeBorder("Type any command or ask Byte a question.")
+        addPromptWithOrangeBorder("Type any command or ask Ivy a question.")
         addLine("")
         break
 
@@ -1299,10 +1308,10 @@ As we stand at the brink of remarkable transformations in artificial intelligenc
       case 'RANDOM':
       case '/RANDOM':
         setIsProcessing(true)
-        const randomPrompt = "You are Byte - a witty, sarcastic AI with a sharp tongue but a caring heart. Generate a clever, sarcastic, or philosophical thought. Keep it under 150 tokens and make it distinctly Byte's voice - irreverent but insightful."
-        const randomResponse = await callOpenAI(randomPrompt, 'conversation')
-        if (randomResponse) {
-          await typeResponse(randomResponse)
+        const randomPrompt = "You are Ivy - wry, reflective, gently ironic. Offer a concise, insightful quip in Ivy's voice."
+        const randomResult = await callOpenAI(randomPrompt, 'conversation')
+        if (randomResult?.response) {
+          await typeResponse(randomResult.response)
         }
         setIsProcessing(false)
         break
@@ -1593,7 +1602,7 @@ ${release.fullDescription}`
         if (newAudioState) {
           // Enabling audio - set state first, then speak the confirmation
           setAudioEnabled(true)
-          await typeResponse(`Audio output enabled. Byte will now speak responses aloud.`, true)
+          await typeResponse(`Audio output enabled. Ivy will now speak responses aloud.`, true)
         } else {
           // Disabling audio - speak first, then disable
           await typeResponse(`Audio output disabled. Audio responses turned off.`, false)
@@ -1604,10 +1613,9 @@ ${release.fullDescription}`
       case 'RESET':
       case '/RESET':
         setIsProcessing(true)
-        // Call the API with clearContext flag
-        const resetResponse = await callOpenAI('clear', 'conversation', true)
-        if (resetResponse) {
-          await typeResponse(`Memory banks cleared. It's like we're meeting for the first time... again. Hi, I'm Byte - sarcastic AI, pizza enthusiast, and your digital companion. What's on your mind?`)
+        const resetResult = await callOpenAI('clear', 'conversation', true)
+        if (resetResult?.response) {
+          await typeResponse(`Memory banks cleared. Fresh slate. I'm Ivy—wry companion and coherence seeker. What's on your mind?`)
         }
         setIsProcessing(false)
         break
@@ -1930,9 +1938,9 @@ ${release.fullDescription}`
         addLine("")
         setIsProcessing(true)
         
-        const response = await callOpenAI(command, 'conversation')
-        if (response) {
-          await typeResponse(response)
+        const result = await callOpenAI(command, 'conversation')
+        if (result && result.response) {
+          await typeResponse(result.response, true, result.sources)
         }
         setIsProcessing(false)
     }
@@ -2277,7 +2285,7 @@ ${release.fullDescription}`
         {/* Desktop message */}
         <div className="border-t border-terminal-green-dim pt-6 mt-8">
           <p className="text-terminal-green-dim text-sm leading-relaxed">
-            💻 For the full terminal experience with AI assistant Byte, 
+            💻 For the full terminal experience with AI assistant Ivy,
             visit this site on a desktop or laptop computer.
           </p>
         </div>
