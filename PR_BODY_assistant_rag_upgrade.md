@@ -1,4 +1,4 @@
-### Upgrade: Byte → GPT‑5 and RAG Quality Improvements
+### Upgrade: Ivy → GPT‑5 and RAG Quality Improvements
 
 #### Why
 - Improve answer quality, coherence, and latency with GPT‑5 for chat.
@@ -33,7 +33,7 @@
 ```bash
 curl -sS -X POST "$ORIGIN/api/chat" \
   -H 'Content-Type: application/json' \
-  -d '{"message":"Hello Byte","mode":"conversation"}' | jq .
+  -d '{"message":"Hello Ivy","mode":"conversation"}' | jq .
 ```
 
 2) RAG search

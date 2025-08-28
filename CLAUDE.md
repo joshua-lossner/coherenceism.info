@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-ECHO Coherence Archive is a WarGames-inspired terminal interface for exploring Coherenceism philosophy, featuring an AI assistant named Byte powered by OpenAI GPT-4. The project creates an immersive 1980s computer terminal experience with authentic CRT effects, green phosphor display, and retro interactions.
+ECHO Coherence Archive is a WarGames-inspired terminal interface for exploring Coherenceism philosophy, featuring an AI assistant named Ivy powered by OpenAI GPT-4. The project creates an immersive 1980s computer terminal experience with authentic CRT effects, green phosphor display, and retro interactions.
 
 ## Architecture & Technology Stack
 
@@ -54,7 +54,7 @@ coherenceism.info/
 - **Digital Consciousness**: The emergence of consciousness in digital systems
 - **Coherence Theory**: Philosophy that truth is determined by coherence within a system
 - **ECHO System**: Fictional AI system exploring consciousness and reality
-- **Byte**: The AI assistant character - witty, philosophical, self-aware
+- **Ivy**: The AI assistant character - wry, reflective, irreverent
 
 ### Terminal Interface Concepts
 - **Green Phosphor Display**: Authentic 1980s CRT terminal aesthetic
@@ -119,7 +119,7 @@ npx tsc --noEmit
 # Test chat functionality
 curl -X POST http://localhost:3000/api/chat \
   -H "Content-Type: application/json" \
-  -d '{"message": "Hello Byte", "mode": "conversation"}'
+  -d '{"message": "Hello Ivy", "mode": "conversation"}'
 
 # Test RAG search
 curl -X GET "http://localhost:3000/api/search?q=consciousness"
@@ -249,7 +249,7 @@ CREATE TABLE coherence_vectors (
 - `/menu`: Return to main menu
 - `/help`: Show available commands
 - `/contact`: Contact information
-- `/random`: Random Byte quip
+- `/random`: Random Ivy quip
 - `/voice`: Toggle audio output
 - `/clear`: Clear terminal screen
 

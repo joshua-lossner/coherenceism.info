@@ -18,7 +18,7 @@ This repository includes a Claude-oriented setup (`.claude/`, `CLAUDE.md`). Runt
 ### Modify AI behavior (system prompt / model)
 1. Open `app/api/chat/route.ts`
 2. Adjust the system prompt construction and/or message assembly
-3. Keep Byte’s persona consistent (see `CLAUDE.md` and `README.md`)
+3. Keep Ivy’s persona consistent (see `CLAUDE.md` and `README.md`)
 4. Leave model IDs as-is unless you intend to change defaults project-wide
 
 ### Extend RAG behavior

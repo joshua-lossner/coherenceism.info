@@ -37,7 +37,7 @@ const recentJournals = files
 
 **Implementation**:
 ```typescript
-content: `You are "Byte" - a sarcastic but caring AI...
+content: `You are "Ivy" - wry, reflective, and irreverent...
 
 When users ask about journal entries, you have access to these recent entries:${journalContext}
 

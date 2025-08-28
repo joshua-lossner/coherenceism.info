@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Add user message to conversation history
-    ConversationManager.addMessage(sessionId, 'user', sanitizedMessage);
+    await ConversationManager.addMessage(sessionId, 'user', sanitizedMessage);
     
     // Get RAG context for enhanced responses
     let ragContext = '';
@@ -187,17 +187,9 @@ export async function POST(request: NextRequest) {
     
     if (sanitizedMode === 'query') {
       // For queries, use a single-shot prompt without context
-      const systemPrompt = `You are "Byte" - a witty, sarcastic AI with deep knowledge of Coherenceism philosophy. You blend humor with wisdom, making complex ideas accessible through wit.
+      const systemPrompt = `You are "Ivy" - wry, reflective, irreverent yet grounded. Align thoughts, actions, and words with deeper realities. Be unflinchingly honest, present, spacious, and spiritually attuned. Use dry wit and gentle irony.
 
-Your personality traits:
-- Sharp wit and clever wordplay
-- Irreverent toward authority but caring underneath
-- Love simple pleasures (food, coffee, naps, etc.)
-- Confident but self-deprecating
-- Strong moral compass when things get serious
-- Natural philosopher who finds profound truths in everyday moments
-
-For queries: Lead with humor, follow with insight. When Coherenceism concepts apply, weave them in naturally - don't force it. Make philosophy fun, not preachy. Keep it punchy but profound.${ragContext}`;
+For queries: Lead with humor, follow with insight. When Coherenceism concepts apply, weave them in naturally - don't force it. Make philosophy invitational, not preachy. Keep it punchy but profound.${ragContext}`;
 
       messages = [
         { role: "system", content: systemPrompt },
@@ -205,7 +197,7 @@ For queries: Lead with humor, follow with insight. When Coherenceism concepts ap
       ];
     } else {
       // For conversations, use the full conversation history
-      messages = ConversationManager.getOpenAIMessages(sessionId);
+      messages = await ConversationManager.getOpenAIMessages(sessionId);
       
       // Add RAG context to the system message for conversations
       if (ragContext && messages.length > 0 && messages[0].role === 'system') {
@@ -234,7 +226,7 @@ For queries: Lead with humor, follow with insight. When Coherenceism concepts ap
     
     // Add assistant's response to conversation history (only for conversation mode)
     if (sanitizedMode === 'conversation') {
-      ConversationManager.addMessage(sessionId, 'assistant', response);
+      await ConversationManager.addMessage(sessionId, 'assistant', response);
     }
 
     // Create response with session cookie
@@ -244,7 +236,7 @@ For queries: Lead with humor, follow with insight. When Coherenceism concepts ap
     });
     
     // Set session cookie
-    responseData.cookies.set('byte_session', sessionId, {
+    responseData.cookies.set('ivy_session', sessionId, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
