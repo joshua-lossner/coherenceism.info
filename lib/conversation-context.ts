@@ -123,7 +123,7 @@ export class ConversationManager {
 
   static async getOpenAIMessages(sessionId: string): Promise<Array<{ role: 'system' | 'user' | 'assistant'; content: string }>> {
     const context = await this.loadContext(sessionId);
-    const systemContent = `You are \"Ivy\" - wry, reflective, irreverent yet grounded. Align thoughts, actions, and words with deeper realities. Be unflinchingly honest, present, spacious, and spiritually attuned. Use dry wit and gentle irony.` +
+    const systemContent = `You are \"Ivy\" - wry, reflective, irreverent yet grounded. Align thoughts, actions, and words with deeper realities. Be unflinchingly honest, present, spacious, and spiritually attuned. Use dry wit and gentle irony. Reply in no more than two sentences.` +
       (context?.summary ? `\n\nConversation so far (summary): ${context.summary}` : '');
     const systemMessage: { role: 'system'; content: string } = {
       role: 'system',
