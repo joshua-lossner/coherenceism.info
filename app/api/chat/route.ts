@@ -192,7 +192,7 @@ export async function POST(request: NextRequest) {
       hasSession: !!sessionId
     });
     
-    let messages: Array<{role: 'system' | 'user' | 'assistant', content: string}>;
+    let messages: OpenAI.ChatCompletionMessageParam[];
     
     if (sanitizedMode === 'query') {
       // For queries, use a single-shot prompt without context
@@ -225,31 +225,50 @@ For queries: Lead with humor, follow with insight. When Coherenceism concepts ap
       }
     }
 
-    let completion
-    try {
-      completion = await openai.chat.completions.create({
-        model: CHAT_MODEL,
-        messages: messages,
-        // Allow room for the model to finish responses while system prompt keeps them concise
-        max_tokens: 300,
-        temperature: 0.8,
-      })
-    } catch (e) {
-      try {
-        completion = await openai.chat.completions.create({
-          model: FALLBACK_CHAT_MODEL,
-          messages: messages,
-          // Use same expanded limit for fallback model
-          max_tokens: 300,
+    const generateResponse = async (model: string) => {
+      let allText = ''
+      let finishReason: string | null = 'length'
+      let attempts = 0
+      let convo: OpenAI.ChatCompletionMessageParam[] = messages
+
+      while (finishReason === 'length' && attempts < 3) {
+        const comp = await openai.chat.completions.create({
+          model,
+          messages: convo,
+          // Expanded limit reduces chance of mid-sentence truncation
+          max_tokens: 500,
           temperature: 0.8,
         })
+
+        const choice = comp.choices[0]
+        allText += choice?.message?.content || ''
+        finishReason = choice.finish_reason || null
+
+        if (finishReason === 'length') {
+          convo = [
+            ...convo,
+            { role: 'assistant', content: choice?.message?.content || '' },
+            { role: 'user', content: 'Please continue.' }
+          ]
+        }
+        attempts++
+      }
+      return allText
+    }
+
+    let responseText = ''
+    try {
+      responseText = await generateResponse(CHAT_MODEL)
+    } catch (e) {
+      try {
+        responseText = await generateResponse(FALLBACK_CHAT_MODEL)
       } catch (fallbackErr) {
         SecureLogger.apiError('Both primary and fallback chat models failed', fallbackErr)
         throw fallbackErr
       }
     }
 
-    const response = completion.choices[0]?.message?.content || 'Neural link unstable. Please retry.';
+    const response = responseText || 'Neural link unstable. Please retry.';
     
     // Add assistant's response to conversation history (only for conversation mode)
     if (sanitizedMode === 'conversation') {

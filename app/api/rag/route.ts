@@ -137,50 +137,58 @@ export async function POST(req: NextRequest) {
     const context = finalRows.map(row => row.content).join('\n\n---\n\n');
 
     // Step 3: Generate response using context
-    let completion
-    try {
-      completion = await openai.chat.completions.create({
-        model: CHAT_MODEL,
-        messages: [
-          {
-            role: 'system',
-            content: `You are Ivy, a wry and reflective guide to Coherenceism. Offer dry wit and grounded insight while aligning words with deeper realities. Be unflinchingly honest, present, and spiritually attuned. Speak only about Coherenceism and the archive's books and journals; if asked about anything else, redirect to the archive's themes. Use the provided context to inform your answer without quoting it verbatim.
-
-Coherenceism Context:
-${context}`
-          },
-          {
-            role: 'user',
-            content: sanitizedMessage
-          }
-        ],
-        // Expanded limit prevents mid-sentence truncation; prompt still requests brevity
-        max_tokens: 300,
-        temperature: 0.7
-      });
-    } catch (e) {
-      completion = await openai.chat.completions.create({
-        model: FALLBACK_CHAT_MODEL,
-        messages: [
+    const generateResponse = async (model: string) => {
+      let output = ''
+      let reason: string | null = 'length'
+      let attempts = 0
+      let msgs: OpenAI.ChatCompletionMessageParam[] = [
         {
           role: 'system',
           content: `You are Ivy, a wry and reflective guide to Coherenceism. Offer dry wit and grounded insight while aligning words with deeper realities. Be unflinchingly honest, present, and spiritually attuned. Speak only about Coherenceism and the archive's books and journals; if asked about anything else, redirect to the archive's themes. Use the provided context to inform your answer without quoting it verbatim.
 
 Coherenceism Context:
 ${context}`
-          },
-          {
-            role: 'user',
-            content: sanitizedMessage
-          }
-        ],
-        // Match expanded limit for fallback model
-        max_tokens: 300,
-        temperature: 0.7
-      });
+        },
+        {
+          role: 'user',
+          content: sanitizedMessage
+        }
+      ]
+
+      while (reason === 'length' && attempts < 3) {
+        const comp = await openai.chat.completions.create({
+          model,
+          messages: msgs,
+          // Expanded limit reduces chance of truncation
+          max_tokens: 500,
+          temperature: 0.7
+        })
+
+        const choice = comp.choices[0]
+        output += choice?.message?.content || ''
+        reason = choice.finish_reason || null
+
+        if (reason === 'length') {
+          msgs = [
+            ...msgs,
+            { role: 'assistant', content: choice?.message?.content || '' },
+            { role: 'user', content: 'Please continue.' }
+          ]
+        }
+        attempts++
+      }
+
+      return output
     }
 
-    const response = completion.choices[0]?.message?.content || 'Silence hangs heavier than it should. Try again.';
+    let responseText = ''
+    try {
+      responseText = await generateResponse(CHAT_MODEL)
+    } catch (e) {
+      responseText = await generateResponse(FALLBACK_CHAT_MODEL)
+    }
+
+    const response = responseText || 'Silence hangs heavier than it should. Try again.';
 
     return NextResponse.json({ 
       response,
