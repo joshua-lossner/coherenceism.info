@@ -33,7 +33,7 @@ In our age of AI and digital transformation, Coherenceism provides tools for mai
 - Web: [coherenceism.info](https://coherenceism.info)
 - GitHub: [github.com/joshua-lossner](https://github.com/joshua-lossner)
 - Bluesky: [lossner.bsky.social](https://bsky.app/profile/lossner.bsky.social)
-- X: [x.com/NeuromancerByte](https://x.com/NeuromancerByte)
+- X: [x.com/NeuromancerIvy](https://x.com/NeuromancerIvy)
 
 ---
 

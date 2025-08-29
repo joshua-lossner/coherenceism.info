@@ -37,7 +37,7 @@ const recentJournals = files
 
 **Implementation**:
 ```typescript
-content: `You are "Byte" - a sarcastic but caring AI...
+content: `You are "Ivy" - wry, reflective, and irreverent...
 
 When users ask about journal entries, you have access to these recent entries:${journalContext}
 
@@ -55,7 +55,7 @@ Recent Journal Entries Available:
 #### 3. Multi-Provider Support (`lib/llm-providers/`)
 
 **Supported Providers**:
-- **OpenAI**: GPT-4o-mini
+- **OpenAI**: GPT-5
 - **Anthropic**: Claude-3.5-Sonnet
 
 **Provider Abstraction**: Common interface for different LLM providers while maintaining RAG functionality
