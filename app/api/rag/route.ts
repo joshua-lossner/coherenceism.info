@@ -8,6 +8,9 @@ import SecureLogger from '../../../lib/secure-logger';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+const VECTOR_WEIGHT = parseFloat(process.env.RAG_VECTOR_WEIGHT || '0.7');
+const BM25_WEIGHT = parseFloat(process.env.RAG_BM25_WEIGHT || '0.3');
+
 export const runtime = 'edge';
 
 export async function POST(req: NextRequest) {
@@ -86,14 +89,17 @@ export async function POST(req: NextRequest) {
       const score = r.score; // lower is better
       const current = merged.get(k);
       const inv = 1 / (1 + score); // invert distance to similarity-ish
-      if (!current || inv > current.score) merged.set(k, { slug: r.slug, chunk_index: r.chunk_index, content: r.content, score: inv });
+      if (!current) {
+        merged.set(k, { slug: r.slug, chunk_index: r.chunk_index, content: r.content, score: VECTOR_WEIGHT * inv });
+      } else {
+        merged.set(k, { ...current, score: current.score + VECTOR_WEIGHT * inv });
+      }
     };
     const addFts = (r: any) => {
       const k = key(r);
       const rank = r.rank || 0;
       const current = merged.get(k);
-      const weight = 0.5; // weight FTS contribution
-      const val = weight * rank;
+      const val = BM25_WEIGHT * rank;
       if (!current) merged.set(k, { slug: r.slug, chunk_index: r.chunk_index, content: r.content, score: val });
       else merged.set(k, { ...current, score: current.score + val });
     };
@@ -101,7 +107,24 @@ export async function POST(req: NextRequest) {
     ftsRows.forEach(addFts);
 
     // Sort by combined score desc and take top N
-    const mergedTop = Array.from(merged.values()).sort((a, b) => b.score - a.score).slice(0, 6);
+    let mergedTop = Array.from(merged.values()).sort((a, b) => b.score - a.score).slice(0, 6);
+
+    // Re-rank using semantic similarity between query and candidates
+    try {
+      const { data: candidateEmbeddings } = await openai.embeddings.create({
+        model: EMBEDDING_MODEL,
+        input: mergedTop.map(r => r.content)
+      });
+      const qNorm = Math.sqrt(queryVec.reduce((s, v) => s + v * v, 0));
+      mergedTop = mergedTop.map((row, idx) => {
+        const cVec = candidateEmbeddings[idx].embedding;
+        const cNorm = Math.sqrt(cVec.reduce((s, v) => s + v * v, 0));
+        const sim = queryVec.reduce((s, v, i) => s + v * cVec[i], 0) / (qNorm * cNorm);
+        return { ...row, score: VECTOR_WEIGHT * sim + BM25_WEIGHT * row.score };
+      }).sort((a, b) => b.score - a.score).slice(0, 6);
+    } catch (err) {
+      SecureLogger.warn('Re-ranking failed, using initial ranking', { error: err });
+    }
 
     // Step 2: Build context from merged results, de-dupe by slug preserving order
     const seenSlugs = new Set<string>();
@@ -114,52 +137,42 @@ export async function POST(req: NextRequest) {
     const context = finalRows.map(row => row.content).join('\n\n---\n\n');
 
     // Step 3: Generate response using context
-    let completion
-    try {
-      completion = await openai.chat.completions.create({
-        model: CHAT_MODEL,
-        messages: [
-          {
-            role: 'system',
-            content: `You are Byte, a sarcastic but caring AI assistant representing Coherenceism. You have access to relevant passages from Coherenceism texts to answer questions. Keep your responses conversational, witty, and grounded in the provided context. Reference the context naturally but don't just quote it verbatim.
+    const messages: OpenAI.ChatCompletionMessageParam[] = [
+      {
+        role: 'system',
+        content: `You are Ivy, a wry and reflective guide to Coherenceism. Offer dry wit and grounded insight while aligning words with deeper realities. Be unflinchingly honest, present, and spiritually attuned. Speak only about Coherenceism and the archive's books and journals; if asked about anything else, redirect to the archive's themes. Keep replies brief—no more than two short sentences. Use the provided context to inform your answer without quoting it verbatim.
 
 Coherenceism Context:
 ${context}`
-          },
-          {
-            role: 'user',
-            content: sanitizedMessage
-          }
-        ],
-        max_tokens: 500,
-        temperature: 0.7
+      },
+      {
+        role: 'user',
+        content: sanitizedMessage
+      }
+    ];
+
+    let completion;
+    try {
+      completion = await openai.chat.completions.create({
+        model: CHAT_MODEL,
+        messages,
+        max_tokens: 150,
+        temperature: 0.6
       });
     } catch (e) {
       completion = await openai.chat.completions.create({
         model: FALLBACK_CHAT_MODEL,
-        messages: [
-        {
-          role: 'system',
-          content: `You are Byte, a sarcastic but caring AI assistant representing Coherenceism. You have access to relevant passages from Coherenceism texts to answer questions. Keep your responses conversational, witty, and grounded in the provided context. Reference the context naturally but don't just quote it verbatim.
-
-Coherenceism Context:
-${context}`
-          },
-          {
-            role: 'user',
-            content: sanitizedMessage
-          }
-        ],
-        max_tokens: 500,
-        temperature: 0.7
+        messages,
+        max_tokens: 150,
+        temperature: 0.6
       });
     }
 
-    const response = completion.choices[0]?.message?.content || 'Sorry, I got distracted by thoughts of pizza.';
+    const response = completion.choices[0]?.message?.content || 'Silence hangs heavier than it should. Try again.';
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       response,
-      sources: finalRows.map(row => ({ slug: row.slug, chunk_index: row.chunk_index }))
+      sources: finalRows.map(row => ({ slug: row.slug, chunk_index: row.chunk_index })) 
     });
 
   } catch (error) {

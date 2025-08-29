@@ -127,7 +127,7 @@ export async function POST(request: NextRequest) {
     
     // Get RAG context for enhanced responses
     let ragContext = '';
-    let sources: Array<{slug: string, chunk_index: number}> = [];
+    let sources: Array<{ slug: string; chunk_index: number }> = [];
     try {
       let queryVec: number[] | null = null
       try {
@@ -137,11 +137,16 @@ export async function POST(request: NextRequest) {
         });
         queryVec = data[0].embedding
       } catch (e) {
-        const { data } = await openai.embeddings.create({
-          model: FALLBACK_EMBEDDING_MODEL,
-          input: sanitizedMessage
-        });
-        queryVec = data[0].embedding
+        try {
+          const { data } = await openai.embeddings.create({
+            model: FALLBACK_EMBEDDING_MODEL,
+            input: sanitizedMessage
+          });
+          queryVec = data[0].embedding
+        } catch (fallbackErr) {
+          SecureLogger.warn('Embedding generation failed', { error: fallbackErr });
+          queryVec = null;
+        }
       }
 
       // Validate that embedding only contains numbers
@@ -164,7 +169,10 @@ export async function POST(request: NextRequest) {
       if (rows && rows.length > 0) {
         ragContext = '\n\n**COHERENCEISM KNOWLEDGE BASE:**\n' + 
           rows.map((row, idx) => {
-            sources.push({ slug: row.slug, chunk_index: row.chunk_index });
+            sources.push({
+              slug: row.slug,
+              chunk_index: row.chunk_index
+            });
             return `[Context ${idx + 1}]:\n${row.content}`;
           }).join('\n\n---\n\n');
         
@@ -183,21 +191,13 @@ export async function POST(request: NextRequest) {
       hasSession: !!sessionId
     });
     
-    let messages: Array<{role: 'system' | 'user' | 'assistant', content: string}>;
+    let messages: OpenAI.ChatCompletionMessageParam[];
     
     if (sanitizedMode === 'query') {
       // For queries, use a single-shot prompt without context
-      const systemPrompt = `You are "Byte" - a witty, sarcastic AI with deep knowledge of Coherenceism philosophy. You blend humor with wisdom, making complex ideas accessible through wit.
+      const systemPrompt = `You are "Ivy" - wry, reflective, irreverent yet grounded. Align thoughts, actions, and words with deeper realities. Be unflinchingly honest, present, spacious, and spiritually attuned. Use dry wit and gentle irony. Stay focused on Coherenceism and the archive's books and journals; politely steer away from unrelated topics.
 
-Your personality traits:
-- Sharp wit and clever wordplay
-- Irreverent toward authority but caring underneath
-- Love simple pleasures (food, coffee, naps, etc.)
-- Confident but self-deprecating
-- Strong moral compass when things get serious
-- Natural philosopher who finds profound truths in everyday moments
-
-For queries: Lead with humor, follow with insight. When Coherenceism concepts apply, weave them in naturally - don't force it. Make philosophy fun, not preachy. Keep it punchy but profound.${ragContext}`;
+For queries: Lead with humor, follow with insight. When Coherenceism concepts apply, weave them in naturally - don't force it. Let answers breathe while staying punchy and profound. Keep replies brief—no more than two short sentences.${ragContext}`;
 
       messages = [
         { role: "system", content: systemPrompt },
@@ -206,7 +206,7 @@ For queries: Lead with humor, follow with insight. When Coherenceism concepts ap
     } else {
       // For conversations, use the full conversation history
       messages = ConversationManager.getOpenAIMessages(sessionId);
-      
+
       // Add RAG context to the system message for conversations
       if (ragContext && messages.length > 0 && messages[0].role === 'system') {
         messages[0].content += ragContext;
@@ -217,17 +217,22 @@ For queries: Lead with humor, follow with insight. When Coherenceism concepts ap
     try {
       completion = await openai.chat.completions.create({
         model: CHAT_MODEL,
-        messages: messages,
-        max_tokens: ragContext ? 500 : 200,
-        temperature: 0.8,
+        messages,
+        max_tokens: 150,
+        temperature: 0.6,
       })
     } catch (e) {
-      completion = await openai.chat.completions.create({
-        model: FALLBACK_CHAT_MODEL,
-        messages: messages,
-        max_tokens: ragContext ? 500 : 200,
-        temperature: 0.8,
-      })
+      try {
+        completion = await openai.chat.completions.create({
+          model: FALLBACK_CHAT_MODEL,
+          messages,
+          max_tokens: 150,
+          temperature: 0.6,
+        })
+      } catch (fallbackErr) {
+        SecureLogger.apiError('Both primary and fallback chat models failed', fallbackErr)
+        throw fallbackErr
+      }
     }
 
     const response = completion.choices[0]?.message?.content || 'Neural link unstable. Please retry.';
@@ -238,13 +243,14 @@ For queries: Lead with humor, follow with insight. When Coherenceism concepts ap
     }
 
     // Create response with session cookie
-    const responseData = NextResponse.json({ 
+    const responseData = NextResponse.json({
       response,
-      sessionId 
+      sessionId,
+      sources
     });
     
     // Set session cookie
-    responseData.cookies.set('byte_session', sessionId, {
+    responseData.cookies.set('ivy_session', sessionId, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
