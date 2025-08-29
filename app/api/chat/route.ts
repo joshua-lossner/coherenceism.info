@@ -230,7 +230,7 @@ For queries: Lead with humor, follow with insight. When Coherenceism concepts ap
       completion = await openai.chat.completions.create({
         model: CHAT_MODEL,
         messages: messages,
-        max_tokens: 250,
+        max_tokens: 150,
         temperature: 0.8,
       })
     } catch (e) {
@@ -238,7 +238,7 @@ For queries: Lead with humor, follow with insight. When Coherenceism concepts ap
         completion = await openai.chat.completions.create({
           model: FALLBACK_CHAT_MODEL,
           messages: messages,
-          max_tokens: 250,
+          max_tokens: 150,
           temperature: 0.8,
         })
       } catch (fallbackErr) {

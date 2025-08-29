@@ -154,7 +154,7 @@ ${context}`
             content: sanitizedMessage
           }
         ],
-        max_tokens: 250,
+        max_tokens: 150,
         temperature: 0.7
       });
     } catch (e) {
@@ -173,7 +173,7 @@ ${context}`
             content: sanitizedMessage
           }
         ],
-        max_tokens: 250,
+        max_tokens: 150,
         temperature: 0.7
       });
     }
