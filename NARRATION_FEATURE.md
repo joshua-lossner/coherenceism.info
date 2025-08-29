@@ -1,7 +1,7 @@
-# Byte Audio Narration Feature
+# Ivy Audio Narration Feature
 
 ## Overview
-This feature enables Byte to generate and cache audio narrations of all content (journal entries, book chapters, and about page) using ElevenLabs text-to-speech API.
+This feature enables Ivy to generate and cache audio narrations of all content (journal entries, book chapters, and about page) using ElevenLabs text-to-speech API.
 
 ## Key Features
 
@@ -77,7 +77,7 @@ Check if narration exists for content hash.
 ### For Users
 1. Navigate to any journal entry or book chapter
 2. Type `/speak` or click the narration option in the command bar
-3. Wait for Byte to prepare the audio (first time only)
+3. Wait for Ivy to prepare the audio (first time only)
 4. Use play/pause controls to listen
 5. Audio is automatically cached for future users
 

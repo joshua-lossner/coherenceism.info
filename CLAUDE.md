@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-ECHO Coherence Archive is a WarGames-inspired terminal interface for exploring Coherenceism philosophy, featuring an AI assistant named Byte powered by OpenAI GPT-4. The project creates an immersive 1980s computer terminal experience with authentic CRT effects, green phosphor display, and retro interactions.
+ECHO Coherence Archive is a retro terminal interface for exploring Coherenceism philosophy, featuring an AI assistant named Ivy powered by OpenAI GPT-5. The project creates an immersive 1980s computer terminal experience with authentic CRT effects, green phosphor display, and retro interactions.
 
 ## Architecture & Technology Stack
 
@@ -10,7 +10,7 @@ ECHO Coherence Archive is a WarGames-inspired terminal interface for exploring C
 - **Framework**: Next.js 15.4.1 with App Router
 - **Language**: TypeScript with strict mode
 - **Styling**: Tailwind CSS with custom terminal effects
-- **AI Integration**: OpenAI GPT-4o-mini for chat, text-embedding-3-small for RAG
+- **AI Integration**: OpenAI GPT-5 for chat, text-embedding-3-small for RAG
 - **Database**: Vercel Postgres with pgvector extension for semantic search
 - **Audio**: ElevenLabs API for text-to-speech narration
 - **Storage**: Vercel Blob for audio file caching
@@ -54,7 +54,7 @@ coherenceism.info/
 - **Digital Consciousness**: The emergence of consciousness in digital systems
 - **Coherence Theory**: Philosophy that truth is determined by coherence within a system
 - **ECHO System**: Fictional AI system exploring consciousness and reality
-- **Byte**: The AI assistant character - witty, philosophical, self-aware
+- **Ivy**: The AI assistant character - wry, reflective, irreverent
 
 ### Terminal Interface Concepts
 - **Green Phosphor Display**: Authentic 1980s CRT terminal aesthetic
@@ -119,7 +119,7 @@ npx tsc --noEmit
 # Test chat functionality
 curl -X POST http://localhost:3000/api/chat \
   -H "Content-Type: application/json" \
-  -d '{"message": "Hello Byte", "mode": "conversation"}'
+  -d '{"message": "Hello Ivy", "mode": "conversation"}'
 
 # Test RAG search
 curl -X GET "http://localhost:3000/api/search?q=consciousness"
@@ -144,7 +144,7 @@ curl -X POST http://localhost:3000/api/narrate \
 - **Home Page**: `app/page.tsx` - Terminal initialization
 
 ### API Endpoints
-- **Chat API**: `app/api/chat/route.ts` - GPT-4 conversations
+- **Chat API**: `app/api/chat/route.ts` - GPT-5 conversations
 - **RAG API**: `app/api/rag/route.ts` - Vector search with AI
 - **Search API**: `app/api/search/route.ts` - Content search
 - **Narration API**: `app/api/narrate/route.ts` - Audio generation
@@ -167,7 +167,7 @@ curl -X POST http://localhost:3000/api/narrate \
 - **typescript**: Type safety and IntelliSense
 
 ### AI & Data
-- **openai**: GPT-4 chat and embeddings
+- **openai**: GPT-5 chat and embeddings
 - **@vercel/postgres**: Vector database for RAG
 - **@vercel/blob**: Audio file storage
 
@@ -183,7 +183,7 @@ curl -X POST http://localhost:3000/api/narrate \
 ## Environment Variables
 
 ### Required
-- `OPENAI_API_KEY`: OpenAI API access for GPT-4 and embeddings
+- `OPENAI_API_KEY`: OpenAI API access for GPT-5 and embeddings
 - `POSTGRES_URL`: Vercel Postgres connection for vector database
 - `ELEVENLABS_API_KEY`: Text-to-speech audio generation
 - `BLOB_READ_WRITE_TOKEN`: Vercel Blob storage for audio files
@@ -198,7 +198,7 @@ curl -X POST http://localhost:3000/api/narrate \
 1. User query → OpenAI embedding generation
 2. Vector similarity search in Postgres
 3. Retrieve top 4 relevant chunks
-4. Inject context into GPT-4 prompt
+4. Inject context into GPT-5 prompt
 5. Generate contextual response
 
 ### Database Schema
@@ -249,7 +249,7 @@ CREATE TABLE coherence_vectors (
 - `/menu`: Return to main menu
 - `/help`: Show available commands
 - `/contact`: Contact information
-- `/random`: Random Byte quip
+- `/random`: Random Ivy quip
 - `/voice`: Toggle audio output
 - `/clear`: Clear terminal screen
 
