@@ -154,7 +154,8 @@ ${context}`
             content: sanitizedMessage
           }
         ],
-        max_tokens: 150,
+        // Expanded limit prevents mid-sentence truncation; prompt still requests brevity
+        max_tokens: 300,
         temperature: 0.7
       });
     } catch (e) {
@@ -173,7 +174,8 @@ ${context}`
             content: sanitizedMessage
           }
         ],
-        max_tokens: 150,
+        // Match expanded limit for fallback model
+        max_tokens: 300,
         temperature: 0.7
       });
     }
