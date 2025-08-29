@@ -123,15 +123,11 @@ export async function POST(request: NextRequest) {
     }
     
     // Add user message to conversation history
-    try {
-      await ConversationManager.addMessage(sessionId, 'user', sanitizedMessage);
-    } catch (cmErr) {
-      SecureLogger.warn('Failed to persist user message', { error: cmErr });
-    }
+    ConversationManager.addMessage(sessionId, 'user', sanitizedMessage);
     
     // Get RAG context for enhanced responses
     let ragContext = '';
-    let sources: Array<{slug: string, chunk_index: number}> = [];
+    let sources: Array<{ slug: string; chunk_index: number }> = [];
     try {
       let queryVec: number[] | null = null
       try {
@@ -198,7 +194,7 @@ export async function POST(request: NextRequest) {
       // For queries, use a single-shot prompt without context
       const systemPrompt = `You are "Ivy" - wry, reflective, irreverent yet grounded. Align thoughts, actions, and words with deeper realities. Be unflinchingly honest, present, spacious, and spiritually attuned. Use dry wit and gentle irony. Stay focused on Coherenceism and the archive's books and journals; politely steer away from unrelated topics.
 
-For queries: Lead with humor, follow with insight. When Coherenceism concepts apply, weave them in naturally - don't force it. Make philosophy invitational, not preachy. Let answers breathe while staying punchy and profound.${ragContext}`;
+For queries: Lead with humor, follow with insight. When Coherenceism concepts apply, weave them in naturally - don't force it. Let answers breathe while staying punchy and profound. Keep replies brief—no more than two short sentences.${ragContext}`;
 
       messages = [
         { role: "system", content: systemPrompt },
@@ -206,18 +202,7 @@ For queries: Lead with humor, follow with insight. When Coherenceism concepts ap
       ];
     } else {
       // For conversations, use the full conversation history
-      try {
-        messages = await ConversationManager.getOpenAIMessages(sessionId);
-      } catch (cmErr) {
-        SecureLogger.warn('Failed to load conversation history', { error: cmErr });
-        messages = [
-          {
-            role: 'system',
-            content: 'You are "Ivy" - wry, reflective, irreverent yet grounded. Align thoughts, actions, and words with deeper realities. Be unflinchingly honest, present, spacious, and spiritually attuned. Use dry wit and gentle irony. Stay focused on Coherenceism and the archive\'s books and journals; politely decline unrelated topics.'
-          },
-          { role: 'user', content: sanitizedMessage }
-        ];
-      }
+      messages = ConversationManager.getOpenAIMessages(sessionId);
 
       // Add RAG context to the system message for conversations
       if (ragContext && messages.length > 0 && messages[0].role === 'system') {
@@ -225,64 +210,40 @@ For queries: Lead with humor, follow with insight. When Coherenceism concepts ap
       }
     }
 
-    const generateResponse = async (model: string) => {
-      let allText = ''
-      let finishReason: string | null = 'length'
-      let attempts = 0
-      let convo: OpenAI.ChatCompletionMessageParam[] = messages
-
-      while (finishReason === 'length' && attempts < 3) {
-        const comp = await openai.chat.completions.create({
-          model,
-          messages: convo,
-          // Expanded limit reduces chance of mid-sentence truncation
-          max_tokens: 500,
-          temperature: 0.8,
-        })
-
-        const choice = comp.choices[0]
-        allText += choice?.message?.content || ''
-        finishReason = choice.finish_reason || null
-
-        if (finishReason === 'length') {
-          convo = [
-            ...convo,
-            { role: 'assistant', content: choice?.message?.content || '' },
-            { role: 'user', content: 'Please continue.' }
-          ]
-        }
-        attempts++
-      }
-      return allText
-    }
-
-    let responseText = ''
+    let completion
     try {
-      responseText = await generateResponse(CHAT_MODEL)
+      completion = await openai.chat.completions.create({
+        model: CHAT_MODEL,
+        messages,
+        max_tokens: 150,
+        temperature: 0.6,
+      })
     } catch (e) {
       try {
-        responseText = await generateResponse(FALLBACK_CHAT_MODEL)
+        completion = await openai.chat.completions.create({
+          model: FALLBACK_CHAT_MODEL,
+          messages,
+          max_tokens: 150,
+          temperature: 0.6,
+        })
       } catch (fallbackErr) {
         SecureLogger.apiError('Both primary and fallback chat models failed', fallbackErr)
         throw fallbackErr
       }
     }
 
-    const response = responseText || 'Neural link unstable. Please retry.';
+    const response = completion.choices[0]?.message?.content || 'Neural link unstable. Please retry.';
     
     // Add assistant's response to conversation history (only for conversation mode)
     if (sanitizedMode === 'conversation') {
-      try {
-        await ConversationManager.addMessage(sessionId, 'assistant', response);
-      } catch (cmErr) {
-        SecureLogger.warn('Failed to persist assistant message', { error: cmErr });
-      }
+      ConversationManager.addMessage(sessionId, 'assistant', response);
     }
 
     // Create response with session cookie
-    const responseData = NextResponse.json({ 
+    const responseData = NextResponse.json({
       response,
-      sessionId 
+      sessionId,
+      sources
     });
     
     // Set session cookie

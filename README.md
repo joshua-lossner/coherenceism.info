@@ -93,7 +93,7 @@ User Query → OpenAI Embedding → Vector Similarity Search → Context Assembl
 **Technologies**:
 - **Embeddings**: OpenAI `text-embedding-3-small` model
 - **Vector Database**: Vercel Postgres with pgvector extension
-- **Generation**: OpenAI `gpt-5` with 500-token limit and auto-continuation to avoid truncation (responses still aim for ~150 tokens)
+- **Generation**: OpenAI `gpt-5` with a 150-token cap; system prompts keep replies to two concise sentences
 - **Storage**: `coherence_vectors` table with semantic chunks
 
 #### 2. Conversation Management

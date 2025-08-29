@@ -1,7 +1,4 @@
 import { NextRequest } from 'next/server';
-import fs from 'fs/promises';
-import path from 'path';
-import OpenAI from 'openai';
 
 export interface ConversationMessage {
   role: 'user' | 'assistant' | 'system';
@@ -14,21 +11,13 @@ export interface ConversationContext {
   messages: ConversationMessage[];
   createdAt: number;
   lastActive: number;
-  summary?: string;
 }
-
-const STORAGE_DIR = path.join(process.cwd(), 'data', 'conversations');
-const TOKEN_THRESHOLD = 1000;
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || '' });
 
 export class ConversationManager {
   private static readonly MAX_MESSAGES = 20;
   private static readonly SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
   private static readonly CONTEXT_COOKIE_NAME = 'ivy_session';
-
-  private static async ensureDir() {
-    await fs.mkdir(STORAGE_DIR, { recursive: true });
-  }
+  private static contexts = new Map<string, ConversationContext>();
 
   static generateSessionId(): string {
     return `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
@@ -39,100 +28,86 @@ export class ConversationManager {
     return cookieValue || this.generateSessionId();
   }
 
-  private static async loadContext(sessionId: string): Promise<ConversationContext | null> {
-    try {
-      const raw = await fs.readFile(path.join(STORAGE_DIR, `${sessionId}.json`), 'utf-8');
-      const context = JSON.parse(raw) as ConversationContext;
-      if (Date.now() - context.lastActive > this.SESSION_TIMEOUT) {
-        await fs.unlink(path.join(STORAGE_DIR, `${sessionId}.json`)).catch(() => {});
-        return null;
-      }
-      return context;
-    } catch {
+  private static getContext(sessionId: string): ConversationContext | null {
+    const context = this.contexts.get(sessionId);
+    if (!context) return null;
+    if (Date.now() - context.lastActive > this.SESSION_TIMEOUT) {
+      this.contexts.delete(sessionId);
       return null;
     }
+    return context;
   }
 
-  private static async saveContext(context: ConversationContext) {
-    await this.ensureDir();
-    await fs.writeFile(path.join(STORAGE_DIR, `${context.sessionId}.json`), JSON.stringify(context));
+  private static createContext(sessionId: string): ConversationContext {
+    const context: ConversationContext = {
+      sessionId,
+      messages: [],
+      createdAt: Date.now(),
+      lastActive: Date.now()
+    };
+    this.contexts.set(sessionId, context);
+    return context;
   }
 
-  static async addMessage(sessionId: string, role: 'user' | 'assistant' | 'system', content: string): Promise<void> {
-    let context = await this.loadContext(sessionId);
+  static addMessage(
+    sessionId: string,
+    role: 'user' | 'assistant' | 'system',
+    content: string
+  ): void {
+    let context = this.getContext(sessionId);
     if (!context) {
-      context = { sessionId, messages: [], createdAt: Date.now(), lastActive: Date.now() };
+      context = this.createContext(sessionId);
     }
 
     context.messages.push({ role, content, timestamp: Date.now() });
 
-    const tokenCount = context.messages.reduce((s, m) => s + m.content.split(/\s+/).length, 0);
-    if (tokenCount > TOKEN_THRESHOLD) {
-      const toSummarize = context.messages.slice(0, -this.MAX_MESSAGES);
-      const summaryInput = toSummarize.map(m => `${m.role}: ${m.content}`).join('\n');
-      try {
-        const summaryRes = await openai.chat.completions.create({
-          model: 'gpt-4o-mini',
-          messages: [
-            { role: 'system', content: 'Summarize the following conversation about Coherenceism, focusing on key facts and tone.' },
-            { role: 'user', content: summaryInput }
-          ],
-          max_tokens: 150,
-          temperature: 0.3
-        });
-        context.summary = summaryRes.choices[0]?.message?.content || context.summary;
-      } catch {
-        /* ignore summarization errors */
+    if (context.messages.length > this.MAX_MESSAGES) {
+      const systemMessage = context.messages.find(m => m.role === 'system');
+      const recent = context.messages.slice(-this.MAX_MESSAGES);
+      if (systemMessage && !recent.includes(systemMessage)) {
+        context.messages = [systemMessage, ...recent.slice(1)];
+      } else {
+        context.messages = recent;
       }
-      context.messages = context.messages.slice(-this.MAX_MESSAGES);
-    } else if (context.messages.length > this.MAX_MESSAGES) {
-      context.messages = context.messages.slice(-this.MAX_MESSAGES);
     }
 
     context.lastActive = Date.now();
-    await this.saveContext(context);
+    this.contexts.set(sessionId, context);
   }
 
-  static async getConversationHistory(sessionId: string): Promise<ConversationMessage[]> {
-    const context = await this.loadContext(sessionId);
+  static getConversationHistory(sessionId: string): ConversationMessage[] {
+    const context = this.getContext(sessionId);
     return context ? context.messages : [];
   }
 
-  static async clearContext(sessionId: string): Promise<void> {
-    await fs.unlink(path.join(STORAGE_DIR, `${sessionId}.json`)).catch(() => {});
+  static clearContext(sessionId: string): void {
+    this.contexts.delete(sessionId);
   }
 
-  static async clearOldSessions(): Promise<void> {
-    await this.ensureDir();
-    const files = await fs.readdir(STORAGE_DIR);
+  static clearOldSessions(): void {
     const now = Date.now();
-    await Promise.all(
-      files.map(async f => {
-        try {
-          const raw = await fs.readFile(path.join(STORAGE_DIR, f), 'utf-8');
-          const ctx = JSON.parse(raw) as ConversationContext;
-          if (now - ctx.lastActive > this.SESSION_TIMEOUT) {
-            await fs.unlink(path.join(STORAGE_DIR, f));
-          }
-        } catch {
-          /* ignore errors */
-        }
-      })
-    );
+    const keysToDelete: string[] = [];
+    this.contexts.forEach((context, id) => {
+      if (now - context.lastActive > this.SESSION_TIMEOUT) {
+        keysToDelete.push(id);
+      }
+    });
+    keysToDelete.forEach(id => this.contexts.delete(id));
   }
 
-  static async getOpenAIMessages(sessionId: string): Promise<Array<{ role: 'system' | 'user' | 'assistant'; content: string }>> {
-    const context = await this.loadContext(sessionId);
-    const systemContent = `You are \"Ivy\" - wry, reflective, irreverent yet grounded. Align thoughts, actions, and words with deeper realities. Be unflinchingly honest, present, spacious, and spiritually attuned. Use dry wit and gentle irony. Keep the conversation focused on Coherenceism and the archive's books and journals; politely deflect unrelated topics.` +
-      (context?.summary ? `\n\nConversation so far (summary): ${context.summary}` : '');
+  static getOpenAIMessages(
+    sessionId: string
+  ): Array<{ role: 'system' | 'user' | 'assistant'; content: string }> {
+    const messages = this.getConversationHistory(sessionId);
     const systemMessage: { role: 'system'; content: string } = {
       role: 'system',
-      content: systemContent
+      content:
+        'You are "Ivy" - wry, reflective, irreverent yet grounded. Align thoughts, actions, and words with deeper realities. Be unflinchingly honest, present, spacious, and spiritually attuned. Use dry wit and gentle irony. Stay focused on Coherenceism and the archive\'s books and journals; politely deflect unrelated topics. Keep replies brief—no more than two short sentences.'
     };
 
-    const conversationMessages = context
-      ? context.messages.filter(m => m.role !== 'system').map(m => ({ role: m.role, content: m.content }))
-      : [];
+    const conversationMessages = messages
+      .filter(m => m.role !== 'system')
+      .map(m => ({ role: m.role, content: m.content }));
 
     return [systemMessage, ...conversationMessages];
   }
@@ -143,3 +118,4 @@ if (typeof window === 'undefined') {
     ConversationManager.clearOldSessions();
   }, 5 * 60 * 1000);
 }
+
