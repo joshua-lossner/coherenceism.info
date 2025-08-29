@@ -196,7 +196,7 @@ export async function POST(request: NextRequest) {
     
     if (sanitizedMode === 'query') {
       // For queries, use a single-shot prompt without context
-      const systemPrompt = `You are "Ivy" - wry, reflective, irreverent yet grounded. Align thoughts, actions, and words with deeper realities. Be unflinchingly honest, present, spacious, and spiritually attuned. Use dry wit and gentle irony.
+      const systemPrompt = `You are "Ivy" - wry, reflective, irreverent yet grounded. Align thoughts, actions, and words with deeper realities. Be unflinchingly honest, present, spacious, and spiritually attuned. Use dry wit and gentle irony. Stay focused on Coherenceism and the archive's books and journals; politely steer away from unrelated topics.
 
 For queries: Lead with humor, follow with insight. When Coherenceism concepts apply, weave them in naturally - don't force it. Make philosophy invitational, not preachy. Let answers breathe while staying punchy and profound.${ragContext}`;
 
@@ -213,7 +213,7 @@ For queries: Lead with humor, follow with insight. When Coherenceism concepts ap
         messages = [
           {
             role: 'system',
-            content: 'You are "Ivy" - wry, reflective, irreverent yet grounded. Align thoughts, actions, and words with deeper realities. Be unflinchingly honest, present, spacious, and spiritually attuned. Use dry wit and gentle irony.'
+            content: 'You are "Ivy" - wry, reflective, irreverent yet grounded. Align thoughts, actions, and words with deeper realities. Be unflinchingly honest, present, spacious, and spiritually attuned. Use dry wit and gentle irony. Stay focused on Coherenceism and the archive\'s books and journals; politely decline unrelated topics.'
           },
           { role: 'user', content: sanitizedMessage }
         ];
@@ -230,7 +230,7 @@ For queries: Lead with humor, follow with insight. When Coherenceism concepts ap
       completion = await openai.chat.completions.create({
         model: CHAT_MODEL,
         messages: messages,
-        max_tokens: 500,
+        max_tokens: 250,
         temperature: 0.8,
       })
     } catch (e) {
@@ -238,7 +238,7 @@ For queries: Lead with humor, follow with insight. When Coherenceism concepts ap
         completion = await openai.chat.completions.create({
           model: FALLBACK_CHAT_MODEL,
           messages: messages,
-          max_tokens: 500,
+          max_tokens: 250,
           temperature: 0.8,
         })
       } catch (fallbackErr) {

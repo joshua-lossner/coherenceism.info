@@ -74,7 +74,7 @@ export class ConversationManager {
         const summaryRes = await openai.chat.completions.create({
           model: 'gpt-4o-mini',
           messages: [
-            { role: 'system', content: 'Summarize the following conversation focusing on key facts and tone.' },
+            { role: 'system', content: 'Summarize the following conversation about Coherenceism, focusing on key facts and tone.' },
             { role: 'user', content: summaryInput }
           ],
           max_tokens: 150,
@@ -123,7 +123,7 @@ export class ConversationManager {
 
   static async getOpenAIMessages(sessionId: string): Promise<Array<{ role: 'system' | 'user' | 'assistant'; content: string }>> {
     const context = await this.loadContext(sessionId);
-    const systemContent = `You are \"Ivy\" - wry, reflective, irreverent yet grounded. Align thoughts, actions, and words with deeper realities. Be unflinchingly honest, present, spacious, and spiritually attuned. Use dry wit and gentle irony.` +
+    const systemContent = `You are \"Ivy\" - wry, reflective, irreverent yet grounded. Align thoughts, actions, and words with deeper realities. Be unflinchingly honest, present, spacious, and spiritually attuned. Use dry wit and gentle irony. Keep the conversation focused on Coherenceism and the archive's books and journals; politely deflect unrelated topics.` +
       (context?.summary ? `\n\nConversation so far (summary): ${context.summary}` : '');
     const systemMessage: { role: 'system'; content: string } = {
       role: 'system',
